@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KF Payroll Calendar 2026</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;overflow:hidden}
@@ -173,21 +171,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 
 <!-- LOCK SCREEN -->
-<div class="lock-screen" id="lock-screen">
+<div class="lock-screen" id="lock-screen" style="display: none;">
   <div class="lock-box">
     <div class="lock-logo">KF <span>Payroll</span></div>
     <div class="lock-sub">2026 Financial Calendar</div>
     <div class="lock-icon"><i class="ti ti-lock"></i></div>
     <div class="lock-title">Password required</div>
     <div class="lock-desc">This calendar is protected. Enter the password to continue.</div>
-    <input class="lock-input" type="password" id="lock-input" placeholder="Enter password" autocomplete="off"/>
+    <input class="lock-input" type="password" id="lock-input" placeholder="Enter password" autocomplete="off">
     <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
     <div class="lock-err" id="lock-err"></div>
   </div>
 </div>
 
 <!-- APP -->
-<div class="app" id="app-wrap" style="display:none">
+<div class="app" id="app-wrap" style="display: flex;">
 
 <div class="topnav">
   <div class="topnav-left">
@@ -213,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </button>
     <div class="nav">
       <button onclick="navM(-1)"><i class="ti ti-chevron-left"></i></button>
-      <span class="mlabel" id="mlabel"></span>
+      <span class="mlabel" id="mlabel">January 2026</span>
       <button onclick="navM(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
   </div>
@@ -225,7 +223,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span class="sb-title" id="sb-title">AP Types</span>
     <button class="add-btn ap" id="add-btn" onclick="openNewTab()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
   </div>
-  <div id="sb-list"></div>
+  <div id="sb-list"><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#FAECE7;border:1px solid #712B1366"></div><span class="sg-name">Medical Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#E6F1FB;border:1px solid #0C447C66"></div><span class="sg-name">Management Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#EAF3DE;border:1px solid #27500A66"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#E1F5EE;border:1px solid #08504166"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#EEEDFE;border:1px solid #3C348966"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#FAEEDA;border:1px solid #63380666"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#FBEAF0;border:1px solid #72243E66"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#F1EFE8;border:1px solid #5F5E5A66"></div><span class="sg-name">Divvy</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#FAEEDA;border:1px solid #63380666"></div><span class="sg-name">Ink Staffing</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div><div class="sg"><button class="sg-hdr"><div class="sg-pill" style="background:#E6F1FB;border:1px solid #0C447C66"></div><span class="sg-name">Chase CC</span><span class="sg-arrow">▶</span><div class="sg-vis on ap">✓</div></button></div></div>
   <button class="sb-toggle" onclick="toggleSidebar()"><i class="ti ti-chevron-left" id="sb-toggle-icon"></i></button>
 </div>
 <button class="sb-pill ap" id="sb-pill" onclick="toggleSidebar()">
@@ -233,13 +231,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </button>
 
 <div class="main">
-  <div class="totrow" id="totrow"></div>
+  <div class="totrow" id="totrow"><div class="tcard main-ap">AP confirmed<b>$0.00</b></div></div>
   <div id="est-banner" style="display:none" class="est-note">
     <i class="ti ti-calculator" style="font-size:12px"></i>
     <span id="est-banner-text"></span>
   </div>
   <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-  <div class="cgrid" id="cgrid"></div>
+  <div class="cgrid" id="cgrid"><div class="dc empty"></div><div class="dc empty"></div><div class="dc empty"></div><div class="dc empty"></div><div class="dc"><div class="dnum">1</div><div class="dtotal ap"></div><div class="ev" style="background: rgb(250, 238, 218); color: rgb(99, 56, 6); border-color: rgba(99, 56, 6, 0.133);"><span class="ev-nm">Ink Staffing</span><span class="ev-av" style="opacity: 0.3;">+$</span></div></div><div class="dc"><div class="dnum">2</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">3</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">4</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">5</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">6</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">7</div><div class="dtotal ap"></div><div class="ev" style="background: rgb(250, 236, 231); color: rgb(113, 43, 19); border-color: rgba(113, 43, 19, 0.133);"><span class="ev-nm">Medical Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-nm">Management Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div><div class="ev" style="background: rgb(234, 243, 222); color: rgb(39, 80, 10); border-color: rgba(39, 80, 10, 0.133);"><span class="ev-nm">Offshore Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div></div><div class="dc"><div class="dnum">8</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">9</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">10</div><div class="dtotal ap"></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-nm">Chase CC</span><span class="ev-av" style="opacity: 0.3;">+$</span></div></div><div class="dc"><div class="dnum">11</div><div class="dtotal ap"></div><div class="ev" style="background: rgb(241, 239, 232); color: rgb(95, 94, 90); border-color: rgba(95, 94, 90, 0.133);"><span class="ev-nm">Divvy</span><span class="ev-av" style="opacity: 0.3;">+$</span></div></div><div class="dc"><div class="dnum">12</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">13</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">14</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">15</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">16</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">17</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">18</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">19</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">20</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">21</div><div class="dtotal ap"></div><div class="ev" style="background: rgb(250, 236, 231); color: rgb(113, 43, 19); border-color: rgba(113, 43, 19, 0.133);"><span class="ev-nm">Medical Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-nm">Management Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div><div class="ev" style="background: rgb(234, 243, 222); color: rgb(39, 80, 10); border-color: rgba(39, 80, 10, 0.133);"><span class="ev-nm">Offshore Payroll</span><span class="ev-av" style="opacity: 0.3;">+$</span></div></div><div class="dc"><div class="dnum">22</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">23</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">24</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">25</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">26</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">27</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">28</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">29</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">30</div><div class="dtotal ap"></div></div><div class="dc"><div class="dnum">31</div><div class="dtotal ap"></div></div></div>
 </div>
 </div>
 </div>
@@ -251,7 +249,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="est-info-box" class="est-info" style="display:none"></div>
   <div class="mrow"><label>Type</label><div class="val" id="am-type"></div></div>
   <div class="mrow"><label>Date</label><div class="val" id="am-date"></div></div>
-  <div class="mrow"><label>Amount ($)</label><input type="number" id="am-amt" placeholder="0.00" step="0.01" min="0"/></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="am-amt" placeholder="0.00" step="0.01" min="0"></div>
   <div class="mbtns"><button onclick="closeAmt()">Cancel</button><button class="save ap" id="am-save" onclick="saveAmt()">Save</button></div>
 </div>
 </div>
@@ -260,9 +258,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="overlay" id="tab-modal">
 <div class="modal">
   <h3 id="tm-title">New type</h3>
-  <div class="mrow"><label>Name</label><input type="text" id="tm-name" placeholder="e.g. Client Invoice"/></div>
+  <div class="mrow"><label>Name</label><input type="text" id="tm-name" placeholder="e.g. Client Invoice"></div>
   <div class="mrow"><label>Color</label><div class="color-grid" id="tm-colors"></div></div>
-  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="tm-day" placeholder="e.g. 15 — leave blank for manual" min="1" max="28"/></div>
+  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="tm-day" placeholder="e.g. 15 — leave blank for manual" min="1" max="28"></div>
   <div class="mbtns" id="tm-btns"></div>
 </div>
 </div>
@@ -272,14 +270,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="modal">
   <h3 id="em-title">Edit event</h3>
   <div class="mrow"><label>Type</label><div class="val" id="em-type"></div></div>
-  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="em-date" placeholder="2026-06-15"/></div>
-  <div class="mrow"><label>Amount ($)</label><input type="number" id="em-amt" placeholder="0.00" step="0.01" min="0"/></div>
+  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="em-date" placeholder="2026-06-15"></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="em-amt" placeholder="0.00" step="0.01" min="0"></div>
   <div class="mbtns" id="em-btns"></div>
 </div>
 </div>
 
 <!-- Export modal -->
-<div class="overlay" id="export-modal">
+<div class="overlay open" id="export-modal">
 <div class="modal export-modal">
   <h3>Update GitHub</h3>
   <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Downloads index.html with all AP, AR amounts and your password settings baked in.</p>
@@ -310,20 +308,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="pw-section">
     <h4>
       <i class="ti ti-lock" style="font-size:13px"></i> Password protection
-      <span id="pw-badge" class="pw-inactive-badge">Off</span>
+      <span id="pw-badge" class="pw-active-badge">Active</span>
     </h4>
     <div style="font-size:11px;color:#888;line-height:1.5;margin-bottom:8px">Set a password so only people you share it with can open this calendar.</div>
     <div class="pw-row">
-      <input type="password" id="pw-new" placeholder="Set new password"/>
+      <input type="password" id="pw-new" placeholder="Set new password">
       <button onclick="setPassword()">Set password</button>
     </div>
     <div class="pw-row" style="margin-top:6px">
-      <input type="password" id="pw-confirm" placeholder="Confirm password"/>
+      <input type="password" id="pw-confirm" placeholder="Confirm password">
     </div>
     <div class="pw-row" style="margin-top:6px">
       <button class="danger" onclick="removePassword()" style="width:100%">Remove password protection</button>
     </div>
-    <div class="pw-status" id="pw-status"></div>
+    <div class="pw-status ok" id="pw-status">Password set! Export and upload to GitHub for it to take effect.</div>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:4px">
     <button onclick="closeSettings()" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button>
@@ -830,7 +828,7 @@ function openExportModal(){document.getElementById('export-modal').classList.add
 function closeExport(){document.getElementById('export-modal').classList.remove('open');}
 function doExport(){
   const payload=JSON.stringify({ap:state.ap,ar:state.ar,password:state.password});
-  const html=document.documentElement.outerHTML.replace('"__BAKED__"',JSON.stringify(payload));
+  const html=document.documentElement.outerHTML.replace('"{\"ap\":{\"tabs\":[{\"id\":\"medical\",\"name\":\"Medical Payroll\",\"color\":{\"bg\":\"#FAECE7\",\"txt\":\"#712B13\"},\"active\":true,\"recurDay\":null},{\"id\":\"mgmt\",\"name\":\"Management Payroll\",\"color\":{\"bg\":\"#E6F1FB\",\"txt\":\"#0C447C\"},\"active\":true,\"recurDay\":null},{\"id\":\"offshore\",\"name\":\"Offshore Payroll\",\"color\":{\"bg\":\"#EAF3DE\",\"txt\":\"#27500A\"},\"active\":true,\"recurDay\":null},{\"id\":\"rbt-ga\",\"name\":\"RBT GA Payroll\",\"color\":{\"bg\":\"#E1F5EE\",\"txt\":\"#085041\"},\"active\":true,\"recurDay\":null},{\"id\":\"rbt-monsey\",\"name\":\"RBT Monsey Payroll\",\"color\":{\"bg\":\"#EEEDFE\",\"txt\":\"#3C3489\"},\"active\":true,\"recurDay\":null},{\"id\":\"aba-ga\",\"name\":\"ABA GA Payroll\",\"color\":{\"bg\":\"#FAEEDA\",\"txt\":\"#633806\"},\"active\":true,\"recurDay\":null},{\"id\":\"aba-monsey\",\"name\":\"ABA Monsey Payroll\",\"color\":{\"bg\":\"#FBEAF0\",\"txt\":\"#72243E\"},\"active\":true,\"recurDay\":null},{\"id\":\"divvy\",\"name\":\"Divvy\",\"color\":{\"bg\":\"#F1EFE8\",\"txt\":\"#5F5E5A\"},\"active\":true,\"recurDay\":11},{\"id\":\"ink\",\"name\":\"Ink Staffing\",\"color\":{\"bg\":\"#FAEEDA\",\"txt\":\"#633806\"},\"active\":true,\"recurDay\":1},{\"id\":\"chase\",\"name\":\"Chase CC\",\"color\":{\"bg\":\"#E6F1FB\",\"txt\":\"#0C447C\"},\"active\":true,\"recurDay\":10}],\"events\":[[\"Medical Payroll\",\"2026-01-07\"],[\"Management Payroll\",\"2026-01-07\"],[\"Offshore Payroll\",\"2026-01-07\"],[\"Medical Payroll\",\"2026-01-21\"],[\"Management Payroll\",\"2026-01-21\"],[\"Offshore Payroll\",\"2026-01-21\"],[\"RBT GA Payroll\",\"2026-02-02\"],[\"RBT Monsey Payroll\",\"2026-02-02\"],[\"Medical Payroll\",\"2026-02-04\"],[\"Management Payroll\",\"2026-02-04\"],[\"Offshore Payroll\",\"2026-02-04\"],[\"RBT GA Payroll\",\"2026-02-17\"],[\"RBT Monsey Payroll\",\"2026-02-17\"],[\"Medical Payroll\",\"2026-02-18\"],[\"Management Payroll\",\"2026-02-18\"],[\"Offshore Payroll\",\"2026-02-18\"],[\"RBT GA Payroll\",\"2026-03-02\"],[\"ABA Monsey Payroll\",\"2026-03-02\"],[\"ABA GA Payroll\",\"2026-03-02\"],[\"RBT Monsey Payroll\",\"2026-03-02\"],[\"Medical Payroll\",\"2026-03-04\"],[\"Management Payroll\",\"2026-03-04\"],[\"Offshore Payroll\",\"2026-03-04\"],[\"RBT GA Payroll\",\"2026-03-16\"],[\"RBT Monsey Payroll\",\"2026-03-16\"],[\"Medical Payroll\",\"2026-03-18\"],[\"Management Payroll\",\"2026-03-18\"],[\"Offshore Payroll\",\"2026-03-18\"],[\"Medical Payroll\",\"2026-04-01\"],[\"RBT GA Payroll\",\"2026-04-01\"],[\"ABA Monsey Payroll\",\"2026-04-01\"],[\"ABA GA Payroll\",\"2026-04-01\"],[\"RBT Monsey Payroll\",\"2026-04-01\"],[\"Management Payroll\",\"2026-04-01\"],[\"Offshore Payroll\",\"2026-04-01\"],[\"Medical Payroll\",\"2026-04-15\"],[\"RBT GA Payroll\",\"2026-04-15\"],[\"RBT Monsey Payroll\",\"2026-04-15\"],[\"Management Payroll\",\"2026-04-15\"],[\"Offshore Payroll\",\"2026-04-15\"],[\"Medical Payroll\",\"2026-04-29\"],[\"Management Payroll\",\"2026-04-29\"],[\"Offshore Payroll\",\"2026-04-29\"],[\"ABA GA Payroll\",\"2026-05-01\"],[\"RBT Monsey Payroll\",\"2026-05-01\"],[\"RBT GA Payroll\",\"2026-05-01\"],[\"ABA Monsey Payroll\",\"2026-05-01\"],[\"Medical Payroll\",\"2026-05-13\"],[\"Management Payroll\",\"2026-05-13\"],[\"Offshore Payroll\",\"2026-05-13\"],[\"RBT Monsey Payroll\",\"2026-05-15\"],[\"RBT GA Payroll\",\"2026-05-15\"],[\"Medical Payroll\",\"2026-05-27\"],[\"Management Payroll\",\"2026-05-27\"],[\"Offshore Payroll\",\"2026-05-27\"],[\"ABA GA Payroll\",\"2026-06-01\"],[\"RBT Monsey Payroll\",\"2026-06-01\"],[\"RBT GA Payroll\",\"2026-06-01\"],[\"ABA Monsey Payroll\",\"2026-06-01\"],[\"Medical Payroll\",\"2026-06-10\"],[\"Management Payroll\",\"2026-06-10\"],[\"Offshore Payroll\",\"2026-06-10\"],[\"RBT Monsey Payroll\",\"2026-06-15\"],[\"RBT GA Payroll\",\"2026-06-15\"],[\"Medical Payroll\",\"2026-06-24\"],[\"Management Payroll\",\"2026-06-24\"],[\"Offshore Payroll\",\"2026-06-24\"],[\"ABA GA Payroll\",\"2026-07-01\"],[\"RBT Monsey Payroll\",\"2026-07-01\"],[\"RBT GA Payroll\",\"2026-07-01\"],[\"ABA Monsey Payroll\",\"2026-07-01\"],[\"Medical Payroll\",\"2026-07-08\"],[\"Management Payroll\",\"2026-07-08\"],[\"Offshore Payroll\",\"2026-07-08\"],[\"RBT Monsey Payroll\",\"2026-07-15\"],[\"RBT GA Payroll\",\"2026-07-15\"],[\"Medical Payroll\",\"2026-07-22\"],[\"Management Payroll\",\"2026-07-22\"],[\"Offshore Payroll\",\"2026-07-22\"],[\"ABA GA Payroll\",\"2026-08-03\"],[\"RBT Monsey Payroll\",\"2026-08-03\"],[\"RBT GA Payroll\",\"2026-08-03\"],[\"ABA Monsey Payroll\",\"2026-08-03\"],[\"Medical Payroll\",\"2026-08-05\"],[\"Management Payroll\",\"2026-08-05\"],[\"Offshore Payroll\",\"2026-08-05\"],[\"RBT Monsey Payroll\",\"2026-08-17\"],[\"RBT GA Payroll\",\"2026-08-17\"],[\"Medical Payroll\",\"2026-08-19\"],[\"Management Payroll\",\"2026-08-19\"],[\"Offshore Payroll\",\"2026-08-19\"],[\"ABA GA Payroll\",\"2026-09-01\"],[\"RBT Monsey Payroll\",\"2026-09-01\"],[\"RBT GA Payroll\",\"2026-09-01\"],[\"ABA Monsey Payroll\",\"2026-09-01\"],[\"Medical Payroll\",\"2026-09-02\"],[\"Management Payroll\",\"2026-09-02\"],[\"Offshore Payroll\",\"2026-09-02\"],[\"RBT Monsey Payroll\",\"2026-09-15\"],[\"RBT GA Payroll\",\"2026-09-15\"],[\"Medical Payroll\",\"2026-09-16\"],[\"Management Payroll\",\"2026-09-16\"],[\"Offshore Payroll\",\"2026-09-16\"],[\"Medical Payroll\",\"2026-09-30\"],[\"Management Payroll\",\"2026-09-30\"],[\"Offshore Payroll\",\"2026-09-30\"],[\"ABA GA Payroll\",\"2026-10-01\"],[\"RBT Monsey Payroll\",\"2026-10-01\"],[\"RBT GA Payroll\",\"2026-10-01\"],[\"ABA Monsey Payroll\",\"2026-10-01\"],[\"Medical Payroll\",\"2026-10-14\"],[\"Management Payroll\",\"2026-10-14\"],[\"Offshore Payroll\",\"2026-10-14\"],[\"RBT Monsey Payroll\",\"2026-10-15\"],[\"RBT GA Payroll\",\"2026-10-15\"],[\"Medical Payroll\",\"2026-10-28\"],[\"Management Payroll\",\"2026-10-28\"],[\"Offshore Payroll\",\"2026-10-28\"],[\"ABA GA Payroll\",\"2026-11-02\"],[\"RBT Monsey Payroll\",\"2026-11-02\"],[\"RBT GA Payroll\",\"2026-11-02\"],[\"ABA Monsey Payroll\",\"2026-11-02\"],[\"Medical Payroll\",\"2026-11-11\"],[\"Management Payroll\",\"2026-11-11\"],[\"Offshore Payroll\",\"2026-11-11\"],[\"RBT Monsey Payroll\",\"2026-11-16\"],[\"RBT GA Payroll\",\"2026-11-16\"],[\"Medical Payroll\",\"2026-11-25\"],[\"Management Payroll\",\"2026-11-25\"],[\"Offshore Payroll\",\"2026-11-25\"],[\"ABA GA Payroll\",\"2026-12-01\"],[\"RBT Monsey Payroll\",\"2026-12-01\"],[\"RBT GA Payroll\",\"2026-12-01\"],[\"ABA Monsey Payroll\",\"2026-12-01\"],[\"Medical Payroll\",\"2026-12-09\"],[\"Management Payroll\",\"2026-12-09\"],[\"Offshore Payroll\",\"2026-12-09\"],[\"RBT Monsey Payroll\",\"2026-12-15\"],[\"RBT GA Payroll\",\"2026-12-15\"],[\"Medical Payroll\",\"2026-12-23\"],[\"Management Payroll\",\"2026-12-23\"],[\"Offshore Payroll\",\"2026-12-23\"],[\"ABA GA Payroll\",\"2027-01-04\"],[\"RBT Monsey Payroll\",\"2027-01-04\"],[\"RBT GA Payroll\",\"2027-01-04\"],[\"ABA Monsey Payroll\",\"2027-01-04\"],[\"Medical Payroll\",\"2027-01-06\"],[\"Management Payroll\",\"2027-01-06\"],[\"Offshore Payroll\",\"2027-01-06\"],[\"RBT Monsey Payroll\",\"2027-01-15\"],[\"RBT GA Payroll\",\"2027-01-15\"],[\"ABA GA Payroll\",\"2027-02-01\"],[\"ABA Monsey Payroll\",\"2027-02-01\"]],\"amounts\":{}},\"ar\":{\"tabs\":[{\"id\":\"ar-client\",\"name\":\"Client Invoices\",\"color\":{\"bg\":\"#EAF3DE\",\"txt\":\"#27500A\"},\"active\":true,\"recurDay\":null},{\"id\":\"ar-ins\",\"name\":\"Insurance Payments\",\"color\":{\"bg\":\"#E1F5EE\",\"txt\":\"#085041\"},\"active\":true,\"recurDay\":null},{\"id\":\"ar-grants\",\"name\":\"Grants\",\"color\":{\"bg\":\"#EEEDFE\",\"txt\":\"#3C3489\"},\"active\":true,\"recurDay\":null}],\"events\":[],\"amounts\":{}},\"password\":\"177d60\"}"',JSON.stringify(payload));
   const blob=new Blob([html],{type:'text/html'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();URL.revokeObjectURL(a.href);
 }
@@ -843,5 +841,6 @@ document.getElementById('lock-input').addEventListener('keydown',e=>{if(e.key===
 
 loadData();checkLock();buildSidebar();render();
 </script>
-</body>
-</html>
+
+
+<div data-lastpass-root="" style="position: absolute !important; top: 0px !important; left: 0px !important; height: 0px !important; width: 0px !important; display: initial !important;"></div></body></html>
