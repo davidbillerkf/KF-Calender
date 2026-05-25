@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Payroll Calendar 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;overflow:hidden}
+.app{display:flex;height:100vh}
+.sb{width:220px;min-width:220px;display:flex;flex-direction:column;background:#fff;border-right:0.5px solid #e0e0d8;height:100vh;overflow-y:auto;transition:transform .25s ease,width .25s ease,min-width .25s ease;position:relative;flex-shrink:0}
+.sb.collapsed{transform:translateX(-220px);width:0;min-width:0;overflow:hidden}
+.sb-head{padding:12px 12px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e8e0;flex-shrink:0}
+.sb-title{font-size:11px;font-weight:500;color:#888;letter-spacing:.06em;text-transform:uppercase}
+.add-btn{display:flex;align-items:center;gap:3px;font-size:11px;padding:3px 8px;border-radius:20px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-weight:500}
+.add-btn:hover{background:#EEEDFE}
+.sg{border-bottom:0.5px solid #eeede8}
+.sg-hdr{display:flex;align-items:center;width:100%;background:transparent;border:none;cursor:pointer;padding:8px 12px;gap:7px;transition:background .1s}
+.sg-hdr:hover{background:#f8f8f4}
+.sg-pill{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.sg-name{font-size:12px;font-weight:500;color:#1a1a1a;flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg-arrow{font-size:9px;color:#aaa;transition:transform .18s;display:inline-block}
+.sg-arrow.open{transform:rotate(90deg)}
+.sg-vis{width:15px;height:15px;border-radius:3px;border:0.5px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;color:transparent;transition:all .15s}
+.sg-vis.on{background:#534AB7;border-color:#534AB7;color:#fff}
+.sg-body{display:none;padding:4px 8px 8px 30px;background:#f9f9f6}
+.sg-body.open{display:block}
+.ev-row{display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:0.5px solid #eee}
+.ev-row:last-of-type{border-bottom:none}
+.ev-ds{font-size:10px;color:#666;flex:1}
+.ev-amt-input{width:65px;font-size:11px;padding:2px 5px;border:0.5px solid #ddd;border-radius:5px;background:#fff;color:#1a1a1a;text-align:right}
+.ev-amt-input:focus{border-color:#534AB7;outline:none}
+.ev-save-btn{font-size:10px;padding:2px 6px;border-radius:5px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer}
+.ev-save-btn:hover{background:#EEEDFE}
+.ev-del-btn{font-size:10px;padding:2px 4px;border-radius:5px;border:0.5px solid #ddd;color:#aaa;background:transparent;cursor:pointer}
+.ev-del-btn:hover{border-color:#a32d2d;color:#a32d2d}
+.sg-actions{display:flex;gap:4px;padding:6px 0 2px}
+.sg-act{font-size:10px;padding:3px 7px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#888;cursor:pointer}
+.sg-act:hover{background:#fff;color:#1a1a1a}
+.sb-toggle{position:absolute;top:50%;right:-14px;transform:translateY(-50%);z-index:100;width:14px;height:44px;background:#fff;border:0.5px solid #e0e0d8;border-left:none;border-radius:0 6px 6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:10px}
+.sb-toggle:hover{background:#f0eefc;color:#534AB7}
+.sb-pill{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:200;background:#534AB7;color:#fff;border:none;border-radius:0 20px 20px 0;padding:10px 8px 10px 6px;cursor:pointer;font-size:12px;display:none;flex-direction:column;align-items:center;gap:4px;writing-mode:vertical-lr;letter-spacing:.05em;font-weight:500}
+.sb-pill.show{display:flex}
+.sb-pill:hover{background:#3C3489}
+.main{flex:1;display:flex;flex-direction:column;padding:14px;gap:10px;min-width:0;overflow:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.topbar-left{display:flex;flex-direction:column;gap:2px}
+.topbar-title{font-size:17px;font-weight:500;color:#1a1a1a}
+.topbar-sub{font-size:11px;color:#999}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nav{display:flex;align-items:center;gap:5px;background:#fff;border:0.5px solid #ddd;border-radius:20px;padding:3px 5px}
+.nav button{background:transparent;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;color:#666;display:flex;align-items:center;justify-content:center}
+.nav button:hover{background:#f5f5f0;color:#1a1a1a}
+.mlabel{font-size:13px;font-weight:500;min-width:110px;text-align:center;color:#1a1a1a}
+.export-btn{display:flex;align-items:center;gap:5px;font-size:12px;padding:6px 14px;border-radius:20px;background:#534AB7;color:#fff;border:none;cursor:pointer;font-weight:500}
+.export-btn:hover{background:#3C3489}
+.totrow{display:flex;gap:6px;flex-wrap:wrap}
+.tcard{background:#fff;border-radius:10px;padding:5px 11px;font-size:10px;color:#888;border:0.5px solid #e8e8e0}
+.tcard b{display:block;font-size:13px;font-weight:500;color:#1a1a1a;margin-top:1px}
+.tcard.main-card{background:#534AB7;border-color:#534AB7;color:#c8c4f0}
+.tcard.main-card b{color:#fff}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow div{text-align:center;font-size:10px;color:#999;padding:3px 0;font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dc{min-height:88px;border-radius:8px;border:0.5px solid #e8e8e0;padding:4px;background:#fff;display:flex;flex-direction:column;transition:border-color .15s}
+.dc:hover{border-color:#bbb}
+.dc.empty{background:transparent;border-color:transparent}
+.dc.today{border:1.5px solid #534AB7;background:#FAFAFE}
+.dnum{font-size:10px;font-weight:500;color:#aaa;margin-bottom:1px}
+.dc.today .dnum{color:#534AB7}
+.dtotal{font-size:8px;font-weight:500;color:#534AB7;margin-bottom:2px;min-height:9px}
+.ev{font-size:8.5px;padding:2px 4px;border-radius:4px;margin-bottom:1px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:2px;line-height:1.4;border:0.5px solid transparent}
+.ev:hover{filter:brightness(.94)}
+.ev-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.ev-av{font-size:8px;font-weight:500;white-space:nowrap}
+.overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.4);align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:340px;max-width:95vw;border:0.5px solid #e0e0d8}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:6px;color:#1a1a1a}
+.modal-desc{font-size:12px;color:#888;margin-bottom:16px;line-height:1.6}
+.mrow{margin-bottom:12px}
+.mrow label{font-size:11px;color:#888;display:block;margin-bottom:4px;font-weight:500;letter-spacing:.03em}
+.mrow .val{font-size:13px;font-weight:500;color:#1a1a1a}
+.mrow input{width:100%;font-size:13px;padding:8px 11px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a}
+.mrow input:focus{border-color:#534AB7;outline:none;box-shadow:0 0 0 3px rgba(83,74,183,.1)}
+.mbtns{display:flex;gap:6px;justify-content:flex-end;margin-top:16px}
+.mbtns button{font-size:12px;padding:7px 15px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500}
+.mbtns button:hover{background:#f5f5f0}
+.mbtns .save{background:#534AB7;color:#fff;border-color:#534AB7}
+.mbtns .save:hover{background:#3C3489}
+.mbtns .danger{color:#a32d2d;border-color:rgba(163,45,45,.3)}
+.mbtns .danger:hover{background:#FCEBEB}
+.color-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.copt{width:22px;height:22px;border-radius:5px;cursor:pointer;transition:transform .1s}
+.copt:hover{transform:scale(1.15)}
+.copt.sel{outline:2px solid #534AB7;outline-offset:2px}
+/* EXPORT MODAL */
+.export-modal{width:400px}
+.steps-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.xstep{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:#f9f9f6;border:0.5px solid #eee}
+.xstep-num{width:24px;height:24px;border-radius:50%;background:#534AB7;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.xstep-body{flex:1}
+.xstep-title{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:3px}
+.xstep-desc{font-size:11px;color:#888;line-height:1.6}
+.xstep-desc a{color:#534AB7;text-decoration:none;font-weight:500}
+.xstep-desc a:hover{text-decoration:underline}
+.xstep.highlight{background:#EEEDFE;border-color:#AFA9EC}
+.xstep.highlight .xstep-num{background:#3C3489}
+.download-big{width:100%;padding:12px;border-radius:10px;background:#534AB7;color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0}
+.download-big:hover{background:#3C3489}
+.divider{height:0.5px;background:#eee;margin:14px 0}
+.tip-box{background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:8px;padding:10px 12px;font-size:11px;color:#085041;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sb" id="sb">
+  <div class="sb-head">
+    <span class="sb-title">Types</span>
+    <button class="add-btn" onclick="openNewTab()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
+  </div>
+  <div id="sb-list"></div>
+  <button class="sb-toggle" onclick="toggleSidebar()" title="Hide panel"><i class="ti ti-chevron-left" id="sb-toggle-icon"></i></button>
+</div>
+<button class="sb-pill" id="sb-pill" onclick="toggleSidebar()">
+  <i class="ti ti-layout-sidebar" style="font-size:14px;writing-mode:horizontal-tb"></i>Types
+</button>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Payroll calendar</div>
+      <div class="topbar-sub" id="topbar-sub">2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="export-btn" onclick="openExportModal()">
+        <i class="ti ti-upload" style="font-size:13px"></i> Update GitHub
+      </button>
+      <div class="nav">
+        <button onclick="navM(-1)"><i class="ti ti-chevron-left"></i></button>
+        <span class="mlabel" id="mlabel"></span>
+        <button onclick="navM(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="totrow" id="totrow"></div>
+  <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+  <div class="cgrid" id="cgrid"></div>
+</div>
+</div>
+
+<!-- Amount modal -->
+<div class="overlay" id="amt-modal">
+<div class="modal">
+  <h3>Enter amount</h3>
+  <div class="mrow"><label>Type</label><div class="val" id="am-type"></div></div>
+  <div class="mrow"><label>Date</label><div class="val" id="am-date"></div></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="am-amt" placeholder="0.00" step="0.01" min="0"/></div>
+  <div class="mbtns"><button onclick="closeAmt()">Cancel</button><button class="save" onclick="saveAmt()">Save</button></div>
+</div>
+</div>
+
+<!-- Tab modal -->
+<div class="overlay" id="tab-modal">
+<div class="modal">
+  <h3 id="tm-title">New payroll type</h3>
+  <div class="mrow"><label>Name</label><input type="text" id="tm-name" placeholder="e.g. Bonus Payroll"/></div>
+  <div class="mrow"><label>Color</label><div class="color-grid" id="tm-colors"></div></div>
+  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="tm-day" placeholder="e.g. 15 — leave blank for manual" min="1" max="28"/></div>
+  <div class="mbtns" id="tm-btns"></div>
+</div>
+</div>
+
+<!-- Event modal -->
+<div class="overlay" id="ev-modal">
+<div class="modal">
+  <h3 id="em-title">Edit event</h3>
+  <div class="mrow"><label>Payroll type</label><div class="val" id="em-type"></div></div>
+  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="em-date" placeholder="2026-06-15"/></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="em-amt" placeholder="0.00" step="0.01" min="0"/></div>
+  <div class="mbtns" id="em-btns"></div>
+</div>
+</div>
+
+<!-- EXPORT / GITHUB MODAL -->
+<div class="overlay" id="export-modal">
+<div class="modal export-modal">
+  <h3>Update your GitHub page</h3>
+  <p class="modal-desc">This bakes all your current amounts into a new file. You then swap it on GitHub — your boss's link updates instantly.</p>
+
+  <div class="xstep highlight">
+    <div class="xstep-num"><i class="ti ti-download" style="font-size:12px"></i></div>
+    <div class="xstep-body">
+      <div class="xstep-title">Step 1 — Download your updated file</div>
+      <div class="xstep-desc">Click below. It saves a file called <strong>index.html</strong> to your Downloads folder with all your amounts baked in.</div>
+      <button class="download-big" onclick="doExport()">
+        <i class="ti ti-download" style="font-size:15px"></i> Download index.html
+      </button>
+    </div>
+  </div>
+
+  <div class="steps-list">
+    <div class="xstep">
+      <div class="xstep-num">2</div>
+      <div class="xstep-body">
+        <div class="xstep-title">Go to your GitHub repository</div>
+        <div class="xstep-desc">Open <a href="https://github.com" target="_blank">github.com</a> and click on your payroll calendar repository.</div>
+      </div>
+    </div>
+    <div class="xstep">
+      <div class="xstep-num">3</div>
+      <div class="xstep-body">
+        <div class="xstep-title">Click on index.html in the file list</div>
+        <div class="xstep-desc">You'll see your files listed. Click the one named <strong>index.html</strong>.</div>
+      </div>
+    </div>
+    <div class="xstep">
+      <div class="xstep-num">4</div>
+      <div class="xstep-body">
+        <div class="xstep-title">Click the pencil icon (Edit)</div>
+        <div class="xstep-desc">Top right of the file view. Then press <strong>Ctrl+A</strong> to select everything, delete it, and paste the contents of your new file. Or use the upload option below.</div>
+      </div>
+    </div>
+    <div class="xstep">
+      <div class="xstep-num">5</div>
+      <div class="xstep-body">
+        <div class="xstep-title">Easier: just drag and drop</div>
+        <div class="xstep-desc">In your repo, click <strong>Add file → Upload files</strong>, drag in the new index.html, scroll down and click <strong>Commit changes</strong>. Done — your boss's page updates in about 30 seconds.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>Your boss's link never changes.</strong> Once you set up GitHub Pages, the URL stays the same forever. You just keep uploading new versions of index.html whenever you want to update the amounts.
+  </div>
+
+  <div class="divider"></div>
+  <div style="display:flex;justify-content:flex-end">
+    <button onclick="closeExport()" style="font-size:12px;padding:7px 15px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button>
+  </div>
+</div>
+</div>
+
+<script>
+const COLORS=[
+  {bg:'#FAECE7',txt:'#712B13'},{bg:'#E6F1FB',txt:'#0C447C'},{bg:'#EAF3DE',txt:'#27500A'},
+  {bg:'#E1F5EE',txt:'#085041'},{bg:'#EEEDFE',txt:'#3C3489'},{bg:'#FAEEDA',txt:'#633806'},
+  {bg:'#FBEAF0',txt:'#72243E'},{bg:'#F1EFE8',txt:'#5F5E5A'},{bg:'#FCEBEB',txt:'#791F1F'},
+  {bg:'#E6F4FA',txt:'#0C4A6E'},{bg:'#F5F0FF',txt:'#4C1D95'},{bg:'#FEF3C7',txt:'#92400E'},
+];
+const DEFAULT_TABS=[
+  {id:'medical',   name:'Medical Payroll',    color:COLORS[0],active:true,recurDay:null},
+  {id:'mgmt',      name:'Management Payroll', color:COLORS[1],active:true,recurDay:null},
+  {id:'offshore',  name:'Offshore Payroll',   color:COLORS[2],active:true,recurDay:null},
+  {id:'rbt-ga',    name:'RBT GA Payroll',     color:COLORS[3],active:true,recurDay:null},
+  {id:'rbt-monsey',name:'RBT Monsey Payroll', color:COLORS[4],active:true,recurDay:null},
+  {id:'aba-ga',    name:'ABA GA Payroll',     color:COLORS[5],active:true,recurDay:null},
+  {id:'aba-monsey',name:'ABA Monsey Payroll', color:COLORS[6],active:true,recurDay:null},
+  {id:'divvy',     name:'Divvy',              color:COLORS[7],active:true,recurDay:11},
+  {id:'ink',       name:'Ink Staffing',       color:COLORS[5],active:true,recurDay:1},
+  {id:'chase',     name:'Chase CC',           color:COLORS[1],active:true,recurDay:10},
+];
+const BASE_EVENTS=[
+  ['Medical Payroll','2026-01-07'],['Management Payroll','2026-01-07'],['Offshore Payroll','2026-01-07'],
+  ['Medical Payroll','2026-01-21'],['Management Payroll','2026-01-21'],['Offshore Payroll','2026-01-21'],
+  ['RBT GA Payroll','2026-02-02'],['RBT Monsey Payroll','2026-02-02'],
+  ['Medical Payroll','2026-02-04'],['Management Payroll','2026-02-04'],['Offshore Payroll','2026-02-04'],
+  ['RBT GA Payroll','2026-02-17'],['RBT Monsey Payroll','2026-02-17'],
+  ['Medical Payroll','2026-02-18'],['Management Payroll','2026-02-18'],['Offshore Payroll','2026-02-18'],
+  ['RBT GA Payroll','2026-03-02'],['ABA Monsey Payroll','2026-03-02'],['ABA GA Payroll','2026-03-02'],['RBT Monsey Payroll','2026-03-02'],
+  ['Medical Payroll','2026-03-04'],['Management Payroll','2026-03-04'],['Offshore Payroll','2026-03-04'],
+  ['RBT GA Payroll','2026-03-16'],['RBT Monsey Payroll','2026-03-16'],
+  ['Medical Payroll','2026-03-18'],['Management Payroll','2026-03-18'],['Offshore Payroll','2026-03-18'],
+  ['Medical Payroll','2026-04-01'],['RBT GA Payroll','2026-04-01'],['ABA Monsey Payroll','2026-04-01'],['ABA GA Payroll','2026-04-01'],['RBT Monsey Payroll','2026-04-01'],['Management Payroll','2026-04-01'],['Offshore Payroll','2026-04-01'],
+  ['Medical Payroll','2026-04-15'],['RBT GA Payroll','2026-04-15'],['RBT Monsey Payroll','2026-04-15'],['Management Payroll','2026-04-15'],['Offshore Payroll','2026-04-15'],
+  ['Medical Payroll','2026-04-29'],['Management Payroll','2026-04-29'],['Offshore Payroll','2026-04-29'],
+  ['ABA GA Payroll','2026-05-01'],['RBT Monsey Payroll','2026-05-01'],['RBT GA Payroll','2026-05-01'],['ABA Monsey Payroll','2026-05-01'],
+  ['Medical Payroll','2026-05-13'],['Management Payroll','2026-05-13'],['Offshore Payroll','2026-05-13'],
+  ['RBT Monsey Payroll','2026-05-15'],['RBT GA Payroll','2026-05-15'],
+  ['Medical Payroll','2026-05-27'],['Management Payroll','2026-05-27'],['Offshore Payroll','2026-05-27'],
+  ['ABA GA Payroll','2026-06-01'],['RBT Monsey Payroll','2026-06-01'],['RBT GA Payroll','2026-06-01'],['ABA Monsey Payroll','2026-06-01'],
+  ['Medical Payroll','2026-06-10'],['Management Payroll','2026-06-10'],['Offshore Payroll','2026-06-10'],
+  ['RBT Monsey Payroll','2026-06-15'],['RBT GA Payroll','2026-06-15'],
+  ['Medical Payroll','2026-06-24'],['Management Payroll','2026-06-24'],['Offshore Payroll','2026-06-24'],
+  ['ABA GA Payroll','2026-07-01'],['RBT Monsey Payroll','2026-07-01'],['RBT GA Payroll','2026-07-01'],['ABA Monsey Payroll','2026-07-01'],
+  ['Medical Payroll','2026-07-08'],['Management Payroll','2026-07-08'],['Offshore Payroll','2026-07-08'],
+  ['RBT Monsey Payroll','2026-07-15'],['RBT GA Payroll','2026-07-15'],
+  ['Medical Payroll','2026-07-22'],['Management Payroll','2026-07-22'],['Offshore Payroll','2026-07-22'],
+  ['ABA GA Payroll','2026-08-03'],['RBT Monsey Payroll','2026-08-03'],['RBT GA Payroll','2026-08-03'],['ABA Monsey Payroll','2026-08-03'],
+  ['Medical Payroll','2026-08-05'],['Management Payroll','2026-08-05'],['Offshore Payroll','2026-08-05'],
+  ['RBT Monsey Payroll','2026-08-17'],['RBT GA Payroll','2026-08-17'],
+  ['Medical Payroll','2026-08-19'],['Management Payroll','2026-08-19'],['Offshore Payroll','2026-08-19'],
+  ['ABA GA Payroll','2026-09-01'],['RBT Monsey Payroll','2026-09-01'],['RBT GA Payroll','2026-09-01'],['ABA Monsey Payroll','2026-09-01'],
+  ['Medical Payroll','2026-09-02'],['Management Payroll','2026-09-02'],['Offshore Payroll','2026-09-02'],
+  ['RBT Monsey Payroll','2026-09-15'],['RBT GA Payroll','2026-09-15'],
+  ['Medical Payroll','2026-09-16'],['Management Payroll','2026-09-16'],['Offshore Payroll','2026-09-16'],
+  ['Medical Payroll','2026-09-30'],['Management Payroll','2026-09-30'],['Offshore Payroll','2026-09-30'],
+  ['ABA GA Payroll','2026-10-01'],['RBT Monsey Payroll','2026-10-01'],['RBT GA Payroll','2026-10-01'],['ABA Monsey Payroll','2026-10-01'],
+  ['Medical Payroll','2026-10-14'],['Management Payroll','2026-10-14'],['Offshore Payroll','2026-10-14'],
+  ['RBT Monsey Payroll','2026-10-15'],['RBT GA Payroll','2026-10-15'],
+  ['Medical Payroll','2026-10-28'],['Management Payroll','2026-10-28'],['Offshore Payroll','2026-10-28'],
+  ['ABA GA Payroll','2026-11-02'],['RBT Monsey Payroll','2026-11-02'],['RBT GA Payroll','2026-11-02'],['ABA Monsey Payroll','2026-11-02'],
+  ['Medical Payroll','2026-11-11'],['Management Payroll','2026-11-11'],['Offshore Payroll','2026-11-11'],
+  ['RBT Monsey Payroll','2026-11-16'],['RBT GA Payroll','2026-11-16'],
+  ['Medical Payroll','2026-11-25'],['Management Payroll','2026-11-25'],['Offshore Payroll','2026-11-25'],
+  ['ABA GA Payroll','2026-12-01'],['RBT Monsey Payroll','2026-12-01'],['RBT GA Payroll','2026-12-01'],['ABA Monsey Payroll','2026-12-01'],
+  ['Medical Payroll','2026-12-09'],['Management Payroll','2026-12-09'],['Offshore Payroll','2026-12-09'],
+  ['RBT Monsey Payroll','2026-12-15'],['RBT GA Payroll','2026-12-15'],
+  ['Medical Payroll','2026-12-23'],['Management Payroll','2026-12-23'],['Offshore Payroll','2026-12-23'],
+  ['ABA GA Payroll','2027-01-04'],['RBT Monsey Payroll','2027-01-04'],['RBT GA Payroll','2027-01-04'],['ABA Monsey Payroll','2027-01-04'],
+  ['Medical Payroll','2027-01-06'],['Management Payroll','2027-01-06'],['Offshore Payroll','2027-01-06'],
+  ['RBT Monsey Payroll','2027-01-15'],['RBT GA Payroll','2027-01-15'],
+  ['ABA GA Payroll','2027-02-01'],['ABA Monsey Payroll','2027-02-01'],
+];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let tabs=[],customEvents=[...BASE_EVENTS],amounts={};
+let cy=2026,cmo=0,openGroups={},sbOpen=true;
+let amtKey=null,evKey=null,evAddName=null,tabEditId=null,tmColorIdx=0;
+
+function loadData(){
+  try{
+    const t=localStorage.getItem('pc_tabs');tabs=t?JSON.parse(t):JSON.parse(JSON.stringify(DEFAULT_TABS));
+    const a=localStorage.getItem('pc_amounts');if(a)amounts=JSON.parse(a);
+    const e=localStorage.getItem('pc_events');if(e)customEvents=JSON.parse(e);
+  }catch(ex){tabs=JSON.parse(JSON.stringify(DEFAULT_TABS));}
+}
+function saveData(){
+  try{
+    localStorage.setItem('pc_tabs',JSON.stringify(tabs));
+    localStorage.setItem('pc_amounts',JSON.stringify(amounts));
+    localStorage.setItem('pc_events',JSON.stringify(customEvents));
+  }catch(ex){}
+}
+
+/* ---- EXPORT ---- */
+function openExportModal(){document.getElementById('export-modal').classList.add('open');}
+function closeExport(){document.getElementById('export-modal').classList.remove('open');}
+function doExport(){
+  const amountsJSON=JSON.stringify(amounts);
+  const tabsJSON=JSON.stringify(tabs);
+  const eventsJSON=JSON.stringify(customEvents);
+  const html=document.documentElement.outerHTML
+    .replace('__BAKED_AMOUNTS__',amountsJSON)
+    .replace('__BAKED_TABS__',tabsJSON)
+    .replace('__BAKED_EVENTS__',eventsJSON);
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='index.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* baked-in data placeholders — replaced on export */
+const _bakedAmounts='__BAKED_AMOUNTS__';
+const _bakedTabs='__BAKED_TABS__';
+const _bakedEvents='__BAKED_EVENTS__';
+
+function toggleSidebar(){
+  sbOpen=!sbOpen;
+  const sb=document.getElementById('sb'),pill=document.getElementById('sb-pill'),icon=document.getElementById('sb-toggle-icon');
+  if(sbOpen){sb.classList.remove('collapsed');pill.classList.remove('show');icon.className='ti ti-chevron-left';}
+  else{sb.classList.add('collapsed');pill.classList.add('show');icon.className='ti ti-chevron-right';}
+}
+
+function getTab(n){return tabs.find(t=>t.name===n)}
+function getTabById(id){return tabs.find(t=>t.id===id)}
+function aKey(d,n){return d+'||'+n}
+function getEventsForDate(ds){
+  const all=[];
+  customEvents.forEach(r=>{if(r[1]===ds&&!all.includes(r[0]))all.push(r[0]);});
+  const d=parseInt(ds.split('-')[2]),y=parseInt(ds.split('-')[0]);
+  tabs.forEach(t=>{if(t.recurDay===d&&y>=2026&&y<=2027&&!all.includes(t.name))all.push(t.name);});
+  return all;
+}
+function getAllEventsForTab(n){
+  const t=getTab(n);if(!t)return[];
+  const res=[];
+  customEvents.forEach(r=>{if(r[0]===n)res.push(r[1]);});
+  if(t.recurDay){for(let y=2026;y<=2027;y++){const mm=y===2027?2:12;for(let m=1;m<=mm;m++){const ds=`${y}-${String(m).padStart(2,'0')}-${String(t.recurDay).padStart(2,'0')}`;if(!res.includes(ds))res.push(ds);}}}
+  return res.sort();
+}
+
+function buildSidebar(){
+  const c=document.getElementById('sb-list');c.innerHTML='';
+  tabs.forEach(t=>{
+    const sg=document.createElement('div');sg.className='sg';
+    const isOpen=!!openGroups[t.id];
+    const hdr=document.createElement('button');hdr.className='sg-hdr';
+    hdr.innerHTML=`<div class="sg-pill" style="background:${t.color.bg};border:1px solid ${t.color.txt}66"></div><span class="sg-name">${t.name}</span><span class="sg-arrow${isOpen?' open':''}">&#9654;</span><div class="sg-vis${t.active?' on':''}">✓</div>`;
+    hdr.onclick=(e)=>{const vis=hdr.querySelector('.sg-vis');if(e.target===vis||vis.contains(e.target)){t.active=!t.active;saveData();render();buildSidebar();return;}openGroups[t.id]=!isOpen;buildSidebar();};
+    sg.appendChild(hdr);
+    if(isOpen){
+      const body=document.createElement('div');body.className='sg-body open';
+      getAllEventsForTab(t.name).slice(0,12).forEach(ds=>{
+        const k=aKey(ds,t.name);
+        const row=document.createElement('div');row.className='ev-row';
+        const dsl=document.createElement('span');dsl.className='ev-ds';dsl.textContent=ds;
+        const inp=document.createElement('input');inp.type='number';inp.className='ev-amt-input';inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=amounts[k]||'';
+        const saveB=document.createElement('button');saveB.className='ev-save-btn';saveB.textContent='Save';
+        saveB.onclick=()=>{const v=inp.value;if(v!=='')amounts[k]=parseFloat(v);else delete amounts[k];saveData();render();buildSidebar();};
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter')saveB.click();});
+        const delB=document.createElement('button');delB.className='ev-del-btn';delB.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
+        delB.onclick=()=>{customEvents=customEvents.filter(r=>!(r[0]===t.name&&r[1]===ds));delete amounts[k];saveData();render();buildSidebar();};
+        row.appendChild(dsl);row.appendChild(inp);row.appendChild(saveB);row.appendChild(delB);body.appendChild(row);
+      });
+      const acts=document.createElement('div');acts.className='sg-actions';
+      const editB=document.createElement('button');editB.className='sg-act';editB.innerHTML='<i class="ti ti-settings" style="font-size:10px"></i> Edit type';editB.onclick=()=>openEditTab(t.id);
+      const addB=document.createElement('button');addB.className='sg-act';addB.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';addB.onclick=()=>openAddDate(t.name);
+      acts.appendChild(editB);acts.appendChild(addB);body.appendChild(acts);sg.appendChild(body);
+    }
+    c.appendChild(sg);
+  });
+}
+
+function render(){
+  document.getElementById('mlabel').textContent=MONTHS[cmo];
+  document.getElementById('topbar-sub').textContent=cy;
+  const grid=document.getElementById('cgrid');grid.innerHTML='';
+  const first=new Date(cy,cmo,1).getDay(),days=new Date(cy,cmo+1,0).getDate(),today=new Date();
+  for(let i=0;i<first;i++){const c=document.createElement('div');c.className='dc empty';grid.appendChild(c);}
+  for(let d=1;d<=days;d++){
+    const ds=`${cy}-${String(cmo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evNames=getEventsForDate(ds);
+    const c=document.createElement('div');c.className='dc';
+    if(today.getFullYear()===cy&&today.getMonth()===cmo&&today.getDate()===d)c.classList.add('today');
+    const dn=document.createElement('div');dn.className='dnum';dn.textContent=d;c.appendChild(dn);
+    let dayTot=0;evNames.forEach(n=>{const v=amounts[aKey(ds,n)];if(v)dayTot+=parseFloat(v);});
+    const dt=document.createElement('div');dt.className='dtotal';if(dayTot>0)dt.textContent='$'+dayTot.toLocaleString('en-US',{minimumFractionDigits:0});c.appendChild(dt);
+    evNames.forEach(name=>{
+      const t=getTab(name);if(!t||!t.active)return;
+      const k=aKey(ds,name);const el=document.createElement('div');el.className='ev';
+      el.style.cssText=`background:${t.color.bg};color:${t.color.txt};border-color:${t.color.txt}22`;
+      const nm=document.createElement('span');nm.className='ev-nm';nm.textContent=name.replace(' Payroll','');
+      const av=document.createElement('span');av.className='ev-av';
+      if(amounts[k]){av.textContent='$'+Number(amounts[k]).toLocaleString('en-US',{minimumFractionDigits:0});}else{av.textContent='+$';av.style.opacity='.3';}
+      el.appendChild(nm);el.appendChild(av);el.onclick=()=>openAmtModal(ds,name,k);c.appendChild(el);
+    });
+    grid.appendChild(c);
+  }
+  buildTotals();
+}
+function buildTotals(){
+  const tr=document.getElementById('totrow');tr.innerHTML='';let tot=0;const byTab={};
+  for(let d=1;d<=new Date(cy,cmo+1,0).getDate();d++){
+    const ds=`${cy}-${String(cmo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    getEventsForDate(ds).forEach(name=>{const t=getTab(name);if(!t||!t.active)return;const v=amounts[aKey(ds,name)];if(!v)return;tot+=parseFloat(v);byTab[name]=(byTab[name]||0)+parseFloat(v);});
+  }
+  const mc=document.createElement('div');mc.className='tcard main-card';mc.innerHTML=`Month total<b>$${tot.toLocaleString('en-US',{minimumFractionDigits:2})}</b>`;tr.appendChild(mc);
+  Object.entries(byTab).forEach(([name,v])=>{const t=getTab(name);if(!t)return;const tc=document.createElement('div');tc.className='tcard';tc.style.cssText=`border-left:3px solid ${t.color.txt};border-radius:0 10px 10px 0`;tc.innerHTML=`${name.replace(' Payroll','')}<b>$${v.toLocaleString('en-US',{minimumFractionDigits:2})}</b>`;tr.appendChild(tc);});
+}
+function navM(d){cmo+=d;if(cmo>11){cmo=0;cy++;}if(cmo<0){cmo=11;cy--;}render();}
+
+function openAmtModal(date,name,key){amtKey=key;document.getElementById('am-type').textContent=name;document.getElementById('am-date').textContent=date;document.getElementById('am-amt').value=amounts[key]||'';document.getElementById('amt-modal').classList.add('open');setTimeout(()=>document.getElementById('am-amt').focus(),60);}
+function closeAmt(){document.getElementById('amt-modal').classList.remove('open');amtKey=null;}
+function saveAmt(){const v=document.getElementById('am-amt').value;if(amtKey&&v!=='')amounts[amtKey]=parseFloat(v);else if(amtKey)delete amounts[amtKey];saveData();closeAmt();render();buildSidebar();}
+
+function openEvModal(date,name,key,isNew){
+  evKey=key;evAddName=isNew?name:null;
+  document.getElementById('em-title').textContent=isNew?'Add date':'Edit event';
+  document.getElementById('em-type').textContent=name;document.getElementById('em-date').value=date||'';document.getElementById('em-amt').value=key&&amounts[key]||'';
+  const btns=document.getElementById('em-btns');btns.innerHTML='';
+  const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.onclick=closeEv;btns.appendChild(cancel);
+  if(!isNew){const del=document.createElement('button');del.className='danger';del.textContent='Delete';del.onclick=deleteEv;btns.appendChild(del);}
+  const save=document.createElement('button');save.className='save';save.textContent='Save';save.onclick=saveEv;btns.appendChild(save);
+  document.getElementById('ev-modal').classList.add('open');setTimeout(()=>document.getElementById(isNew?'em-date':'em-amt').focus(),60);
+}
+function openAddDate(name){openEvModal('',name,null,true);}
+function closeEv(){document.getElementById('ev-modal').classList.remove('open');evKey=null;evAddName=null;}
+function saveEv(){
+  const newDate=document.getElementById('em-date').value.trim(),v=document.getElementById('em-amt').value;
+  if(evAddName){if(!newDate)return;if(!customEvents.find(r=>r[0]===evAddName&&r[1]===newDate))customEvents.push([evAddName,newDate]);const k=aKey(newDate,evAddName);if(v!=='')amounts[k]=parseFloat(v);}
+  else if(evKey){const[oldDate,name]=evKey.split('||');if(newDate&&newDate!==oldDate){customEvents=customEvents.map(r=>r[0]===name&&r[1]===oldDate?[r[0],newDate]:r);const oldK=aKey(oldDate,name),newK=aKey(newDate,name);if(amounts[oldK]){amounts[newK]=amounts[oldK];delete amounts[oldK];}}const fDate=newDate||oldDate,fKey=aKey(fDate,name);if(v!=='')amounts[fKey]=parseFloat(v);else delete amounts[fKey];}
+  saveData();closeEv();render();buildSidebar();
+}
+function deleteEv(){if(evKey){const[date,name]=evKey.split('||');customEvents=customEvents.filter(r=>!(r[0]===name&&r[1]===date));delete amounts[evKey];}saveData();closeEv();render();buildSidebar();}
+
+function buildColorGrid(selIdx){const cg=document.getElementById('tm-colors');cg.innerHTML='';COLORS.forEach((c,i)=>{const d=document.createElement('div');d.className='copt'+(i===selIdx?' sel':'');d.style.cssText=`background:${c.bg};border:2px solid ${i===selIdx?c.txt:'transparent'}`;d.onclick=()=>{tmColorIdx=i;buildColorGrid(i);};cg.appendChild(d);});}
+function openNewTab(){tabEditId=null;tmColorIdx=0;document.getElementById('tm-title').textContent='New payroll type';document.getElementById('tm-name').value='';document.getElementById('tm-day').value='';buildColorGrid(0);const btns=document.getElementById('tm-btns');btns.innerHTML='';const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.onclick=closeTab;btns.appendChild(cancel);const save=document.createElement('button');save.className='save';save.textContent='Add type';save.onclick=saveTab;btns.appendChild(save);document.getElementById('tab-modal').classList.add('open');setTimeout(()=>document.getElementById('tm-name').focus(),60);}
+function openEditTab(id){const t=getTabById(id);if(!t)return;tabEditId=id;tmColorIdx=COLORS.findIndex(c=>c.bg===t.color.bg);if(tmColorIdx<0)tmColorIdx=0;document.getElementById('tm-title').textContent='Edit type';document.getElementById('tm-name').value=t.name;document.getElementById('tm-day').value=t.recurDay||'';buildColorGrid(tmColorIdx);const btns=document.getElementById('tm-btns');btns.innerHTML='';const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.onclick=closeTab;btns.appendChild(cancel);const del=document.createElement('button');del.className='danger';del.textContent='Delete';del.onclick=()=>deleteTab(id);btns.appendChild(del);const save=document.createElement('button');save.className='save';save.textContent='Save';save.onclick=saveTab;btns.appendChild(save);document.getElementById('tab-modal').classList.add('open');}
+function closeTab(){document.getElementById('tab-modal').classList.remove('open');tabEditId=null;}
+function saveTab(){const name=document.getElementById('tm-name').value.trim();if(!name)return;const day=parseInt(document.getElementById('tm-day').value)||null;if(tabEditId){const t=getTabById(tabEditId);if(t){t.name=name;t.color=COLORS[tmColorIdx];t.recurDay=day;}}else tabs.push({id:'tab-'+Date.now(),name,color:COLORS[tmColorIdx],active:true,recurDay:day});saveData();closeTab();render();buildSidebar();}
+function deleteTab(id){tabs=tabs.filter(t=>t.id!==id);saveData();closeTab();render();buildSidebar();}
+
+['amt-modal','tab-modal','ev-modal','export-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+document.getElementById('am-amt').addEventListener('keydown',e=>{if(e.key==='Enter')saveAmt();});
+
+/* Load baked data if present (from export), otherwise use localStorage */
+function loadData(){
+  try{
+    if(_bakedAmounts!=='__BAKED_AMOUNTS__'){
+      amounts=JSON.parse(_bakedAmounts);
+      tabs=JSON.parse(_bakedTabs);
+      customEvents=JSON.parse(_bakedEvents);
+      return;
+    }
+    const t=localStorage.getItem('pc_tabs');tabs=t?JSON.parse(t):JSON.parse(JSON.stringify(DEFAULT_TABS));
+    const a=localStorage.getItem('pc_amounts');if(a)amounts=JSON.parse(a);
+    const e=localStorage.getItem('pc_events');if(e)customEvents=JSON.parse(e);
+  }catch(ex){tabs=JSON.parse(JSON.stringify(DEFAULT_TABS));}
+}
+
+loadData();buildSidebar();render();
+</script>
+</body>
+</html>
