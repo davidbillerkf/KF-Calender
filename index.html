@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Finance 2026–2027</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;overflow:hidden}
@@ -167,6 +168,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dl-btn:hover{background:#3C3489}
 .tip{background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:8px;padding:9px 11px;font-size:11px;color:#085041;line-height:1.6;margin-top:4px}
 .tip a{color:#085041;font-weight:500}
+.snap-preview{background:#fff;border:0.5px solid #e0e0d8;border-radius:12px;overflow:hidden;margin:12px 0}
+.snap-header{background:#534AB7;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.snap-header.ar{background:#0F6E56}
+.snap-header.net{background:#1a1a1a}
+.snap-h-title{font-size:14px;font-weight:600}
+.snap-h-sub{font-size:11px;opacity:.75}
+.snap-totals{display:flex;gap:6px;padding:10px 14px;background:#f9f9f6;border-bottom:0.5px solid #eee;flex-wrap:wrap}
+.snap-tc{font-size:10px;color:#888;background:#fff;border-radius:8px;padding:4px 10px;border:0.5px solid #e0e0d8}
+.snap-tc b{display:block;font-size:13px;font-weight:500;color:#1a1a1a;margin-top:1px}
+.snap-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0ec}
+.snap-dow div{text-align:center;font-size:9px;color:#999;padding:4px 0;font-weight:500;text-transform:uppercase;background:#f9f9f6}
+.snap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e8e8e0}
+.snap-dc{min-height:60px;background:#fff;padding:3px 4px;display:flex;flex-direction:column}
+.snap-dc.empty{background:#f9f9f6}
+.snap-dc.tod{background:#FAFAFE}
+.snap-dnum{font-size:9px;font-weight:500;color:#bbb;margin-bottom:1px}
+.snap-dc.tod .snap-dnum{color:#534AB7;font-weight:500}
+.snap-dtot{font-size:7.5px;font-weight:500;margin-bottom:1px;min-height:8px}
+.snap-dtot.ap{color:#534AB7}.snap-dtot.ar{color:#0F6E56}.snap-dtot.pos{color:#0F6E56}.snap-dtot.neg{color:#a32d2d}.snap-dtot.est{color:#854F0B}
+.snap-ev{font-size:7px;padding:1px 3px;border-radius:3px;margin-bottom:1px;display:flex;align-items:center;justify-content:space-between;gap:1px;line-height:1.4;border:0.5px solid transparent}
+.snap-ev.est{border-style:dashed!important;opacity:.8}
+.snap-ev-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.snap-ev-v{font-size:7px;font-weight:500;white-space:nowrap}
+.snap-footer{padding:8px 14px;font-size:10px;color:#aaa;background:#f9f9f6;display:flex;justify-content:space-between}
+.snap-actions{display:flex;gap:7px;justify-content:flex-end}
+.snap-dl-btn{display:flex;align-items:center;gap:5px;font-size:12px;padding:7px 14px;border-radius:9px;background:#534AB7;color:#fff;border:none;cursor:pointer;font-weight:500}
+.snap-dl-btn:hover{background:#3C3489}
+.snap-modal{width:520px;max-width:96vw}
+.snap-opt-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.snap-opt-row label{font-size:11px;color:#888;font-weight:500}
+.snap-opt-row select{font-size:12px;padding:5px 8px;border:0.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer}
+.snap-opt-row select:focus{border-color:#534AB7;outline:none}
 .divider{height:0.5px;background:#eee;margin:12px 0}
 
 /* SETTINGS */
@@ -191,13 +224,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 
 <!-- LOCK SCREEN -->
-<div class="lock" id="lock" style="display: none;">
+<div class="lock" id="lock" style="display:none">
   <div class="lock-box">
     <div class="lock-logo">Finance <span>2026</span></div>
     <div class="lock-sub">2026–2027 Financial Calendar</div>
     <div class="lock-icon"><i class="ti ti-lock"></i></div>
     <div class="lock-label">Password required</div>
-    <input class="lock-input" type="password" id="lock-pw" placeholder="Enter password" autocomplete="off">
+    <input class="lock-input" type="password" id="lock-pw" placeholder="Enter password" autocomplete="off"/>
     <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
     <div class="lock-err" id="lock-err"></div>
     <div class="lock-reset">
@@ -207,7 +240,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <!-- APP -->
-<div class="app" id="app" style="display: flex;">
+<div class="app" id="app">
 
 <div class="topnav">
   <div style="display:flex;align-items:center;gap:12px">
@@ -219,11 +252,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
   <div class="topright">
+    <button class="icon-btn" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:12px"></i> Snapshot</button>
     <button class="icon-btn" onclick="openSettings()"><i class="ti ti-settings" style="font-size:12px"></i> Settings</button>
     <button class="icon-btn upload-btn ap" id="upload-btn" onclick="openExport()"><i class="ti ti-upload" style="font-size:11px"></i> Update GitHub</button>
     <div class="nav-row">
       <button onclick="navM(-1)"><i class="ti ti-chevron-left"></i></button>
-      <span class="mlabel" id="mlabel">May 2026</span>
+      <span class="mlabel" id="mlabel"></span>
       <button onclick="navM(1)"><i class="ti ti-chevron-right"></i></button>
       <button class="today-btn" id="today-btn" onclick="goToday()">Today</button>
     </div>
@@ -236,16 +270,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <span class="sb-head-title" id="sb-title">AP Types</span>
       <button class="sb-add" id="sb-add" onclick="openNewType()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
     </div>
-    <div id="sb-list"><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAECE7;border:1px solid #712B1355"></div><span class="sg-name">Medical Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Management Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EAF3DE;border:1px solid #27500A55"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E1F5EE;border:1px solid #08504155"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EEEDFE;border:1px solid #3C348955"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FBEAF0;border:1px solid #72243E55"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#F1EFE8;border:1px solid #5F5E5A55"></div><span class="sg-name">Divvy</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">Ink Staffing</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Chase CC</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div></div>
+    <div id="sb-list"></div>
     <button class="sb-toggle" onclick="toggleSb()"><i class="ti ti-chevron-left" id="sb-icon"></i></button>
   </div>
   <button class="sb-pill ap-p" id="sb-pill" onclick="toggleSb()"><i class="ti ti-layout-sidebar" style="font-size:13px;writing-mode:horizontal-tb"></i>Types</button>
 
   <div class="main">
-    <div class="totrow" id="totrow"><div class="tc cap">AP confirmed<b>$520,222.29</b></div><div class="tc" style="border-left: 3px solid rgb(95, 94, 90); border-radius: 0px 10px 10px 0px;">Divvy<b>$203,155</b></div><div class="tc" style="border-left: 3px solid rgb(113, 43, 19); border-radius: 0px 10px 10px 0px;">Medical Payroll<b>$141,505</b></div><div class="tc" style="border-left: 3px solid rgb(12, 68, 124); border-radius: 0px 10px 10px 0px;">Management Payroll<b>$140,030</b></div><div class="tc" style="border-left: 3px solid rgb(39, 80, 10); border-radius: 0px 10px 10px 0px;">Offshore Payroll<b>$35,533</b></div></div>
+    <div class="totrow" id="totrow"></div>
     <div class="est-bar" id="est-bar" style="display:none"><i class="ti ti-calculator" style="font-size:12px"></i><span id="est-txt"></span></div>
     <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-    <div class="grid" id="grid"><div class="dc empty"></div><div class="dc empty"></div><div class="dc empty"></div><div class="dc empty"></div><div class="dc empty"></div><div class="dc"><div class="dnum">1</div><div class="dday-tot ap"></div><div class="ev" style="background: rgb(250, 238, 218); color: rgb(99, 56, 6); border-color: rgba(99, 56, 6, 0.133);"><span class="ev-n">ABA GA Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(238, 237, 254); color: rgb(60, 52, 137); border-color: rgba(60, 52, 137, 0.133);"><span class="ev-n">RBT Monsey Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(225, 245, 238); color: rgb(8, 80, 65); border-color: rgba(8, 80, 65, 0.133);"><span class="ev-n">RBT GA Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(251, 234, 240); color: rgb(114, 36, 62); border-color: rgba(114, 36, 62, 0.133);"><span class="ev-n">ABA Monsey Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(250, 238, 218); color: rgb(99, 56, 6); border-color: rgba(99, 56, 6, 0.133);"><span class="ev-n">Ink Staffing</span><span class="ev-v" style="opacity: 0.3;">$</span></div></div><div class="dc"><div class="dnum">2</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">3</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">4</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">5</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">6</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">7</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">8</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">9</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">10</div><div class="dday-tot ap"></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-n">Chase CC</span><span class="ev-v" style="opacity: 0.3;">$</span></div></div><div class="dc"><div class="dnum">11</div><div class="dday-tot ap">$203,155</div><div class="ev" style="background: rgb(241, 239, 232); color: rgb(95, 94, 90); border-color: rgba(95, 94, 90, 0.133);"><span class="ev-n">Divvy</span><span class="ev-v">$203,155</span></div></div><div class="dc"><div class="dnum">12</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">13</div><div class="dday-tot ap"></div><div class="ev" style="background: rgb(250, 236, 231); color: rgb(113, 43, 19); border-color: rgba(113, 43, 19, 0.133);"><span class="ev-n">Medical Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-n">Management Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(234, 243, 222); color: rgb(39, 80, 10); border-color: rgba(39, 80, 10, 0.133);"><span class="ev-n">Offshore Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div></div><div class="dc"><div class="dnum">14</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">15</div><div class="dday-tot ap"></div><div class="ev" style="background: rgb(238, 237, 254); color: rgb(60, 52, 137); border-color: rgba(60, 52, 137, 0.133);"><span class="ev-n">RBT Monsey Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div><div class="ev" style="background: rgb(225, 245, 238); color: rgb(8, 80, 65); border-color: rgba(8, 80, 65, 0.133);"><span class="ev-n">RBT GA Payroll</span><span class="ev-v" style="opacity: 0.3;">$</span></div></div><div class="dc"><div class="dnum">16</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">17</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">18</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">19</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">20</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">21</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">22</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">23</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">24</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">25</div><div class="dday-tot ap"></div></div><div class="dc tod-ap"><div class="dnum">26</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">27</div><div class="dday-tot ap">$317,067</div><div class="ev" style="background: rgb(250, 236, 231); color: rgb(113, 43, 19); border-color: rgba(113, 43, 19, 0.133);"><span class="ev-n">Medical Payroll</span><span class="ev-v">$141,505</span></div><div class="ev" style="background: rgb(230, 241, 251); color: rgb(12, 68, 124); border-color: rgba(12, 68, 124, 0.133);"><span class="ev-n">Management Payroll</span><span class="ev-v">$140,030</span></div><div class="ev" style="background: rgb(234, 243, 222); color: rgb(39, 80, 10); border-color: rgba(39, 80, 10, 0.133);"><span class="ev-n">Offshore Payroll</span><span class="ev-v">$35,533</span></div></div><div class="dc"><div class="dnum">28</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">29</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">30</div><div class="dday-tot ap"></div></div><div class="dc"><div class="dnum">31</div><div class="dday-tot ap"></div></div></div>
+    <div class="grid" id="grid"></div>
   </div>
 </div>
 </div>
@@ -256,16 +290,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="est-hint" id="m-est-hint"></div>
   <div class="mrow"><label>Type</label><div class="vv" id="m-amt-type"></div></div>
   <div class="mrow"><label>Date</label><div class="vv" id="m-amt-date"></div></div>
-  <div class="mrow"><label>Amount ($)</label><input type="number" id="m-amt-val" placeholder="0.00" step="0.01" min="0"></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="m-amt-val" placeholder="0.00" step="0.01" min="0"/></div>
   <div class="mbtns"><button onclick="closeModal('m-amt')">Cancel</button><button class="sv ap" id="m-amt-save" onclick="saveAmt()">Save</button></div>
 </div></div>
 
 <!-- Type modal -->
 <div class="ov" id="m-type"><div class="md">
   <h3 id="m-type-title">New type</h3>
-  <div class="mrow"><label>Name</label><input type="text" id="m-type-name" placeholder="e.g. Client Invoices"></div>
+  <div class="mrow"><label>Name</label><input type="text" id="m-type-name" placeholder="e.g. Client Invoices"/></div>
   <div class="mrow"><label>Color</label><div class="color-picker" id="m-type-colors"></div></div>
-  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="m-type-day" placeholder="e.g. 15 — blank for manual" min="1" max="28"></div>
+  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="m-type-day" placeholder="e.g. 15 — blank for manual" min="1" max="28"/></div>
   <div class="mbtns" id="m-type-btns"></div>
 </div></div>
 
@@ -273,8 +307,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="ov" id="m-ev"><div class="md">
   <h3 id="m-ev-title">Edit event</h3>
   <div class="mrow"><label>Type</label><div class="vv" id="m-ev-type"></div></div>
-  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="m-ev-date" placeholder="2026-06-15"></div>
-  <div class="mrow"><label>Amount ($)</label><input type="number" id="m-ev-amt" placeholder="0.00" step="0.01" min="0"></div>
+  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="m-ev-date" placeholder="2026-06-15"/></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="m-ev-amt" placeholder="0.00" step="0.01" min="0"/></div>
   <div class="mbtns" id="m-ev-btns"></div>
 </div></div>
 
@@ -308,12 +342,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="pw-box">
     <h4><i class="ti ti-lock" style="font-size:12px"></i> Password <span class="badge off" id="pw-badge">Off</span></h4>
     <div class="pw-note">Protect this calendar with a password. Only people you share the password with can open it.</div>
-    <div class="pw-inp-row"><input type="password" id="pw-a" placeholder="New password"></div>
-    <div class="pw-inp-row"><input type="password" id="pw-b" placeholder="Confirm password"><button onclick="setPw()">Set</button></div>
+    <div class="pw-inp-row"><input type="password" id="pw-a" placeholder="New password"/></div>
+    <div class="pw-inp-row"><input type="password" id="pw-b" placeholder="Confirm password"/><button onclick="setPw()">Set</button></div>
     <button class="pw-rm" onclick="removePw()">Remove password protection</button>
     <div class="pw-msg" id="pw-msg"></div>
   </div>
   <div style="display:flex;justify-content:flex-end"><button onclick="closeModal('m-settings')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
+</div></div>
+
+<!-- Snapshot modal -->
+<div class="ov" id="m-snap"><div class="md snap-modal">
+  <h3><i class="ti ti-camera" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Month Snapshot</h3>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">Export a clean PDF-ready view of any month. Great for sharing with your boss or keeping records.</p>
+  <div class="snap-opt-row">
+    <label>View</label>
+    <select id="snap-cat">
+      <option value="ap">AP — Accounts Payable</option>
+      <option value="ar">AR — Accounts Receivable</option>
+      <option value="net">Net View (AP + AR)</option>
+    </select>
+    <label>Month</label>
+    <select id="snap-month"></select>
+    <label>Year</label>
+    <select id="snap-year">
+      <option value="2026">2026</option>
+      <option value="2027">2027</option>
+    </select>
+  </div>
+  <div id="snap-preview-wrap"></div>
+  <div class="snap-actions" style="margin-top:10px">
+    <button onclick="closeModal('m-snap')" style="font-size:12px;padding:7px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button>
+    <button class="snap-dl-btn" onclick="printSnap()"><i class="ti ti-printer" style="font-size:13px"></i> Print / Save as PDF</button>
+  </div>
 </div></div>
 
 <script>
@@ -439,7 +499,7 @@ const MO=['January','February','March','April','May','June','July','August','Sep
 
 /* ---- BAKED DATA SLOT ---- */
 /* DATASTART */
-var BAKED={"ap":{"types":[{"id":"md","name":"Medical Payroll","c":{"bg":"#FAECE7","tx":"#712B13"},"on":true,"rd":null},{"id":"mg","name":"Management Payroll","c":{"bg":"#E6F1FB","tx":"#0C447C"},"on":true,"rd":null},{"id":"of","name":"Offshore Payroll","c":{"bg":"#EAF3DE","tx":"#27500A"},"on":true,"rd":null},{"id":"rg","name":"RBT GA Payroll","c":{"bg":"#E1F5EE","tx":"#085041"},"on":true,"rd":null},{"id":"rm","name":"RBT Monsey Payroll","c":{"bg":"#EEEDFE","tx":"#3C3489"},"on":true,"rd":null},{"id":"ag","name":"ABA GA Payroll","c":{"bg":"#FAEEDA","tx":"#633806"},"on":true,"rd":null},{"id":"am","name":"ABA Monsey Payroll","c":{"bg":"#FBEAF0","tx":"#72243E"},"on":true,"rd":null},{"id":"dv","name":"Divvy","c":{"bg":"#F1EFE8","tx":"#5F5E5A"},"on":true,"rd":11},{"id":"ik","name":"Ink Staffing","c":{"bg":"#FAEEDA","tx":"#633806"},"on":true,"rd":1},{"id":"ch","name":"Chase CC","c":{"bg":"#E6F1FB","tx":"#0C447C"},"on":true,"rd":10}],"events":[["Medical Payroll","2026-01-07"],["Management Payroll","2026-01-07"],["Offshore Payroll","2026-01-07"],["Medical Payroll","2026-01-21"],["Management Payroll","2026-01-21"],["Offshore Payroll","2026-01-21"],["RBT GA Payroll","2026-02-02"],["RBT Monsey Payroll","2026-02-02"],["Medical Payroll","2026-02-04"],["Management Payroll","2026-02-04"],["Offshore Payroll","2026-02-04"],["RBT GA Payroll","2026-02-17"],["RBT Monsey Payroll","2026-02-17"],["Medical Payroll","2026-02-18"],["Management Payroll","2026-02-18"],["Offshore Payroll","2026-02-18"],["RBT GA Payroll","2026-03-02"],["ABA Monsey Payroll","2026-03-02"],["ABA GA Payroll","2026-03-02"],["RBT Monsey Payroll","2026-03-02"],["Medical Payroll","2026-03-04"],["Management Payroll","2026-03-04"],["Offshore Payroll","2026-03-04"],["RBT GA Payroll","2026-03-16"],["RBT Monsey Payroll","2026-03-16"],["Medical Payroll","2026-03-18"],["Management Payroll","2026-03-18"],["Offshore Payroll","2026-03-18"],["Medical Payroll","2026-04-01"],["RBT GA Payroll","2026-04-01"],["ABA Monsey Payroll","2026-04-01"],["ABA GA Payroll","2026-04-01"],["RBT Monsey Payroll","2026-04-01"],["Management Payroll","2026-04-01"],["Offshore Payroll","2026-04-01"],["Medical Payroll","2026-04-15"],["RBT GA Payroll","2026-04-15"],["RBT Monsey Payroll","2026-04-15"],["Management Payroll","2026-04-15"],["Offshore Payroll","2026-04-15"],["Medical Payroll","2026-04-29"],["Management Payroll","2026-04-29"],["Offshore Payroll","2026-04-29"],["ABA GA Payroll","2026-05-01"],["RBT Monsey Payroll","2026-05-01"],["RBT GA Payroll","2026-05-01"],["ABA Monsey Payroll","2026-05-01"],["Medical Payroll","2026-05-13"],["Management Payroll","2026-05-13"],["Offshore Payroll","2026-05-13"],["RBT Monsey Payroll","2026-05-15"],["RBT GA Payroll","2026-05-15"],["Medical Payroll","2026-05-27"],["Management Payroll","2026-05-27"],["Offshore Payroll","2026-05-27"],["ABA GA Payroll","2026-06-01"],["RBT Monsey Payroll","2026-06-01"],["RBT GA Payroll","2026-06-01"],["ABA Monsey Payroll","2026-06-01"],["Medical Payroll","2026-06-10"],["Management Payroll","2026-06-10"],["Offshore Payroll","2026-06-10"],["RBT Monsey Payroll","2026-06-15"],["RBT GA Payroll","2026-06-15"],["Medical Payroll","2026-06-24"],["Management Payroll","2026-06-24"],["Offshore Payroll","2026-06-24"],["ABA GA Payroll","2026-07-01"],["RBT Monsey Payroll","2026-07-01"],["RBT GA Payroll","2026-07-01"],["ABA Monsey Payroll","2026-07-01"],["Medical Payroll","2026-07-08"],["Management Payroll","2026-07-08"],["Offshore Payroll","2026-07-08"],["RBT Monsey Payroll","2026-07-15"],["RBT GA Payroll","2026-07-15"],["Medical Payroll","2026-07-22"],["Management Payroll","2026-07-22"],["Offshore Payroll","2026-07-22"],["ABA GA Payroll","2026-08-03"],["RBT Monsey Payroll","2026-08-03"],["RBT GA Payroll","2026-08-03"],["ABA Monsey Payroll","2026-08-03"],["Medical Payroll","2026-08-05"],["Management Payroll","2026-08-05"],["Offshore Payroll","2026-08-05"],["RBT Monsey Payroll","2026-08-17"],["RBT GA Payroll","2026-08-17"],["Medical Payroll","2026-08-19"],["Management Payroll","2026-08-19"],["Offshore Payroll","2026-08-19"],["ABA GA Payroll","2026-09-01"],["RBT Monsey Payroll","2026-09-01"],["RBT GA Payroll","2026-09-01"],["ABA Monsey Payroll","2026-09-01"],["Medical Payroll","2026-09-02"],["Management Payroll","2026-09-02"],["Offshore Payroll","2026-09-02"],["RBT Monsey Payroll","2026-09-15"],["RBT GA Payroll","2026-09-15"],["Medical Payroll","2026-09-16"],["Management Payroll","2026-09-16"],["Offshore Payroll","2026-09-16"],["Medical Payroll","2026-09-30"],["Management Payroll","2026-09-30"],["Offshore Payroll","2026-09-30"],["ABA GA Payroll","2026-10-01"],["RBT Monsey Payroll","2026-10-01"],["RBT GA Payroll","2026-10-01"],["ABA Monsey Payroll","2026-10-01"],["Medical Payroll","2026-10-14"],["Management Payroll","2026-10-14"],["Offshore Payroll","2026-10-14"],["RBT Monsey Payroll","2026-10-15"],["RBT GA Payroll","2026-10-15"],["Medical Payroll","2026-10-28"],["Management Payroll","2026-10-28"],["Offshore Payroll","2026-10-28"],["ABA GA Payroll","2026-11-02"],["RBT Monsey Payroll","2026-11-02"],["RBT GA Payroll","2026-11-02"],["ABA Monsey Payroll","2026-11-02"],["Medical Payroll","2026-11-11"],["Management Payroll","2026-11-11"],["Offshore Payroll","2026-11-11"],["RBT Monsey Payroll","2026-11-16"],["RBT GA Payroll","2026-11-16"],["Medical Payroll","2026-11-25"],["Management Payroll","2026-11-25"],["Offshore Payroll","2026-11-25"],["ABA GA Payroll","2026-12-01"],["RBT Monsey Payroll","2026-12-01"],["RBT GA Payroll","2026-12-01"],["ABA Monsey Payroll","2026-12-01"],["Medical Payroll","2026-12-09"],["Management Payroll","2026-12-09"],["Offshore Payroll","2026-12-09"],["RBT Monsey Payroll","2026-12-15"],["RBT GA Payroll","2026-12-15"],["Medical Payroll","2026-12-23"],["Management Payroll","2026-12-23"],["Offshore Payroll","2026-12-23"],["ABA GA Payroll","2027-01-04"],["RBT Monsey Payroll","2027-01-04"],["RBT GA Payroll","2027-01-04"],["ABA Monsey Payroll","2027-01-04"],["Medical Payroll","2027-01-06"],["Management Payroll","2027-01-06"],["Offshore Payroll","2027-01-06"],["RBT Monsey Payroll","2027-01-15"],["RBT GA Payroll","2027-01-15"],["ABA GA Payroll","2027-02-01"],["ABA Monsey Payroll","2027-02-01"]],"amounts":{"2026-01-11||Divvy":139666.79,"2026-02-11||Divvy":218449.01,"2026-05-27||Medical Payroll":141505.2,"2026-05-27||Management Payroll":140029.72,"2026-05-27||Offshore Payroll":35532.56,"2026-03-11||Divvy":194841.46,"2026-04-11||Divvy":230642.2,"2026-05-11||Divvy":203154.81}},"ar":{"types":[{"id":"ac","name":"Client Invoices","c":{"bg":"#EAF3DE","tx":"#27500A"},"on":true,"rd":null},{"id":"ai","name":"Insurance Payments","c":{"bg":"#E1F5EE","tx":"#085041"},"on":true,"rd":null},{"id":"agr","name":"Grants","c":{"bg":"#EEEDFE","tx":"#3C3489"},"on":true,"rd":null}],"events":[],"amounts":{}},"pw":"7c548c65"};
+var BAKED=null;
 /* DATAEND */
 
 /* ---- LIVE STATE ---- */
@@ -844,8 +904,157 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
 
+/* ---- SNAPSHOT ---- */
+function openSnapshot(){
+  // set selectors to current view
+  document.getElementById('snap-cat').value=cat;
+  document.getElementById('snap-year').value=cy;
+  // populate months
+  const ms=document.getElementById('snap-month');
+  ms.innerHTML='';
+  MO.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m;if(i===cm)o.selected=true;ms.appendChild(o);});
+  buildSnapPreview();
+  document.getElementById('snap-cat').onchange=buildSnapPreview;
+  document.getElementById('snap-month').onchange=buildSnapPreview;
+  document.getElementById('snap-year').onchange=buildSnapPreview;
+  openModal('m-snap');
+}
+
+function buildSnapPreview(){
+  const sc=document.getElementById('snap-cat').value;
+  const sm=parseInt(document.getElementById('snap-month').value);
+  const sy=parseInt(document.getElementById('snap-year').value);
+  const wrap=document.getElementById('snap-preview-wrap');
+  wrap.innerHTML='';
+
+  const headerCls=sc==='ap'?'':'snap-header '+(sc==='ar'?'ar':'net');
+  const label=sc==='ap'?'AP — Accounts Payable':sc==='ar'?'AR — Accounts Receivable':'Net View (AP + AR)';
+  const now=new Date();
+
+  // build totals for this month/cat
+  const days=new Date(sy,sm+1,0).getDate();
+  let tot=0,totE=0,arT=0,apT=0,arTE=0,apTE=0;
+  const byType={};
+  for(let d=1;d<=days;d++){
+    const ds=`${sy}-${String(sm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(sc==='net'){
+      ['ap','ar'].forEach(cc=>{
+        evForDate(ds,cc).forEach(name=>{
+          const t=gt(name,cc);if(!t||!t.on)return;
+          const da=dispAmt(ds,name,cc);if(!da)return;
+          if(cc==='ap'){da.est?apTE+=da.v:apT+=da.v;}else{da.est?arTE+=da.v:arT+=da.v;}
+        });
+      });
+    } else {
+      evForDate(ds,sc).forEach(name=>{
+        const t=gt(name,sc);if(!t||!t.on)return;
+        const da=dispAmt(ds,name,sc);if(!da)return;
+        if(da.est)totE+=da.v;else{tot+=da.v;byType[name]=(byType[name]||0)+da.v;}
+      });
+    }
+  }
+
+  // header
+  const net=arT-apT;
+  let totalsHTML='';
+  if(sc==='net'){
+    totalsHTML=`<div class="snap-tc">AP Out<b>-$${fmt(apT)}</b></div><div class="snap-tc">AR In<b>+$${fmt(arT)}</b></div><div class="snap-tc" style="border-left:2px solid ${net>=0?'#0F6E56':'#a32d2d'}">Net<b>${net>=0?'+':'-'}$${fmt(net)}</b></div>${(apTE||arTE)?`<div class="snap-tc" style="border-color:#EF9F27;color:#854F0B">Est. Net<b>~${((arT+arTE)-(apT+apTE))>=0?'+':'-'}$${fmt(Math.abs((arT+arTE)-(apT+apTE)))}</b></div>`:''}`;
+  } else {
+    totalsHTML=`<div class="snap-tc">Confirmed<b>$${tot.toLocaleString('en-US',{minimumFractionDigits:2})}</b></div>${totE?`<div class="snap-tc" style="border-color:#EF9F27;color:#854F0B">Estimated<b>~$${fmt(tot+totE)}</b></div>`:''}`;
+    Object.entries(byType).forEach(([name,v])=>{const t=gt(name,sc);if(!t)return;totalsHTML+=`<div class="snap-tc" style="border-left:2px solid ${t.c.tx}">${name}<b>$${fmt(v)}</b></div>`;});
+  }
+
+  // calendar grid
+  const first=new Date(sy,sm,1).getDay();
+  let gridHTML='';
+  for(let i=0;i<first;i++)gridHTML+=`<div class="snap-dc empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${sy}-${String(sm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=now.getFullYear()===sy&&now.getMonth()===sm&&now.getDate()===d;
+    let dayTot=0,anyEst=false,evHTML='';
+    if(sc==='net'){
+      let ar2=0,ap2=0,estDay=false;
+      ['ap','ar'].forEach(cc=>{
+        evForDate(ds,cc).forEach(name=>{
+          const t=gt(name,cc);if(!t||!t.on)return;
+          const da=dispAmt(ds,name,cc);if(!da)return;
+          if(cc==='ar')ar2+=da.v;else ap2+=da.v;
+          if(da.est)estDay=true;
+          const sign=cc==='ar'?'+':'-';
+          evHTML+=`<div class="snap-ev${da.est?' est':''}" style="background:${t.c.bg};color:${t.c.tx};border-color:${t.c.tx}22"><span class="snap-ev-n">${name}</span><span class="snap-ev-v">${da.est?'~':''}${sign}$${fmt(da.v)}</span></div>`;
+        });
+      });
+      const n2=ar2-ap2;
+      const dtcls=estDay?'est':n2>=0?'pos':'neg';
+      const dtxt=(ar2||ap2)?((estDay?'~':'')+(n2>=0?'+':'-')+'$'+fmt(n2)):'';
+      gridHTML+=`<div class="snap-dc${isToday?' tod':''}"><div class="snap-dnum${isToday?' " style="color:#534AB7':''}">${d}</div><div class="snap-dtot ${dtcls}">${dtxt}</div>${evHTML}</div>`;
+    } else {
+      evForDate(ds,sc).forEach(name=>{
+        const t=gt(name,sc);if(!t||!t.on)return;
+        const da=dispAmt(ds,name,sc);if(!da)return;
+        dayTot+=da.v;if(da.est)anyEst=true;
+        evHTML+=`<div class="snap-ev${da.est?' est':''}" style="background:${t.c.bg};color:${t.c.tx};border-color:${t.c.tx}22"><span class="snap-ev-n">${name}</span><span class="snap-ev-v">${da.est?'~':''}$${fmt(da.v)}</span></div>`;
+      });
+      const dtxt=dayTot>0?((anyEst?'~':'')+'$'+fmt(dayTot)):'';
+      gridHTML+=`<div class="snap-dc${isToday?' tod':''}"><div class="snap-dnum">${d}</div><div class="snap-dtot ${sc}${anyEst?' est':''}">${dtxt}</div>${evHTML}</div>`;
+    }
+  }
+
+  wrap.innerHTML=`
+  <div class="snap-preview" id="snap-content">
+    <div class="snap-header ${sc==='ap'?'':sc}">
+      <div>
+        <div class="snap-h-title">Finance 2026–2027 — ${label}</div>
+        <div class="snap-h-sub">${MO[sm]} ${sy}</div>
+      </div>
+      <div class="snap-h-sub">Generated ${now.toLocaleDateString()}</div>
+    </div>
+    <div class="snap-totals">${totalsHTML}</div>
+    <div class="snap-dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+    <div class="snap-grid">${gridHTML}</div>
+    <div class="snap-footer"><span>Finance 2026–2027</span><span>~ = estimated from prior month average</span></div>
+  </div>`;
+}
+
+function printSnap(){
+  const content=document.getElementById('snap-content');
+  if(!content)return;
+  const sc=document.getElementById('snap-cat').value;
+  const sm=parseInt(document.getElementById('snap-month').value);
+  const sy=parseInt(document.getElementById('snap-year').value);
+  const headerColor=sc==='ap'?'#534AB7':sc==='ar'?'#0F6E56':'#1a1a1a';
+  const pw=window.open('','_blank');
+  pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Finance ${MO[sm]} ${sy}</title><style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;padding:20px}
+    @page{size:A4 landscape;margin:10mm}
+    @media print{body{padding:0}}
+    .snap-preview{border:0.5px solid #ddd;border-radius:8px;overflow:hidden}
+    .snap-header{background:${headerColor};color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+    .snap-h-title{font-size:14px;font-weight:600}
+    .snap-h-sub{font-size:11px;opacity:.75}
+    .snap-totals{display:flex;gap:6px;padding:8px 12px;background:#f9f9f6;border-bottom:0.5px solid #eee;flex-wrap:wrap}
+    .snap-tc{font-size:10px;color:#888;background:#fff;border-radius:6px;padding:4px 9px;border:0.5px solid #ddd}
+    .snap-tc b{display:block;font-size:12px;font-weight:500;color:#1a1a1a;margin-top:1px}
+    .snap-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e0e0d8}
+    .snap-dow div{text-align:center;font-size:9px;color:#888;padding:4px;font-weight:500;text-transform:uppercase;background:#f5f5f0}
+    .snap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e0e0d8}
+    .snap-dc{min-height:70px;background:#fff;padding:3px 4px}
+    .snap-dc.empty{background:#f9f9f6}
+    .snap-dc.tod{background:#FAFAFE;outline:1.5px solid ${headerColor}}
+    .snap-dnum{font-size:9px;font-weight:500;color:#bbb;margin-bottom:1px}
+    .snap-dtot{font-size:7.5px;font-weight:500;margin-bottom:1px;min-height:8px;color:${headerColor}}
+    .snap-dtot.pos{color:#0F6E56}.snap-dtot.neg{color:#a32d2d}.snap-dtot.est{color:#854F0B}
+    .snap-ev{font-size:7px;padding:1px 3px;border-radius:2px;margin-bottom:1px;display:flex;align-items:center;justify-content:space-between;gap:1px;line-height:1.4}
+    .snap-ev.est{opacity:.8;border:0.5px dashed}
+    .snap-ev-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .snap-ev-v{font-size:7px;font-weight:500;white-space:nowrap}
+    .snap-footer{padding:6px 12px;font-size:9px;color:#aaa;background:#f9f9f6;display:flex;justify-content:space-between}
+  </style></head><body>${content.outerHTML}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+  pw.document.close();
+}
+
 init();
 </script>
-
-
-<div data-lastpass-root="" style="position: absolute !important; top: 0px !important; left: 0px !important; height: 0px !important; width: 0px !important; display: initial !important;"></div></body></html>
+</body>
+</html>
