@@ -39,6 +39,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .topright{display:flex;align-items:center;gap:7px}
 .icon-btn{display:flex;align-items:center;gap:4px;font-size:11px;padding:5px 11px;border-radius:20px;border:0.5px solid #ddd;background:#fff;cursor:pointer;color:#666;font-weight:500;white-space:nowrap}
 .icon-btn:hover{background:#f5f5f0;color:#1a1a1a}
+.icon-btn.icon-only{padding:6px 8px;border-radius:10px}
 .upload-btn{color:#fff;border:none}
 .upload-btn.ap{background:#534AB7}.upload-btn.ap:hover{background:#3C3489}
 .upload-btn.ar{background:#0F6E56}.upload-btn.ar:hover{background:#085041}
@@ -224,6 +225,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .wk-net{font-size:8.5px;font-weight:600;text-align:center}
 .wk-net.pos{color:#0F6E56}.wk-net.neg{color:#a32d2d}
 
+
+/* SIDEBAR GROUPS */
+.sg-grp-hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 12px 3px;background:#f5f5f0;border-bottom:0.5px solid #eee;border-top:0.5px solid #eee;margin-top:2px}
+.sg-grp-label{font-size:10px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.06em}
+.sg-grp-add{background:transparent;border:none;cursor:pointer;font-size:10px;color:#aaa;padding:1px 4px;border-radius:4px;display:flex;align-items:center;gap:2px}
+.sg-grp-add:hover{background:#e8e8e0;color:#534AB7}
+/* PAYORS */
+.payor-section{padding:4px 8px 4px 12px;background:#f5f5f0;border-bottom:0.5px solid #eee}
+.payor-hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 3px}
+.payor-label{font-size:10px;font-weight:500;color:#888}
+.payor-add-btn{font-size:10px;padding:2px 6px;border-radius:12px;border:0.5px solid #0F6E56;color:#0F6E56;background:transparent;cursor:pointer}
+.payor-add-btn:hover{background:#E1F5EE}
+.payor-row{display:flex;align-items:center;gap:5px;padding:3px 0 3px 8px;border-bottom:0.5px solid #eee}
+.payor-row:last-child{border:none}
+.payor-name{font-size:11px;color:#555;flex:1;font-weight:500}
+.payor-edit{font-size:10px;padding:1px 5px;border-radius:4px;border:0.5px solid #ddd;background:transparent;color:#aaa;cursor:pointer}
+.payor-edit:hover{border-color:#534AB7;color:#534AB7}
+.payor-dates{padding:2px 0 2px 16px}
+.payor-ev-row{display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:0.5px dashed #eee}
+.payor-ev-row:last-child{border:none}
+
 .rp-empty{padding:24px 12px;text-align:center;font-size:12px;color:#bbb}
 /* toggle pill on right */
 .rp-pill{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:200;background:#1a1a1a;color:#fff;border:none;border-radius:18px 0 0 18px;padding:10px 6px 10px 8px;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;writing-mode:vertical-lr;letter-spacing:.05em;font-weight:500}
@@ -314,9 +336,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
   <div class="topright">
-    <button class="icon-btn" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:12px"></i> Snapshot</button>
-    <button class="icon-btn" id="list-toggle-btn" onclick="toggleRp()"><i class="ti ti-list-details" style="font-size:12px"></i> List view</button>
-    <button class="icon-btn" onclick="openSettings()"><i class="ti ti-settings" style="font-size:12px"></i> Settings</button>
+    <button class="icon-btn icon-only" title="Month Snapshot" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:15px"></i></button>
+    <button class="icon-btn icon-only" title="Settings" onclick="openSettings()"><i class="ti ti-settings" style="font-size:15px"></i></button>
     <button class="icon-btn upload-btn ap" id="upload-btn" onclick="openExport()"><i class="ti ti-upload" style="font-size:11px"></i> Update GitHub</button>
     <div class="nav-row">
       <button onclick="navM(-1)"><i class="ti ti-chevron-left"></i></button>
@@ -428,6 +449,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div style="display:flex;justify-content:flex-end"><button onclick="closeModal('m-settings')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
 </div></div>
 
+<!-- Payor modal -->
+<div class="ov" id="m-payor"><div class="md">
+  <h3 id="m-payor-title">Add Payor</h3>
+  <div class="mrow"><label>Payor name</label><input type="text" id="m-payor-name" placeholder="e.g. BlueCross BlueShield"/></div>
+  <div class="mrow"><label>Color</label><div class="color-picker" id="m-payor-colors"></div></div>
+  <div class="mbtns" id="m-payor-btns"></div>
+</div></div>
+
+<!-- Payor date modal -->
+<div class="ov" id="m-payor-date"><div class="md">
+  <h3 id="m-pd-title">Add Pay Date</h3>
+  <div class="mrow"><label>Payor</label><div class="vv" id="m-pd-payor"></div></div>
+  <div class="mrow"><label>Date (YYYY-MM-DD)</label><input type="text" id="m-pd-date" placeholder="2026-06-15"/></div>
+  <div class="mrow"><label>Amount ($)</label><input type="number" id="m-pd-amt" placeholder="0.00" step="0.01" min="0"/></div>
+  <div class="mbtns" id="m-pd-btns"></div>
+</div></div>
+
 <!-- Snapshot modal -->
 <div class="ov" id="m-snap"><div class="md snap-modal">
   <h3><i class="ti ti-camera" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Month Snapshot</h3>
@@ -463,21 +501,21 @@ const COLORS=[
   {bg:'#E6F4FA',tx:'#0C4A6E'},{bg:'#F5F0FF',tx:'#4C1D95'},{bg:'#FEF3C7',tx:'#92400E'},
 ];
 const DEF_AP=[
-  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,rd:null},
-  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,rd:null},
-  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,rd:null},
-  {id:'rg',  name:'RBT GA Payroll',     c:COLORS[3],on:true,rd:null},
-  {id:'rm',  name:'RBT Monsey Payroll', c:COLORS[4],on:true,rd:null},
-  {id:'ag',  name:'ABA GA Payroll',     c:COLORS[5],on:true,rd:null},
-  {id:'am',  name:'ABA Monsey Payroll', c:COLORS[6],on:true,rd:null},
-  {id:'dv',  name:'Divvy',              c:COLORS[7],on:true,rd:11},
-  {id:'ik',  name:'Ink Staffing',       c:COLORS[5],on:true,rd:1},
-  {id:'ch',  name:'Chase CC',           c:COLORS[1],on:true,rd:10},
+  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,rd:null, grp:'Payroll'},
+  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,rd:null, grp:'Payroll'},
+  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,rd:null, grp:'Payroll'},
+  {id:'rg',  name:'RBT GA Payroll',     c:COLORS[3],on:true,rd:null, grp:'Payroll'},
+  {id:'rm',  name:'RBT Monsey Payroll', c:COLORS[4],on:true,rd:null, grp:'Payroll'},
+  {id:'ag',  name:'ABA GA Payroll',     c:COLORS[5],on:true,rd:null, grp:'Payroll'},
+  {id:'am',  name:'ABA Monsey Payroll', c:COLORS[6],on:true,rd:null, grp:'Payroll'},
+  {id:'dv',  name:'Divvy',              c:COLORS[7],on:true,rd:11,   grp:'Credit Cards'},
+  {id:'ik',  name:'Ink Staffing',       c:COLORS[5],on:true,rd:1,    grp:'Credit Cards'},
+  {id:'ch',  name:'Chase CC',           c:COLORS[1],on:true,rd:10,   grp:'Credit Cards'},
 ];
 const DEF_AR=[
-  {id:'ac',  name:'Client Invoices',    c:COLORS[2],on:true,rd:null},
-  {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,rd:null},
-  {id:'agr', name:'Grants',             c:COLORS[4],on:true,rd:null},
+  {id:'ac',  name:'Client Invoices',    c:COLORS[2],on:true,rd:null, grp:'Clients'},
+  {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,rd:null, grp:'Insurance', payors:[]},
+  {id:'agr', name:'Grants',             c:COLORS[4],on:true,rd:null, grp:'Grants'},
 ];
 const AP_EV=[
   ['Medical Payroll','2026-01-07'],['Management Payroll','2026-01-07'],['Offshore Payroll','2026-01-07'],
@@ -738,47 +776,139 @@ function buildSb(){
   const wrap=document.getElementById('sb-list');wrap.innerHTML='';
   const cats=cat==='net'?['ap','ar']:[cat];
   cats.forEach(cc=>{
+    // group types by grp field
+    const groups={};const groupOrder=[];
     T(cc).forEach(t=>{
-      const key=cc+t.id;const isOpen=!!_openGroups[key];
-      const sg=document.createElement('div');sg.className='sg';
-      const row=document.createElement('button');row.className='sg-row';
-      const badge=cat==='net'?`<span class="sg-badge ${cc}">${cc.toUpperCase()}</span>`:'';
-      row.innerHTML=`<div class="sg-dot" style="background:${t.c.bg};border:1px solid ${t.c.tx}55"></div><span class="sg-name">${t.name}</span>${badge}<span class="sg-arr${isOpen?' open':''}">&#9654;</span><div class="sg-chk${t.on?' on':''} ${cc}">✓</div>`;
-      row.onclick=e=>{
-        const chk=row.querySelector('.sg-chk');
-        if(e.target===chk||chk.contains(e.target)){t.on=!t.on;save();render();buildSb();return;}
-        _openGroups[key]=!isOpen;buildSb();
-      };
-      sg.appendChild(row);
-      if(isOpen){
-        const body=document.createElement('div');body.className='sg-body open';
-        allEvForType(t.name,cc).slice(0,12).forEach(ds=>{
-          const k=ak(ds,t.name);
-          const[y,m]=ds.split('-').map(Number);
-          const hasReal=A(cc)[k]!==undefined;
-          const estV=!hasReal?estimate(t.name,y,m,cc):null;
-          const row2=document.createElement('div');row2.className='ev-row';
-          const dl=document.createElement('span');dl.className='ev-date';dl.textContent=ds+(!hasReal&&estV!==null?' ~':'');
-          const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(!hasReal&&estV!==null?' est':'');
-          inp.placeholder='0.00';inp.step='0.01';inp.min='0';
-          inp.value=hasReal?A(cc)[k]:(estV!==null?estV.toFixed(2):'');
-          inp._isEst=!hasReal&&estV!==null;
-          inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
-          const sb2=document.createElement('button');sb2.className='ev-save '+cc;sb2.textContent='Save';
-          sb2.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
-          inp.addEventListener('keydown',e=>{if(e.key==='Enter')sb2.click();});
-          const db=document.createElement('button');db.className='ev-del';db.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
-          db.onclick=()=>{D[cc].events=EV(cc).filter(r=>!(r[0]===t.name&&r[1]===ds));delete A(cc)[k];save();render();buildSb();};
-          row2.appendChild(dl);row2.appendChild(inp);row2.appendChild(sb2);row2.appendChild(db);body.appendChild(row2);
-        });
-        const acts=document.createElement('div');acts.className='sg-acts';
-        const eb=document.createElement('button');eb.className='sg-act';eb.innerHTML='<i class="ti ti-settings" style="font-size:10px"></i> Edit type';eb.onclick=()=>openEditType(t.id,cc);
-        const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openAddDate(t.name,cc);
-        acts.appendChild(eb);acts.appendChild(ab);body.appendChild(acts);sg.appendChild(body);
-      }
-      wrap.appendChild(sg);
+      const g=t.grp||'Other';
+      if(!groups[g]){groups[g]=[];groupOrder.push(g);}
+      groups[g].push(t);
     });
+    groupOrder.forEach(grpName=>{
+      // group header
+      const ghdr=document.createElement('div');ghdr.className='sg-grp-hdr';
+      const gl=document.createElement('span');gl.className='sg-grp-label';gl.textContent=grpName;
+      const ga=document.createElement('button');ga.className='sg-grp-add';
+      ga.title='Add type to '+grpName;
+      ga.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add';
+      ga.onclick=()=>openNewTypeInGroup(grpName,cc);
+      ghdr.appendChild(gl);if(cat!=='net')ghdr.appendChild(ga);
+      wrap.appendChild(ghdr);
+
+      groups[grpName].forEach(t=>{
+        const key=cc+t.id;const isOpen=!!_openGroups[key];
+        const sg=document.createElement('div');sg.className='sg';
+        const row=document.createElement('button');row.className='sg-row';
+        const badge=cat==='net'?`<span class="sg-badge ${cc}">${cc.toUpperCase()}</span>`:'';
+        row.innerHTML=`<div class="sg-dot" style="background:${t.c.bg};border:1px solid ${t.c.tx}55"></div><span class="sg-name">${t.name}</span>${badge}<span class="sg-arr${isOpen?' open':''}">&#9654;</span><div class="sg-chk${t.on?' on':''} ${cc}">✓</div>`;
+        row.onclick=e=>{
+          const chk=row.querySelector('.sg-chk');
+          if(e.target===chk||chk.contains(e.target)){t.on=!t.on;save();render();buildSb();return;}
+          _openGroups[key]=!isOpen;buildSb();
+        };
+        sg.appendChild(row);
+        if(isOpen){
+          const body=document.createElement('div');body.className='sg-body open';
+
+          // if this type supports payors (Insurance Payments style)
+          if(Array.isArray(t.payors)){
+            buildPayorSection(body,t,cc);
+          } else {
+            buildTypeEvents(body,t,cc);
+          }
+
+          const acts=document.createElement('div');acts.className='sg-acts';
+          const eb=document.createElement('button');eb.className='sg-act';eb.innerHTML='<i class="ti ti-settings" style="font-size:10px"></i> Edit type';eb.onclick=()=>openEditType(t.id,cc);
+          if(!Array.isArray(t.payors)){
+            const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openAddDate(t.name,cc);
+            acts.appendChild(ab);
+          }
+          acts.appendChild(eb);body.appendChild(acts);sg.appendChild(body);
+        }
+        wrap.appendChild(sg);
+      });
+    });
+
+    // "Add new group" button at bottom
+    if(cat!=='net'){
+      const newGrpBtn=document.createElement('button');
+      newGrpBtn.className='sg-act';
+      newGrpBtn.style.cssText='margin:6px 12px;font-size:10px';
+      newGrpBtn.innerHTML='<i class="ti ti-folder-plus" style="font-size:10px"></i> New group';
+      newGrpBtn.onclick=()=>openNewTypeInGroup(null,cc);
+      wrap.appendChild(newGrpBtn);
+    }
   });
+}
+
+function buildTypeEvents(body,t,cc){
+  allEvForType(t.name,cc).slice(0,12).forEach(ds=>{
+    const k=ak(ds,t.name);
+    const[y,m]=ds.split('-').map(Number);
+    const hasReal=A(cc)[k]!==undefined;
+    const estV=!hasReal?estimate(t.name,y,m,cc):null;
+    const row2=document.createElement('div');row2.className='ev-row';
+    const dl=document.createElement('span');dl.className='ev-date';dl.textContent=ds+(!hasReal&&estV!==null?' ~':'');
+    const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(!hasReal&&estV!==null?' est':'');
+    inp.placeholder='0.00';inp.step='0.01';inp.min='0';
+    inp.value=hasReal?A(cc)[k]:(estV!==null?estV.toFixed(2):'');
+    inp._isEst=!hasReal&&estV!==null;
+    inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
+    const sb2=document.createElement('button');sb2.className='ev-save '+cc;sb2.textContent='Save';
+    sb2.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')sb2.click();});
+    const db=document.createElement('button');db.className='ev-del';db.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
+    db.onclick=()=>{D[cc].events=EV(cc).filter(r=>!(r[0]===t.name&&r[1]===ds));delete A(cc)[k];save();render();buildSb();};
+    row2.appendChild(dl);row2.appendChild(inp);row2.appendChild(sb2);row2.appendChild(db);body.appendChild(row2);
+  });
+}
+
+function buildPayorSection(body,t,cc){
+  if(!t.payors)t.payors=[];
+  const ps=document.createElement('div');ps.className='payor-section';
+  const phdr=document.createElement('div');phdr.className='payor-hdr';
+  const pl=document.createElement('span');pl.className='payor-label';pl.textContent='Payors';
+  const padd=document.createElement('button');padd.className='payor-add-btn';padd.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i> Add payor';
+  padd.onclick=()=>openPayorModal(t,cc,null);
+  phdr.appendChild(pl);phdr.appendChild(padd);ps.appendChild(phdr);
+
+  if(!t.payors.length){
+    const empty=document.createElement('div');empty.style.cssText='font-size:10px;color:#bbb;padding:6px 0 4px';empty.textContent='No payors yet. Add one above.';
+    ps.appendChild(empty);
+  } else {
+    t.payors.forEach(p=>{
+      const pr=document.createElement('div');pr.className='payor-row';
+      const dot=document.createElement('div');dot.style.cssText=`width:7px;height:7px;border-radius:2px;flex-shrink:0;background:${p.c?p.c.bg:t.c.bg};border:1px solid ${p.c?p.c.tx:t.c.tx}55`;
+      const pn=document.createElement('span');pn.className='payor-name';pn.textContent=p.name;
+      const pe=document.createElement('button');pe.className='payor-edit';pe.textContent='Edit';
+      pe.onclick=()=>openPayorModal(t,cc,p);
+      const paddate=document.createElement('button');paddate.className='payor-edit';paddate.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i>';paddate.title='Add date';
+      paddate.onclick=()=>openPayorDateModal(t,cc,p,null);
+      pr.appendChild(dot);pr.appendChild(pn);pr.appendChild(pe);pr.appendChild(paddate);ps.appendChild(pr);
+
+      // payor dates
+      if(p.dates&&p.dates.length){
+        const pd=document.createElement('div');pd.className='payor-dates';
+        p.dates.sort().forEach(ds=>{
+          const k=ak(ds,p.name+'__'+t.name);
+          const hasReal=A(cc)[k]!==undefined;
+          const dr=document.createElement('div');dr.className='payor-ev-row';
+          const dd=document.createElement('span');dd.className='ev-date';dd.style.flex='1';dd.textContent=ds;
+          const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(hasReal?'':' est');
+          inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=hasReal?A(cc)[k]:'';
+          inp._isEst=!hasReal;
+          inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
+          const sv=document.createElement('button');sv.className='ev-save '+cc;sv.textContent='Save';
+          sv.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
+          inp.addEventListener('keydown',e=>{if(e.key==='Enter')sv.click();});
+          const dl=document.createElement('button');dl.className='ev-del';dl.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
+          dl.onclick=()=>{p.dates=p.dates.filter(x=>x!==ds);delete A(cc)[k];save();render();buildSb();};
+          dr.appendChild(dd);dr.appendChild(inp);dr.appendChild(sv);dr.appendChild(dl);pd.appendChild(dr);
+        });
+        ps.appendChild(pd);
+      }
+    });
+  }
+  body.appendChild(ps);
 }
 
 /* ---- RENDER ---- */
@@ -1015,9 +1145,98 @@ function openSettings(){updatePwBadge();openModal('m-settings');}
 /* ---- MODAL HELPERS ---- */
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['m-amt','m-type','m-ev','m-export','m-settings'].forEach(id=>{
+['m-amt','m-type','m-ev','m-export','m-settings','m-payor','m-payor-date'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
+
+
+/* ---- PAYOR MANAGEMENT ---- */
+var _payorType=null,_payorCat=null,_payorObj=null,_payorCI=0;
+var _pdType=null,_pdCat=null,_pdPayor=null,_pdDateKey=null;
+
+function openPayorModal(t,cc,p){
+  _payorType=t;_payorCat=cc;_payorObj=p;
+  const isNew=!p;
+  document.getElementById('m-payor-title').textContent=isNew?'Add Payor':'Edit Payor';
+  document.getElementById('m-payor-name').value=p?p.name:'';
+  _payorCI=p&&p.c?COLORS.findIndex(x=>x.bg===p.c.bg):0;if(_payorCI<0)_payorCI=0;
+  buildPayorCP(_payorCI);
+  const btns=document.getElementById('m-payor-btns');btns.innerHTML='';
+  const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-payor');btns.appendChild(can);
+  if(!isNew){const del=document.createElement('button');del.className='del';del.textContent='Delete';del.onclick=()=>{_payorType.payors=_payorType.payors.filter(x=>x.name!==p.name);save();closeModal('m-payor');buildSb();};btns.appendChild(del);}
+  const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Save';
+  sv.onclick=()=>{
+    const name=document.getElementById('m-payor-name').value.trim();if(!name)return;
+    if(isNew){if(!_payorType.payors)_payorType.payors=[];_payorType.payors.push({name,c:COLORS[_payorCI],dates:[]});}
+    else{p.name=name;p.c=COLORS[_payorCI];}
+    save();closeModal('m-payor');buildSb();
+  };
+  btns.appendChild(sv);openModal('m-payor');setTimeout(()=>document.getElementById('m-payor-name').focus(),60);
+}
+function buildPayorCP(sel){
+  const cp=document.getElementById('m-payor-colors');cp.innerHTML='';
+  COLORS.forEach((cl,i)=>{const d=document.createElement('div');d.className='cpick'+(i===sel?' sel':'');d.style.cssText=`background:${cl.bg};border:2px solid ${i===sel?cl.tx:'transparent'}`;d.onclick=()=>{_payorCI=i;buildPayorCP(i);};cp.appendChild(d);});
+}
+function openPayorDateModal(t,cc,p,dateKey){
+  _pdType=t;_pdCat=cc;_pdPayor=p;_pdDateKey=dateKey;
+  document.getElementById('m-pd-title').textContent=dateKey?'Edit Date':'Add Pay Date';
+  document.getElementById('m-pd-payor').textContent=p.name;
+  document.getElementById('m-pd-date').value=dateKey||'';
+  const k=dateKey?ak(dateKey,p.name+'__'+t.name):'';
+  document.getElementById('m-pd-amt').value=k&&A(cc)[k]!==undefined?A(cc)[k]:'';
+  const btns=document.getElementById('m-pd-btns');btns.innerHTML='';
+  const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-payor-date');btns.appendChild(can);
+  if(dateKey){const del=document.createElement('button');del.className='del';del.textContent='Delete';del.onclick=()=>{p.dates=p.dates.filter(x=>x!==dateKey);delete A(cc)[ak(dateKey,p.name+'__'+t.name)];save();closeModal('m-payor-date');render();buildSb();};btns.appendChild(del);}
+  const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Save';
+  sv.onclick=()=>{
+    const nd=document.getElementById('m-pd-date').value.trim();const v=document.getElementById('m-pd-amt').value;
+    if(!nd)return;
+    if(!p.dates.includes(nd))p.dates.push(nd);
+    if(dateKey&&dateKey!==nd){p.dates=p.dates.filter(x=>x!==dateKey);const ok=ak(dateKey,p.name+'__'+t.name);if(A(cc)[ok]!==undefined){A(cc)[ak(nd,p.name+'__'+t.name)]=A(cc)[ok];delete A(cc)[ok];}}
+    if(v!=='')A(cc)[ak(nd,p.name+'__'+t.name)]=parseFloat(v);
+    save();closeModal('m-payor-date');render();buildSb();
+  };
+  btns.appendChild(sv);openModal('m-payor-date');setTimeout(()=>document.getElementById('m-pd-date').focus(),60);
+}
+
+/* ---- NEW TYPE IN GROUP ---- */
+var _newTypeGrp=null,_newTypeCat2=null;
+function openNewTypeInGroup(grpName,cc){
+  _newTypeGrp=grpName;_newTypeCat2=cc;
+  if(!grpName){
+    // ask for group name first
+    const g=prompt('Enter group name:');
+    if(!g)return;
+    _newTypeGrp=g;
+  }
+  _typeId=null;_typeCI=0;
+  document.getElementById('m-type-title').textContent=cc.toUpperCase()+' — New type in "'+_newTypeGrp+'"';
+  document.getElementById('m-type-name').value='';document.getElementById('m-type-day').value='';buildCP(0);
+  const btns=document.getElementById('m-type-btns');btns.innerHTML='';
+  // payor toggle
+  const ptRow=document.createElement('div');ptRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
+  const ptChk=document.createElement('input');ptChk.type='checkbox';ptChk.id='tp-payor-chk';
+  const ptLbl=document.createElement('label');ptLbl.htmlFor='tp-payor-chk';ptLbl.style.cssText='font-size:11px;color:#888';ptLbl.textContent='Has individual payors (like Insurance)';
+  ptRow.appendChild(ptChk);ptRow.appendChild(ptLbl);
+  document.getElementById('m-type').querySelector('.md').insertBefore(ptRow, document.getElementById('m-type-btns'));
+  const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>{closeModal('m-type');ptRow.remove();};btns.appendChild(can);
+  const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Add type';
+  sv.onclick=()=>{
+    const name=document.getElementById('m-type-name').value.trim();if(!name)return;
+    const rd=parseInt(document.getElementById('m-type-day').value)||null;
+    const hasPayors=document.getElementById('tp-payor-chk')&&document.getElementById('tp-payor-chk').checked;
+    const newT={id:cc+Date.now(),name,c:COLORS[_typeCI],on:true,rd,grp:_newTypeGrp};
+    if(hasPayors)newT.payors=[];
+    D[cc].types.push(newT);
+    save();closeModal('m-type');ptRow.remove();render();buildSb();
+  };
+  btns.appendChild(sv);openModal('m-type');setTimeout(()=>document.getElementById('m-type-name').focus(),60);
+}
+
+/* Also make evForDate and buildRp aware of payor sub-entries */
+/* Payor amounts are stored with key: date||payorName__typeName */
+/* They appear on the calendar under the parent type's name for display */
+
 
 /* ---- RIGHT PANEL ---- */
 var rpOpen=false, rpCat='ap';
