@@ -1,0 +1,37 @@
+-- KF Payroll Calendar — schema
+--
+-- Two tables:
+--   app_state  — singleton row holding the structural data (types, events, password).
+--                This changes rarely (adding/renaming a payroll type, editing the
+--                recurring schedule) so it's stored as jsonb blobs.
+--   amounts    — one row per dollar figure the user has entered. This is the data
+--                that changes constantly as amounts get typed in, so it gets its
+--                own table keyed the same way the frontend already keys it in memory.
+--
+-- Key convention (matches the frontend's `ak(date, name)` helper, `date + '||' + name`):
+--   "2026-01-07||Medical Payroll"                     -> flat amount for a type on a date
+--   "2026-01-07||Blue Cross__Insurance Payments"       -> AR payor sub-amount (payorName__typeName)
+--
+-- Per-market breakdown (planned, not yet built in the UI) reuses this exact
+-- convention with no schema change required:
+--   "2026-01-07||GA__Medical Payroll"                  -> market sub-amount (marketName__typeName)
+-- The flat "date||typeName" key remains the total/override; per-market keys are
+-- additive detail under it, the same way payor keys already work for AR.
+
+CREATE TABLE IF NOT EXISTS app_state (
+  id          integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  ap_types    jsonb NOT NULL,
+  ap_events   jsonb NOT NULL,
+  ar_types    jsonb NOT NULL,
+  ar_events   jsonb NOT NULL,
+  pw          text,
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS amounts (
+  category    text NOT NULL CHECK (category IN ('ap', 'ar')),
+  key         text NOT NULL,
+  amount      numeric NOT NULL,
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (category, key)
+);

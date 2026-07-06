@@ -335,6 +335,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
   <div class="topright">
+    <span class="badge" id="sync-badge" title="Cloud sync status" style="display:none"></span>
     <button class="icon-btn icon-only" title="Month Snapshot" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:15px"></i></button>
     <button class="icon-btn icon-only" title="Settings" onclick="openSettings()"><i class="ti ti-settings" style="font-size:15px"></i></button>
     <button class="icon-btn upload-btn ap" id="upload-btn" onclick="openExport()"><i class="ti ti-upload" style="font-size:11px"></i> Update GitHub</button>
@@ -631,6 +632,63 @@ const MO=['January','February','March','April','May','June','July','August','Sep
 var BAKED={"ap":{"types":[{"id":"md","name":"Medical Payroll","c":{"bg":"#FAECE7","tx":"#712B13"},"on":true,"rd":null,"grp":"Payroll"},{"id":"mg","name":"Management Payroll","c":{"bg":"#E6F1FB","tx":"#0C447C"},"on":true,"rd":null,"grp":"Payroll"},{"id":"of","name":"Offshore Payroll","c":{"bg":"#EAF3DE","tx":"#27500A"},"on":true,"rd":null,"grp":"Payroll"},{"id":"rg","name":"RBT GA Payroll","c":{"bg":"#E1F5EE","tx":"#085041"},"on":true,"rd":null,"grp":"Payroll"},{"id":"rm","name":"RBT Monsey Payroll","c":{"bg":"#EEEDFE","tx":"#3C3489"},"on":true,"rd":null,"grp":"Payroll"},{"id":"ag","name":"ABA GA Payroll","c":{"bg":"#FAEEDA","tx":"#633806"},"on":true,"rd":null,"grp":"Payroll"},{"id":"am","name":"ABA Monsey Payroll","c":{"bg":"#FBEAF0","tx":"#72243E"},"on":true,"rd":null,"grp":"Payroll"},{"id":"dv","name":"Divvy","c":{"bg":"#F1EFE8","tx":"#5F5E5A"},"on":true,"rd":11,"grp":"Credit Cards"},{"id":"ik","name":"Ink Staffing","c":{"bg":"#FAEEDA","tx":"#633806"},"on":true,"rd":1,"grp":"Credit Cards"},{"id":"ch","name":"Chase CC","c":{"bg":"#E6F1FB","tx":"#0C447C"},"on":true,"rd":10,"grp":"Credit Cards"}],"events":[["Medical Payroll","2026-01-07"],["Management Payroll","2026-01-07"],["Offshore Payroll","2026-01-07"],["Medical Payroll","2026-01-21"],["Management Payroll","2026-01-21"],["Offshore Payroll","2026-01-21"],["RBT GA Payroll","2026-02-02"],["RBT Monsey Payroll","2026-02-02"],["Medical Payroll","2026-02-04"],["Management Payroll","2026-02-04"],["Offshore Payroll","2026-02-04"],["RBT GA Payroll","2026-02-17"],["RBT Monsey Payroll","2026-02-17"],["Medical Payroll","2026-02-18"],["Management Payroll","2026-02-18"],["Offshore Payroll","2026-02-18"],["RBT GA Payroll","2026-03-02"],["ABA Monsey Payroll","2026-03-02"],["ABA GA Payroll","2026-03-02"],["RBT Monsey Payroll","2026-03-02"],["Medical Payroll","2026-03-04"],["Management Payroll","2026-03-04"],["Offshore Payroll","2026-03-04"],["RBT GA Payroll","2026-03-16"],["RBT Monsey Payroll","2026-03-16"],["Medical Payroll","2026-03-18"],["Management Payroll","2026-03-18"],["Offshore Payroll","2026-03-18"],["Medical Payroll","2026-04-01"],["RBT GA Payroll","2026-04-01"],["ABA Monsey Payroll","2026-04-01"],["ABA GA Payroll","2026-04-01"],["RBT Monsey Payroll","2026-04-01"],["Management Payroll","2026-04-01"],["Offshore Payroll","2026-04-01"],["Medical Payroll","2026-04-15"],["RBT GA Payroll","2026-04-15"],["RBT Monsey Payroll","2026-04-15"],["Management Payroll","2026-04-15"],["Offshore Payroll","2026-04-15"],["Medical Payroll","2026-04-29"],["Management Payroll","2026-04-29"],["Offshore Payroll","2026-04-29"],["ABA GA Payroll","2026-05-01"],["RBT Monsey Payroll","2026-05-01"],["RBT GA Payroll","2026-05-01"],["ABA Monsey Payroll","2026-05-01"],["Medical Payroll","2026-05-13"],["Management Payroll","2026-05-13"],["Offshore Payroll","2026-05-13"],["RBT Monsey Payroll","2026-05-15"],["RBT GA Payroll","2026-05-15"],["Medical Payroll","2026-05-27"],["Management Payroll","2026-05-27"],["Offshore Payroll","2026-05-27"],["ABA GA Payroll","2026-06-01"],["RBT Monsey Payroll","2026-06-01"],["RBT GA Payroll","2026-06-01"],["ABA Monsey Payroll","2026-06-01"],["Medical Payroll","2026-06-10"],["Management Payroll","2026-06-10"],["Offshore Payroll","2026-06-10"],["RBT Monsey Payroll","2026-06-15"],["RBT GA Payroll","2026-06-15"],["Medical Payroll","2026-06-24"],["Management Payroll","2026-06-24"],["Offshore Payroll","2026-06-24"],["ABA GA Payroll","2026-07-01"],["RBT Monsey Payroll","2026-07-01"],["RBT GA Payroll","2026-07-01"],["ABA Monsey Payroll","2026-07-01"],["Medical Payroll","2026-07-08"],["Management Payroll","2026-07-08"],["Offshore Payroll","2026-07-08"],["RBT Monsey Payroll","2026-07-15"],["RBT GA Payroll","2026-07-15"],["Medical Payroll","2026-07-22"],["Management Payroll","2026-07-22"],["Offshore Payroll","2026-07-22"],["ABA GA Payroll","2026-08-03"],["RBT Monsey Payroll","2026-08-03"],["RBT GA Payroll","2026-08-03"],["ABA Monsey Payroll","2026-08-03"],["Medical Payroll","2026-08-05"],["Management Payroll","2026-08-05"],["Offshore Payroll","2026-08-05"],["RBT Monsey Payroll","2026-08-17"],["RBT GA Payroll","2026-08-17"],["Medical Payroll","2026-08-19"],["Management Payroll","2026-08-19"],["Offshore Payroll","2026-08-19"],["ABA GA Payroll","2026-09-01"],["RBT Monsey Payroll","2026-09-01"],["RBT GA Payroll","2026-09-01"],["ABA Monsey Payroll","2026-09-01"],["Medical Payroll","2026-09-02"],["Management Payroll","2026-09-02"],["Offshore Payroll","2026-09-02"],["RBT Monsey Payroll","2026-09-15"],["RBT GA Payroll","2026-09-15"],["Medical Payroll","2026-09-16"],["Management Payroll","2026-09-16"],["Offshore Payroll","2026-09-16"],["Medical Payroll","2026-09-30"],["Management Payroll","2026-09-30"],["Offshore Payroll","2026-09-30"],["ABA GA Payroll","2026-10-01"],["RBT Monsey Payroll","2026-10-01"],["RBT GA Payroll","2026-10-01"],["ABA Monsey Payroll","2026-10-01"],["Medical Payroll","2026-10-14"],["Management Payroll","2026-10-14"],["Offshore Payroll","2026-10-14"],["RBT Monsey Payroll","2026-10-15"],["RBT GA Payroll","2026-10-15"],["Medical Payroll","2026-10-28"],["Management Payroll","2026-10-28"],["Offshore Payroll","2026-10-28"],["ABA GA Payroll","2026-11-02"],["RBT Monsey Payroll","2026-11-02"],["RBT GA Payroll","2026-11-02"],["ABA Monsey Payroll","2026-11-02"],["Medical Payroll","2026-11-11"],["Management Payroll","2026-11-11"],["Offshore Payroll","2026-11-11"],["RBT Monsey Payroll","2026-11-16"],["RBT GA Payroll","2026-11-16"],["Medical Payroll","2026-11-25"],["Management Payroll","2026-11-25"],["Offshore Payroll","2026-11-25"],["ABA GA Payroll","2026-12-01"],["RBT Monsey Payroll","2026-12-01"],["RBT GA Payroll","2026-12-01"],["ABA Monsey Payroll","2026-12-01"],["Medical Payroll","2026-12-09"],["Management Payroll","2026-12-09"],["Offshore Payroll","2026-12-09"],["RBT Monsey Payroll","2026-12-15"],["RBT GA Payroll","2026-12-15"],["Medical Payroll","2026-12-23"],["Management Payroll","2026-12-23"],["Offshore Payroll","2026-12-23"],["ABA GA Payroll","2027-01-04"],["RBT Monsey Payroll","2027-01-04"],["RBT GA Payroll","2027-01-04"],["ABA Monsey Payroll","2027-01-04"],["Medical Payroll","2027-01-06"],["Management Payroll","2027-01-06"],["Offshore Payroll","2027-01-06"],["RBT Monsey Payroll","2027-01-15"],["RBT GA Payroll","2027-01-15"],["ABA GA Payroll","2027-02-01"],["ABA Monsey Payroll","2027-02-01"],["RBT GA Payroll","20260102"],["RBT GA Payroll","2026-01-02"],["RBT GA Payroll","2026-01-15"],["RBT Monsey Payroll","2026-01-02"],["RBT Monsey Payroll","2026-01-15"],["ABA GA Payroll","2026-01-02"],["ABA GA Payroll","2026-02-02"],["ABA Monsey Payroll","2026-01-02"],["ABA Monsey Payroll","2026-02-02"]],"amounts":{"2026-01-11||Divvy":139666.79,"2026-02-11||Divvy":218449.01,"2026-05-27||Medical Payroll":142453.44,"2026-05-27||Management Payroll":141762.19,"2026-05-27||Offshore Payroll":35481.09,"2026-03-11||Divvy":194841.46,"2026-04-11||Divvy":230642.2,"2026-05-11||Divvy":203154.81,"2026-01-07||Medical Payroll":126610.53,"2026-01-21||Medical Payroll":144682.12,"2026-02-04||Medical Payroll":153284.1,"2026-02-18||Medical Payroll":136019.9,"2026-03-04||Medical Payroll":135532.6,"2026-03-18||Medical Payroll":116526.6,"2026-04-01||Medical Payroll":187868.95,"2026-04-15||Medical Payroll":101352.7,"2026-04-29||Medical Payroll":82459.25,"2026-05-13||Medical Payroll":138407.4,"2026-01-07||Offshore Payroll":17687.32,"2026-01-21||Offshore Payroll":18389.63,"2026-02-04||Offshore Payroll":18762.87,"2026-02-18||Offshore Payroll":20085.63,"2026-03-04||Offshore Payroll":22701.25,"2026-03-18||Offshore Payroll":23942.41,"2026-04-01||Offshore Payroll":23620.73,"2026-04-15||Offshore Payroll":23055.63,"2026-04-29||Offshore Payroll":33573.78,"2026-05-13||Offshore Payroll":34672.96,"2026-01-10||Chase CC":3357.7,"2026-02-10||Chase CC":1627.16,"2026-03-10||Chase CC":2415.6,"2026-04-10||Chase CC":3411.88,"2026-05-10||Chase CC":2426.24,"2026-01-01||Ink Staffing":88044,"2026-02-01||Ink Staffing":91850,"2026-03-01||Ink Staffing":74910,"2026-04-01||Ink Staffing":77550,"2026-05-01||Ink Staffing":108702,"2026-01-07||Management Payroll":136141.66,"2026-01-21||Management Payroll":121748.61,"2026-02-04||Management Payroll":122491.17,"2026-02-18||Management Payroll":129118.61,"2026-03-04||Management Payroll":142111.69,"2026-03-18||Management Payroll":128400.92,"2026-04-01||Management Payroll":127902.44,"2026-04-15||Management Payroll":125296.6,"2026-04-29||Management Payroll":130341.59,"2026-05-13||Management Payroll":133929.85,"2026-01-02||RBT GA Payroll":9900.49,"2026-01-15||RBT GA Payroll":6557.88,"2026-02-02||RBT GA Payroll":6701.95,"2026-02-17||RBT GA Payroll":8191.99,"2026-03-02||RBT GA Payroll":7580.85,"2026-03-16||RBT GA Payroll":8044.43,"2026-04-01||RBT GA Payroll":9117.96,"2026-04-15||RBT GA Payroll":10852.34,"2026-05-15||RBT GA Payroll":10853.1,"2026-05-01||RBT GA Payroll":9427.35,"2026-01-02||RBT Monsey Payroll":223258.69,"2026-01-15||RBT Monsey Payroll":227566.08,"2026-02-02||RBT Monsey Payroll":216198.3,"2026-02-17||RBT Monsey Payroll":221503.04,"2026-03-02||RBT Monsey Payroll":222482.37,"2026-03-16||RBT Monsey Payroll":192973.05,"2026-04-01||RBT Monsey Payroll":223514.81,"2026-04-15||RBT Monsey Payroll":260851.58,"2026-05-01||RBT Monsey Payroll":231951.18,"2026-05-15||RBT Monsey Payroll":238831.23,"2026-01-02||ABA GA Payroll":4526.92,"2026-02-02||ABA GA Payroll":8627.39,"2026-03-02||ABA GA Payroll":13699.05,"2026-04-01||ABA GA Payroll":8668.59,"2026-05-01||ABA GA Payroll":9834.15,"2026-03-02||ABA Monsey Payroll":344752.74,"2026-01-02||ABA Monsey Payroll":335930.1,"2026-02-02||ABA Monsey Payroll":388018.86,"2026-04-01||ABA Monsey Payroll":326782.32,"2026-05-01||ABA Monsey Payroll":376759.85,"2026-06-01||RBT Monsey Payroll":222214.25,"2026-06-01||RBT GA Payroll":11180.67,"2026-06-01||ABA GA Payroll":9792.52,"2026-06-01||ABA Monsey Payroll":334947.43,"2026-06-01||Ink Staffing":76120,"2026-06-24||Management Payroll":163775.88,"2026-06-24||Medical Payroll":139358.94,"2026-06-24||Offshore Payroll":35758.74}},"ar":{"types":[{"id":"ac","name":"Client Invoices","c":{"bg":"#EAF3DE","tx":"#27500A"},"on":true,"rd":null,"grp":"Clients"},{"id":"ai","name":"Insurance Payments","c":{"bg":"#E1F5EE","tx":"#085041"},"on":true,"rd":null,"grp":"Insurance","payors":[]},{"id":"agr","name":"Grants","c":{"bg":"#EEEDFE","tx":"#3C3489"},"on":true,"rd":null,"grp":"Grants"}],"events":[],"amounts":{}},"pw":"7c548c65"};
 /* DATAEND */
 
+/* ---- CLOUD SYNC (Railway backend) ----
+   Fill in API_URL + API_KEY after deploying the server in /server (see
+   server/README.md). Leave API_URL empty to run in local-only mode
+   (localStorage, same as before). */
+const API_URL='';
+const API_KEY='';
+let _syncTimer=null;
+
+function setSyncBadge(state){
+  const b=document.getElementById('sync-badge');
+  if(!b)return;
+  if(!API_URL){b.style.display='none';return;}
+  b.style.display='inline-block';
+  if(state==='ok'){b.className='badge on';b.textContent='Synced';}
+  else if(state==='syncing'){b.className='badge off';b.textContent='Saving…';}
+  else{b.className='badge off';b.textContent='Offline (saved locally)';}
+}
+async function apiGet(path){
+  const r=await fetch(API_URL+path,{headers:{'x-api-key':API_KEY}});
+  if(!r.ok)throw new Error('API '+r.status);
+  return r.json();
+}
+async function apiPost(path,body){
+  const r=await fetch(API_URL+path,{method:'POST',headers:{'x-api-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('API '+r.status);
+  return r.json();
+}
+function syncToServer(){
+  if(!API_URL)return;
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(async()=>{
+    setSyncBadge('syncing');
+    try{
+      await apiPost('/data',{ap:D.ap,ar:D.ar,pw:D.pw});
+      setSyncBadge('ok');
+    }catch(e){
+      setSyncBadge('err');
+    }
+  },400);
+}
+async function refreshFromServer(){
+  if(!API_URL)return;
+  setSyncBadge('syncing');
+  try{
+    const remote=await apiGet('/data');
+    D.ap.types=remote.ap.types;D.ap.events=remote.ap.events;D.ap.amounts=remote.ap.amounts||{};
+    D.ar.types=remote.ar.types;D.ar.events=remote.ar.events;D.ar.amounts=remote.ar.amounts||{};
+    D.pw=remote.pw||null;
+    finalizeData();
+    try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw}));}catch(e){}
+    buildSb();render();
+    setSyncBadge('ok');
+  }catch(e){
+    setSyncBadge('err');
+  }
+}
+
 /* ---- LIVE STATE ---- */
 var D={ap:{types:null,events:null,amounts:{}},ar:{types:null,events:null,amounts:{}},pw:null};
 var cat='ap',sbOpen=true;
@@ -666,6 +724,18 @@ function init(){
       if(D.pw===null&&typeof p.pw==='string'&&p.pw.length>0)D.pw=p.pw;
     }
   }catch(e){}
+  finalizeData();
+  /* lock if password set */
+  if(D.pw){
+    document.getElementById('lock').style.display='flex';
+    document.getElementById('app').style.display='none';
+    setTimeout(()=>document.getElementById('lock-pw').focus(),100);
+  }
+  buildSb();render();
+  refreshFromServer();
+}
+
+function finalizeData(){
   /* defaults */
   if(!D.ap.types)D.ap.types=JSON.parse(JSON.stringify(DEF_AP));
   if(!D.ar.types)D.ar.types=JSON.parse(JSON.stringify(DEF_AR));
@@ -683,17 +753,11 @@ function init(){
     if(!t.grp)(defArMap[t.id]?t.grp=defArMap[t.id].grp:t.grp='Other');
     if(defArMap[t.id]&&Array.isArray(defArMap[t.id].payors)&&!Array.isArray(t.payors))t.payors=[];
   });
-  /* lock if password set */
-  if(D.pw){
-    document.getElementById('lock').style.display='flex';
-    document.getElementById('app').style.display='none';
-    setTimeout(()=>document.getElementById('lock-pw').focus(),100);
-  }
-  buildSb();render();
 }
 
 function save(){
   try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw}));}catch(e){}
+  syncToServer();
 }
 
 /* ---- PASSWORD ---- */
