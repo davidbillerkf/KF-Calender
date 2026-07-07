@@ -390,6 +390,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="mrow"><label>Type</label><div class="vv" id="m-amt-type">Offshore Payroll</div></div>
   <div class="mrow"><label>Date</label><div class="vv" id="m-amt-date">2026-06-24</div></div>
   <div class="mrow"><label>Amount ($)</label><input type="number" id="m-amt-val" placeholder="0.00" step="0.01" min="0"></div>
+  <div id="m-amt-mkt-toggle" style="display:none;margin:-6px 0 10px">
+    <button onclick="toggleMktBreakdown()" style="font-size:11px;padding:0;border:none;background:transparent;color:#534AB7;cursor:pointer;text-decoration:underline">+ Breakdown by market</button>
+  </div>
+  <div id="m-amt-mkt-box" style="display:none;margin-bottom:10px">
+    <div id="m-amt-mkt-rows"></div>
+    <div style="display:flex;gap:6px;margin-top:2px">
+      <input type="text" id="m-amt-mkt-new" placeholder="Add another market" style="flex:1;font-size:11px;padding:6px 9px;border:0.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a">
+      <button onclick="addMktRowInline()" style="font-size:10px;padding:6px 10px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;white-space:nowrap">Add</button>
+    </div>
+    <button onclick="clearMktBreakdown()" style="font-size:10px;margin-top:8px;padding:0;border:none;background:transparent;color:#888;cursor:pointer;text-decoration:underline">Switch to single total</button>
+  </div>
   <div class="mbtns"><button onclick="closeModal('m-amt')">Cancel</button><button class="sv ap" id="m-amt-save" onclick="saveAmt()">Save</button></div>
 </div></div>
 
@@ -446,6 +457,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="pw-inp-row"><input type="password" id="pw-b" placeholder="Confirm password"><button onclick="setPw()">Set</button></div>
     <button class="pw-rm" onclick="removePw()">Remove password protection</button>
     <div class="pw-msg" id="pw-msg"></div>
+  </div>
+  <div class="pw-box">
+    <h4><i class="ti ti-map-pin" style="font-size:12px"></i> Markets</h4>
+    <div class="pw-note">Used to break Medical/Management/Offshore Payroll amounts down by market when entering them.</div>
+    <div id="markets-list"></div>
+    <div class="pw-inp-row"><input type="text" id="market-new" placeholder="New market name"><button onclick="addMarket()">Add</button></div>
   </div>
   <div style="display:flex;justify-content:flex-end"><button onclick="closeModal('m-settings')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
 </div></div>
@@ -514,10 +531,11 @@ const COLORS=[
   {bg:'#FBEAF0',tx:'#72243E'},{bg:'#F1EFE8',tx:'#5F5E5A'},{bg:'#FCEBEB',tx:'#791F1F'},
   {bg:'#E6F4FA',tx:'#0C4A6E'},{bg:'#F5F0FF',tx:'#4C1D95'},{bg:'#FEF3C7',tx:'#92400E'},
 ];
+const DEF_MARKETS=['General Market','Local Market','Care First'];
 const DEF_AP=[
-  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,rd:null, grp:'Payroll'},
-  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,rd:null, grp:'Payroll'},
-  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,rd:null, grp:'Payroll'},
+  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,rd:null, grp:'Payroll', mkt:true},
+  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,rd:null, grp:'Payroll', mkt:true},
+  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,rd:null, grp:'Payroll', mkt:true},
   {id:'rg',  name:'RBT GA Payroll',     c:COLORS[3],on:true,rd:null, grp:'Payroll'},
   {id:'rm',  name:'RBT Monsey Payroll', c:COLORS[4],on:true,rd:null, grp:'Payroll'},
   {id:'ag',  name:'ABA GA Payroll',     c:COLORS[5],on:true,rd:null, grp:'Payroll'},
@@ -665,7 +683,7 @@ function syncToServer(){
   _syncTimer=setTimeout(async()=>{
     setSyncBadge('syncing');
     try{
-      await apiPost('/data',{ap:D.ap,ar:D.ar,pw:D.pw});
+      await apiPost('/data',{ap:D.ap,ar:D.ar,pw:D.pw,markets:D.markets});
       setSyncBadge('ok');
     }catch(e){
       setSyncBadge('err');
@@ -680,8 +698,9 @@ async function refreshFromServer(){
     D.ap.types=remote.ap.types;D.ap.events=remote.ap.events;D.ap.amounts=remote.ap.amounts||{};
     D.ar.types=remote.ar.types;D.ar.events=remote.ar.events;D.ar.amounts=remote.ar.amounts||{};
     D.pw=remote.pw||null;
+    D.markets=remote.markets&&remote.markets.length?remote.markets:D.markets;
     finalizeData();
-    try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw}));}catch(e){}
+    try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw,markets:D.markets}));}catch(e){}
     buildSb();render();
     setSyncBadge('ok');
   }catch(e){
@@ -690,10 +709,10 @@ async function refreshFromServer(){
 }
 
 /* ---- LIVE STATE ---- */
-var D={ap:{types:null,events:null,amounts:{}},ar:{types:null,events:null,amounts:{}},pw:null};
+var D={ap:{types:null,events:null,amounts:{}},ar:{types:null,events:null,amounts:{}},pw:null,markets:null};
 var cat='ap',sbOpen=true;
 var _openGroups={};
-var _amtKey=null,_amtCat=null,_evKey=null,_evNew=null,_evCat=null,_typeId=null,_typeCI=0;
+var _amtKey=null,_amtCat=null,_amtDs=null,_amtName=null,_amtMktCleared=false,_evKey=null,_evNew=null,_evCat=null,_typeId=null,_typeCI=0;
 const _now=new Date(); var cy=_now.getFullYear(),cm=_now.getMonth();
 
 /* ---- HASH ---- */
@@ -708,6 +727,7 @@ function init(){
       if(b.ap){D.ap.types=b.ap.types||null;D.ap.events=b.ap.events||null;D.ap.amounts=b.ap.amounts||{};}
       if(b.ar){D.ar.types=b.ar.types||null;D.ar.events=b.ar.events||null;D.ar.amounts=b.ar.amounts||{};}
       if(typeof b.pw==='string'&&b.pw.length>0)D.pw=b.pw;
+      if(Array.isArray(b.markets)&&b.markets.length)D.markets=b.markets;
     }catch(e){}
   }
   /* fill in anything still missing from localStorage */
@@ -722,6 +742,7 @@ function init(){
       if(!D.ar.events&&p.ar&&p.ar.events)D.ar.events=p.ar.events;
       if(!Object.keys(D.ar.amounts).length&&p.ar&&p.ar.amounts)D.ar.amounts=p.ar.amounts;
       if(D.pw===null&&typeof p.pw==='string'&&p.pw.length>0)D.pw=p.pw;
+      if(!D.markets&&Array.isArray(p.markets)&&p.markets.length)D.markets=p.markets;
     }
   }catch(e){}
   finalizeData();
@@ -743,11 +764,13 @@ function finalizeData(){
   if(!D.ar.events)D.ar.events=[];
   if(!D.ap.amounts)D.ap.amounts={};
   if(!D.ar.amounts)D.ar.amounts={};
-  /* Backfill grp and payors from defaults — handles old saved/baked data */
+  if(!D.markets||!D.markets.length)D.markets=[...DEF_MARKETS];
+  /* Backfill grp, payors and mkt from defaults — handles old saved/baked data */
   const defApMap={}; DEF_AP.forEach(t=>defApMap[t.id]=t);
   const defArMap={}; DEF_AR.forEach(t=>defArMap[t.id]=t);
   D.ap.types.forEach(t=>{
     if(!t.grp)(defApMap[t.id]?t.grp=defApMap[t.id].grp:t.grp='Other');
+    if(t.mkt===undefined)t.mkt=!!(defApMap[t.id]&&defApMap[t.id].mkt);
   });
   D.ar.types.forEach(t=>{
     if(!t.grp)(defArMap[t.id]?t.grp=defArMap[t.id].grp:t.grp='Other');
@@ -756,7 +779,7 @@ function finalizeData(){
 }
 
 function save(){
-  try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw}));}catch(e){}
+  try{localStorage.setItem('kfpc',JSON.stringify({ap:D.ap,ar:D.ar,pw:D.pw,markets:D.markets}));}catch(e){}
   syncToServer();
 }
 
@@ -1052,7 +1075,8 @@ function render(){
         evForDate(ds,cc).forEach(name=>{
           const t=gt(name,cc);if(!t||!t.on)return;
           const k=ak(ds,name);const da=dispAmt(ds,name,cc);
-          const el=makeEvEl(name,t,da,cc==='ar'?'+':'-',()=>openAmt(ds,name,k,da,cc));
+          const hasMkt=cc==='ap'&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
+          const el=makeEvEl(name,t,da,cc==='ar'?'+':'-',()=>openAmt(ds,name,k,da,cc),hasMkt);
           cell.appendChild(el);
         });
       });
@@ -1065,7 +1089,8 @@ function render(){
         const t=gt(name,cat);if(!t||!t.on)return;
         const k=ak(ds,name);const da=dispAmt(ds,name,cat);
         if(da&&da.est){hasEst=true;estCt++;}
-        const el=makeEvEl(name,t,da,'',()=>openAmt(ds,name,k,da,cat));
+        const hasMkt=cat==='ap'&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
+        const el=makeEvEl(name,t,da,'',()=>openAmt(ds,name,k,da,cat),hasMkt);
         cell.appendChild(el);
       });
     }
@@ -1097,10 +1122,11 @@ function render(){
   if(rpOpen)buildRp();
 }
 function fmt(n){return Math.round(Math.abs(n)).toLocaleString('en-US');}
-function makeEvEl(name,t,da,sign,onclick){
+function makeEvEl(name,t,da,sign,onclick,hasMkt){
   const el=document.createElement('div');el.className='ev'+(da&&da.est?' est':'');
   el.style.cssText=`background:${t.c.bg};color:${t.c.tx};border-color:${t.c.tx}${da&&da.est?'55':'22'}`;
   const nm=document.createElement('span');nm.className='ev-n';nm.textContent=name;
+  if(hasMkt){const dot=document.createElement('span');dot.textContent=' ▾';dot.style.opacity='.6';dot.style.fontSize='8px';nm.appendChild(dot);nm.title='Has a market breakdown — click to view';}
   const vv=document.createElement('span');vv.className='ev-v';
   if(da){vv.textContent=(da.est?'~':'')+sign+'$'+fmt(da.v);}else{vv.textContent=sign+'$';vv.style.opacity='.3';}
   el.appendChild(nm);el.appendChild(vv);el.onclick=onclick;return el;
@@ -1135,23 +1161,104 @@ function navM(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}render();}
 function goToday(){const n=new Date();cy=n.getFullYear();cm=n.getMonth();render();}
 
 /* ---- AMOUNT MODAL ---- */
+function mktKey(ds,market,name){return ak(ds,market+'__'+name);}
+function getMktBreakdown(ds,name){
+  const out={};
+  D.markets.forEach(m=>{const k=mktKey(ds,m,name);if(A('ap')[k]!==undefined)out[m]=A('ap')[k];});
+  return out;
+}
 function openAmt(ds,name,key,da,c){
-  _amtKey=key;_amtCat=c;
+  _amtKey=key;_amtCat=c;_amtDs=ds;_amtName=name;_amtMktCleared=false;
   document.getElementById('m-amt-title').textContent=(c==='ap'?'AP':'AR')+' — Enter amount';
   document.getElementById('m-amt-type').textContent=name;
   document.getElementById('m-amt-date').textContent=ds;
   document.getElementById('m-amt-save').className='sv '+c;
+  const valInp=document.getElementById('m-amt-val');
+  valInp.readOnly=false;valInp.style.background='';valInp.style.color='';
   const hint=document.getElementById('m-est-hint');
-  if(da&&da.est){hint.style.display='block';hint.textContent=`Estimated from prior months: $${da.v.toFixed(2)}. Enter the real amount to confirm.`;document.getElementById('m-amt-val').value=da.v.toFixed(2);}
-  else{hint.style.display='none';document.getElementById('m-amt-val').value=A(c)[key]!==undefined?A(c)[key]:'';}
+  if(da&&da.est){hint.style.display='block';hint.textContent=`Estimated from prior months: $${da.v.toFixed(2)}. Enter the real amount to confirm.`;valInp.value=da.v.toFixed(2);}
+  else{hint.style.display='none';valInp.value=A(c)[key]!==undefined?A(c)[key]:'';}
+
+  const t=gt(name,c);
+  const toggleEl=document.getElementById('m-amt-mkt-toggle');
+  const boxEl=document.getElementById('m-amt-mkt-box');
+  if(c==='ap'&&t&&t.mkt){
+    const existing=getMktBreakdown(ds,name);
+    const hasBreakdown=Object.keys(existing).length>0;
+    toggleEl.style.display=hasBreakdown?'none':'block';
+    boxEl.style.display=hasBreakdown?'block':'none';
+    if(hasBreakdown)buildMktRows(existing);
+    else document.getElementById('m-amt-mkt-rows').innerHTML='';
+  } else {
+    toggleEl.style.display='none';
+    boxEl.style.display='none';
+  }
   openModal('m-amt');setTimeout(()=>document.getElementById('m-amt-val').focus(),60);
 }
+function buildMktRows(existing){
+  const wrap=document.getElementById('m-amt-mkt-rows');wrap.innerHTML='';
+  D.markets.forEach(m=>addMktRow(m,existing[m]!==undefined?existing[m]:''));
+  recalcMktTotal();
+}
+function addMktRow(marketName,value){
+  const wrap=document.getElementById('m-amt-mkt-rows');
+  const row=document.createElement('div');row.className='mrow';row.style.marginBottom='6px';row.dataset.market=marketName;
+  const lbl=document.createElement('label');lbl.textContent=marketName;
+  const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.min='0';inp.placeholder='0.00';inp.value=value;
+  inp.addEventListener('input',recalcMktTotal);
+  row.appendChild(lbl);row.appendChild(inp);wrap.appendChild(row);
+}
+function recalcMktTotal(){
+  let sum=0,any=false;
+  document.querySelectorAll('#m-amt-mkt-rows div[data-market]').forEach(row=>{
+    const inp=row.querySelector('input');
+    if(inp.value!==''){sum+=parseFloat(inp.value)||0;any=true;}
+  });
+  const valInp=document.getElementById('m-amt-val');
+  valInp.value=any?sum.toFixed(2):'';
+  valInp.readOnly=true;valInp.style.background='#f5f5f0';valInp.style.color='#888';
+}
+function toggleMktBreakdown(){
+  document.getElementById('m-amt-mkt-toggle').style.display='none';
+  document.getElementById('m-amt-mkt-box').style.display='block';
+  buildMktRows({});
+}
+function clearMktBreakdown(){
+  document.getElementById('m-amt-mkt-box').style.display='none';
+  document.getElementById('m-amt-mkt-toggle').style.display='block';
+  const valInp=document.getElementById('m-amt-val');
+  valInp.readOnly=false;valInp.style.background='';valInp.style.color='';valInp.value='';
+  _amtMktCleared=true;
+}
+function addMktRowInline(){
+  const inp=document.getElementById('m-amt-mkt-new');
+  const v=inp.value.trim();if(!v)return;
+  if(!D.markets.includes(v)){D.markets.push(v);save();}
+  let exists=false;
+  document.querySelectorAll('#m-amt-mkt-rows div[data-market]').forEach(row=>{if(row.dataset.market===v)exists=true;});
+  if(!exists)addMktRow(v,'');
+  inp.value='';recalcMktTotal();
+}
 function saveAmt(){
-  const v=document.getElementById('m-amt-val').value;
-  if(v!=='')A(_amtCat)[_amtKey]=parseFloat(v);else delete A(_amtCat)[_amtKey];
+  const mktActive=document.getElementById('m-amt-mkt-box').style.display==='block';
+  if(mktActive){
+    let sum=0,any=false;
+    document.querySelectorAll('#m-amt-mkt-rows div[data-market]').forEach(row=>{
+      const m=row.dataset.market,inp=row.querySelector('input'),k=mktKey(_amtDs,m,_amtName);
+      if(inp.value!==''){A('ap')[k]=parseFloat(inp.value);sum+=parseFloat(inp.value)||0;any=true;}
+      else delete A('ap')[k];
+    });
+    if(any)A('ap')[_amtKey]=sum;else delete A('ap')[_amtKey];
+  } else {
+    if(_amtMktCleared)D.markets.forEach(m=>{delete A('ap')[mktKey(_amtDs,m,_amtName)];});
+    const v=document.getElementById('m-amt-val').value;
+    if(v!=='')A(_amtCat)[_amtKey]=parseFloat(v);else delete A(_amtCat)[_amtKey];
+  }
+  _amtMktCleared=false;
   save();closeModal('m-amt');render();buildSb();
 }
 document.getElementById('m-amt-val').addEventListener('keydown',e=>{if(e.key==='Enter')saveAmt();});
+document.getElementById('market-new').addEventListener('keydown',e=>{if(e.key==='Enter')addMarket();});
 
 /* ---- EVENT MODAL ---- */
 function openAddDate(name,c){
@@ -1269,7 +1376,53 @@ function doExport(){
 }
 
 /* ---- SETTINGS ---- */
-function openSettings(){updatePwBadge();openModal('m-settings');}
+function openSettings(){updatePwBadge();buildMarketsList();openModal('m-settings');}
+
+/* ---- MARKETS ---- */
+function buildMarketsList(){
+  const wrap=document.getElementById('markets-list');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  D.markets.forEach(m=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:4px';
+    const nm=document.createElement('span');nm.style.cssText='flex:1;font-size:11px;padding:4px 2px';nm.textContent=m;
+    const rn=document.createElement('button');rn.textContent='Rename';
+    rn.style.cssText='font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid #ddd;background:transparent;cursor:pointer;color:#666';
+    rn.onclick=()=>{const nv=prompt('Rename market:',m);if(nv&&nv.trim()&&nv.trim()!==m)renameMarket(m,nv.trim());};
+    const rm=document.createElement('button');rm.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';rm.title='Remove';
+    rm.style.cssText='font-size:10px;padding:3px 7px;border-radius:6px;border:0.5px solid #eee;background:transparent;cursor:pointer;color:#a32d2d';
+    rm.onclick=()=>{if(confirm('Remove market "'+m+'"? Amounts already entered under it are kept but will no longer show in the breakdown UI.'))removeMarket(m);};
+    row.appendChild(nm);row.appendChild(rn);row.appendChild(rm);wrap.appendChild(row);
+  });
+}
+function addMarket(){
+  const inp=document.getElementById('market-new');
+  const v=inp.value.trim();
+  if(!v||D.markets.includes(v))return;
+  D.markets.push(v);inp.value='';
+  save();buildMarketsList();
+}
+function renameMarket(oldName,newName){
+  if(D.markets.includes(newName))return;
+  const idx=D.markets.indexOf(oldName);if(idx<0)return;
+  D.markets[idx]=newName;
+  /* rename any AP market sub-amount keys that used the old name */
+  Object.keys(A('ap')).forEach(k=>{
+    const[ds,namePart]=k.split('||');
+    const us=namePart.indexOf('__');if(us<0)return;
+    const mktName=namePart.slice(0,us),typeName=namePart.slice(us+2);
+    if(mktName===oldName){
+      const nk=ak(ds,newName+'__'+typeName);
+      A('ap')[nk]=A('ap')[k];delete A('ap')[k];
+    }
+  });
+  save();buildMarketsList();render();
+}
+function removeMarket(name){
+  D.markets=D.markets.filter(m=>m!==name);
+  save();buildMarketsList();
+}
 
 /* ---- MODAL HELPERS ---- */
 function openModal(id){document.getElementById(id).classList.add('open');}

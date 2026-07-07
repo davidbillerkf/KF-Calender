@@ -34,12 +34,12 @@ app.get('/data', requireApiKey, async (req, res) => {
 });
 
 app.post('/data', requireApiKey, async (req, res) => {
-  const { ap, ar, pw } = req.body || {};
+  const { ap, ar, pw, markets } = req.body || {};
   if (!ap || !ar || !Array.isArray(ap.types) || !Array.isArray(ap.events)) {
-    return res.status(400).json({ error: 'Malformed payload: expected { ap, ar, pw }' });
+    return res.status(400).json({ error: 'Malformed payload: expected { ap, ar, pw, markets }' });
   }
   try {
-    await saveFullState({ ap, ar, pw });
+    await saveFullState({ ap, ar, pw, markets });
     res.json({ status: 'saved' });
   } catch (err) {
     console.error(err);
