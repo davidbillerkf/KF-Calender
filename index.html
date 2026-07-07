@@ -333,6 +333,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="ctab" id="ctab-ar" onclick="setCat('ar')"><i class="ti ti-arrow-down-circle" style="font-size:10px;vertical-align:-1px;margin-right:2px"></i>AR</button>
       <button class="ctab" id="ctab-net" onclick="setCat('net')"><i class="ti ti-arrows-exchange" style="font-size:10px;vertical-align:-1px;margin-right:2px"></i>Net</button>
     </div>
+    <select id="market-filter" onchange="setMarketFilter(this.value)" title="Filter by market" style="display:none;font-size:11px;padding:5px 9px;border-radius:20px;border:0.5px solid #ddd;background:#fff;color:#666;cursor:pointer">
+      <option value="">All markets</option>
+    </select>
   </div>
   <div class="topright">
     <span class="badge" id="sync-badge" title="Cloud sync status" style="display:none"></span>
@@ -711,6 +714,7 @@ async function refreshFromServer(){
 /* ---- LIVE STATE ---- */
 var D={ap:{types:null,events:null,amounts:{}},ar:{types:null,events:null,amounts:{}},pw:null,markets:null};
 var cat='ap',sbOpen=true;
+var selectedMarket=null;
 var _openGroups={};
 var _amtKey=null,_amtCat=null,_amtDs=null,_amtName=null,_amtMktCleared=false,_evKey=null,_evNew=null,_evCat=null,_typeId=null,_typeCI=0;
 const _now=new Date(); var cy=_now.getFullYear(),cm=_now.getMonth();
@@ -860,10 +864,24 @@ function dispAmt(ds,name,c){
   const e=estimate(name,y,m,c);
   return e!==null?{v:e,est:true}:null;
 }
+/* Market-filter-aware wrapper around dispAmt. When a market filter is active
+   (AP only), types without a market breakdown — and dates within a
+   market-capable type that haven't been broken down yet — are hidden
+   entirely rather than shown as a full/unattributed amount. */
+function dispAmtEff(ds,name,c){
+  if(c==='ap'&&selectedMarket){
+    const t=gt(name,c);
+    if(!t||!t.mkt)return null;
+    const v=A('ap')[mktKey(ds,selectedMarket,name)];
+    return v!==undefined?{v,est:false}:null;
+  }
+  return dispAmt(ds,name,c);
+}
 
 /* ---- CATEGORY SWITCH ---- */
 function setCat(c){
   cat=c;
+  if(c!=='ap')selectedMarket=null;
   ['ap','ar','net'].forEach(x=>{
     const b=document.getElementById('ctab-'+x);
     b.className='ctab'+(c===x?' '+x:'');
@@ -1025,6 +1043,7 @@ function buildPayorSection(body,t,cc){
 
 /* ---- RENDER ---- */
 function render(){
+  buildMarketFilterOptions();
   const now=new Date();
   document.getElementById('mlabel').textContent=MO[cm]+' '+cy;
   const tb=document.getElementById('today-btn');
@@ -1082,14 +1101,15 @@ function render(){
       });
     } else {
       let tot=0,anyEst=false;
-      evForDate(ds,cat).forEach(n=>{const da=dispAmt(ds,n,cat);if(da){tot+=da.v;if(da.est)anyEst=true;}});
+      evForDate(ds,cat).forEach(n=>{const da=dispAmtEff(ds,n,cat);if(da){tot+=da.v;if(da.est)anyEst=true;}});
       dt.className='dday-tot '+cat+(anyEst?' est':'');
       if(tot>0)dt.textContent=(anyEst?'~':'')+'$'+fmt(tot);
       evForDate(ds,cat).forEach(name=>{
         const t=gt(name,cat);if(!t||!t.on)return;
-        const k=ak(ds,name);const da=dispAmt(ds,name,cat);
+        const k=ak(ds,name);const da=dispAmtEff(ds,name,cat);
+        if(cat==='ap'&&selectedMarket&&!da)return;
         if(da&&da.est){hasEst=true;estCt++;}
-        const hasMkt=cat==='ap'&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
+        const hasMkt=cat==='ap'&&!selectedMarket&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
         const el=makeEvEl(name,t,da,'',()=>openAmt(ds,name,k,da,cat),hasMkt);
         cell.appendChild(el);
       });
@@ -1098,7 +1118,7 @@ function render(){
     ['ap','ar'].forEach(cc=>{
       evForDate(ds,cc).forEach(name=>{
         const t2=gt(name,cc);if(!t2||!t2.on)return;
-        const da2=dispAmt(ds,name,cc);if(!da2)return;
+        const da2=dispAmtEff(ds,name,cc);if(!da2)return;
         if(cc==='ap')wkAP+=da2.v;else wkAR+=da2.v;
       });
     });
@@ -1149,9 +1169,10 @@ function buildTotals(hasEst){
     let tot=0,totE=0;const byT={};
     for(let d=1;d<=days;d++){
       const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      evForDate(ds,cat).forEach(name=>{const t=gt(name,cat);if(!t||!t.on)return;const da=dispAmt(ds,name,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;byT[name]=(byT[name]||0)+da.v;}});
+      evForDate(ds,cat).forEach(name=>{const t=gt(name,cat);if(!t||!t.on)return;const da=dispAmtEff(ds,name,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;byT[name]=(byT[name]||0)+da.v;}});
     }
-    add(tr,'c'+cat,cat.toUpperCase()+' confirmed','$'+tot.toLocaleString('en-US',{minimumFractionDigits:2}));
+    const confirmedLbl=cat.toUpperCase()+' confirmed'+(cat==='ap'&&selectedMarket?` (${selectedMarket})`:'');
+    add(tr,'c'+cat,confirmedLbl,'$'+tot.toLocaleString('en-US',{minimumFractionDigits:2}));
     if(hasEst)add(tr,'cest','Est. total','~$'+fmt(tot+totE));
     Object.entries(byT).forEach(([name,v])=>{const t=gt(name,cat);if(!t)return;const tc=document.createElement('div');tc.className='tc';tc.style.cssText=`border-left:3px solid ${t.c.tx};border-radius:0 10px 10px 0`;tc.innerHTML=`${name}<b>$${fmt(v)}</b>`;tr.appendChild(tc);});
   }
@@ -1396,12 +1417,24 @@ function buildMarketsList(){
     row.appendChild(nm);row.appendChild(rn);row.appendChild(rm);wrap.appendChild(row);
   });
 }
+function buildMarketFilterOptions(){
+  const sel=document.getElementById('market-filter');
+  if(!sel)return;
+  sel.style.display=cat==='ap'?'inline-block':'none';
+  const cur=selectedMarket||'';
+  sel.innerHTML='<option value="">All markets</option>'+D.markets.map(m=>`<option value="${m}">${m}</option>`).join('');
+  sel.value=cur;
+}
+function setMarketFilter(v){
+  selectedMarket=v||null;
+  render();
+}
 function addMarket(){
   const inp=document.getElementById('market-new');
   const v=inp.value.trim();
   if(!v||D.markets.includes(v))return;
   D.markets.push(v);inp.value='';
-  save();buildMarketsList();
+  save();buildMarketsList();buildMarketFilterOptions();
 }
 function renameMarket(oldName,newName){
   if(D.markets.includes(newName))return;
@@ -1417,11 +1450,13 @@ function renameMarket(oldName,newName){
       A('ap')[nk]=A('ap')[k];delete A('ap')[k];
     }
   });
-  save();buildMarketsList();render();
+  if(selectedMarket===oldName)selectedMarket=newName;
+  save();buildMarketsList();buildMarketFilterOptions();render();
 }
 function removeMarket(name){
   D.markets=D.markets.filter(m=>m!==name);
-  save();buildMarketsList();
+  if(selectedMarket===name)selectedMarket=null;
+  save();buildMarketsList();buildMarketFilterOptions();render();
 }
 
 /* ---- MODAL HELPERS ---- */
@@ -1564,7 +1599,7 @@ function buildRp(){
     cats.forEach(cc=>{
       evForDate(ds,cc).forEach(name=>{
         const t=gt(name,cc);if(!t||!t.on)return;
-        const da=dispAmt(ds,name,cc);if(!da)return;
+        const da=dispAmtEff(ds,name,cc);if(!da)return;
         rows.push({ds,name,t,da,cc});
       });
     });
