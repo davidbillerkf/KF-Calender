@@ -10,22 +10,22 @@ const pool = new Pool({
 });
 
 const DEFAULT_AP_TYPES = [
-  { id: 'md', name: 'Medical Payroll', c: { bg: '#FAECE7', tx: '#712B13' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'mg', name: 'Management Payroll', c: { bg: '#E6F1FB', tx: '#0C447C' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'of', name: 'Offshore Payroll', c: { bg: '#EAF3DE', tx: '#27500A' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'rg', name: 'RBT GA Payroll', c: { bg: '#E1F5EE', tx: '#085041' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'rm', name: 'RBT Monsey Payroll', c: { bg: '#EEEDFE', tx: '#3C3489' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'ag', name: 'ABA GA Payroll', c: { bg: '#FAEEDA', tx: '#633806' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'am', name: 'ABA Monsey Payroll', c: { bg: '#FBEAF0', tx: '#72243E' }, on: true, rd: null, grp: 'Payroll' },
-  { id: 'dv', name: 'Divvy', c: { bg: '#F1EFE8', tx: '#5F5E5A' }, on: true, rd: 11, grp: 'Credit Cards' },
-  { id: 'ik', name: 'Ink Staffing', c: { bg: '#FAEEDA', tx: '#633806' }, on: true, rd: 1, grp: 'Credit Cards' },
-  { id: 'ch', name: 'Chase CC', c: { bg: '#E6F1FB', tx: '#0C447C' }, on: true, rd: 10, grp: 'Credit Cards' },
+  { id: 'md', name: 'Medical Payroll', c: { bg: '#FAECE7', tx: '#712B13' }, on: true, recur: null, grp: 'Payroll', mkt: true },
+  { id: 'mg', name: 'Management Payroll', c: { bg: '#E6F1FB', tx: '#0C447C' }, on: true, recur: null, grp: 'Payroll', mkt: true },
+  { id: 'of', name: 'Offshore Payroll', c: { bg: '#EAF3DE', tx: '#27500A' }, on: true, recur: null, grp: 'Payroll', mkt: true },
+  { id: 'rg', name: 'RBT GA Payroll', c: { bg: '#E1F5EE', tx: '#085041' }, on: true, recur: null, grp: 'Payroll' },
+  { id: 'rm', name: 'RBT Monsey Payroll', c: { bg: '#EEEDFE', tx: '#3C3489' }, on: true, recur: null, grp: 'Payroll' },
+  { id: 'ag', name: 'ABA GA Payroll', c: { bg: '#FAEEDA', tx: '#633806' }, on: true, recur: null, grp: 'Payroll' },
+  { id: 'am', name: 'ABA Monsey Payroll', c: { bg: '#FBEAF0', tx: '#72243E' }, on: true, recur: null, grp: 'Payroll' },
+  { id: 'dv', name: 'Divvy', c: { bg: '#F1EFE8', tx: '#5F5E5A' }, on: true, recur: { freq: 'monthly', day: 11 }, grp: 'Credit Cards' },
+  { id: 'ik', name: 'Ink Staffing', c: { bg: '#FAEEDA', tx: '#633806' }, on: true, recur: { freq: 'monthly', day: 1 }, grp: 'Credit Cards' },
+  { id: 'ch', name: 'Chase CC', c: { bg: '#E6F1FB', tx: '#0C447C' }, on: true, recur: { freq: 'monthly', day: 10 }, grp: 'Credit Cards' },
 ];
 
 const DEFAULT_AR_TYPES = [
-  { id: 'ac', name: 'Client Invoices', c: { bg: '#EAF3DE', tx: '#27500A' }, on: true, rd: null, grp: 'Clients' },
-  { id: 'ai', name: 'Insurance Payments', c: { bg: '#E1F5EE', tx: '#085041' }, on: true, rd: null, grp: 'Insurance', payors: [] },
-  { id: 'agr', name: 'Grants', c: { bg: '#EEEDFE', tx: '#3C3489' }, on: true, rd: null, grp: 'Grants' },
+  { id: 'ac', name: 'Client Invoices', c: { bg: '#EAF3DE', tx: '#27500A' }, on: true, recur: null, grp: 'Clients' },
+  { id: 'ai', name: 'Insurance Payments', c: { bg: '#E1F5EE', tx: '#085041' }, on: true, recur: null, grp: 'Insurance', payors: [] },
+  { id: 'agr', name: 'Grants', c: { bg: '#EEEDFE', tx: '#3C3489' }, on: true, recur: null, grp: 'Grants' },
 ];
 
 const DEFAULT_MARKETS = ['General Market', 'Local Market', 'Care First'];

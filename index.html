@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Finance 2026–2027</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;overflow:hidden}
@@ -125,6 +126,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dday-tot{font-size:8px;font-weight:500;margin-bottom:2px;min-height:9px}
 .dday-tot.ap{color:#534AB7}.dday-tot.ar{color:#0F6E56}
 .dday-tot.pos{color:#0F6E56}.dday-tot.neg{color:#a32d2d}.dday-tot.est{color:#854F0B}
+.dpreview{font-size:7px;color:#aaa;margin-bottom:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev{font-size:8.5px;padding:2px 3px;border-radius:4px;margin-bottom:1px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:2px;line-height:1.3;border:0.5px solid transparent}
 .ev:hover{filter:brightness(.93)}
 .ev.est{border-style:dashed!important;opacity:.83}
@@ -340,6 +342,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="topright">
     <span class="badge" id="sync-badge" title="Cloud sync status" style="display:none"></span>
     <button class="icon-btn icon-only" title="Month Snapshot" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:15px"></i></button>
+    <button class="icon-btn icon-only" title="Export to Excel" onclick="openXlsExport()"><i class="ti ti-download" style="font-size:15px"></i></button>
     <button class="icon-btn icon-only" title="Settings" onclick="openSettings()"><i class="ti ti-settings" style="font-size:15px"></i></button>
     <button class="icon-btn upload-btn ap" id="upload-btn" onclick="openExport()"><i class="ti ti-upload" style="font-size:11px"></i> Update GitHub</button>
     <div class="nav-row">
@@ -356,6 +359,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="sb-head">
       <span class="sb-head-title" id="sb-title">AP Types</span>
       <button class="sb-add ap" id="sb-add" onclick="openNewType()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
+    </div>
+    <div style="display:flex;gap:6px;padding:7px 12px;border-bottom:0.5px solid #eee">
+      <button onclick="selectAllTypes()" style="font-size:10px;padding:3px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">Select all</button>
+      <button onclick="deselectAllTypes()" style="font-size:10px;padding:3px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">Deselect all</button>
     </div>
     <div id="sb-list"><div class="sg-grp-hdr"><span class="sg-grp-label">Payroll</span><button class="sg-grp-add" title="Add type to Payroll"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAECE7;border:1px solid #712B1355"></div><span class="sg-name">Medical Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Management Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EAF3DE;border:1px solid #27500A55"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E1F5EE;border:1px solid #08504155"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EEEDFE;border:1px solid #3C348955"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FBEAF0;border:1px solid #72243E55"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg-grp-hdr"><span class="sg-grp-label">Credit Cards</span><button class="sg-grp-add" title="Add type to Credit Cards"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#F1EFE8;border:1px solid #5F5E5A55"></div><span class="sg-name">Divvy</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">Ink Staffing</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Chase CC</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><button class="sg-act" style="margin: 6px 12px; font-size: 10px;"><i class="ti ti-folder-plus" style="font-size:10px"></i> New group</button></div>
     <button class="sb-toggle" onclick="toggleSb()"><i class="ti ti-chevron-left" id="sb-icon"></i></button>
@@ -413,7 +420,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="mrow"><label>Name</label><input type="text" id="m-type-name" placeholder="e.g. Client Invoices"></div>
   <div class="mrow"><label>Color</label><div class="color-picker" id="m-type-colors"></div></div>
   <div class="mrow"><label>Group</label><select id="m-type-grp" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a"><option value="">-- Select group --</option></select></div>
-  <div class="mrow"><label>Recurring day of month (optional)</label><input type="number" id="m-type-day" placeholder="e.g. 15 — blank for manual" min="1" max="28"></div>
+  <div class="mrow"><label>Recurrence</label>
+    <select id="m-type-freq" onchange="onRecurFreqChange()" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a">
+      <option value="">None (manual dates only)</option>
+      <option value="monthly">Monthly</option>
+      <option value="weekly">Weekly</option>
+      <option value="biweekly">Bi-weekly</option>
+    </select>
+  </div>
+  <div class="mrow" id="m-type-day-row" style="display:none"><label>Day of month</label><input type="number" id="m-type-day" placeholder="e.g. 15" min="1" max="28"></div>
+  <div class="mrow" id="m-type-weekday-row" style="display:none">
+    <label>Day of week</label>
+    <select id="m-type-weekday" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a">
+      <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+    </select>
+  </div>
+  <div class="mrow" id="m-type-anchor-row" style="display:none"><label>Starting on (first occurrence)</label><input type="text" id="m-type-anchor" placeholder="2026-01-05"></div>
   <div class="mbtns" id="m-type-btns"></div>
 </div></div>
 
@@ -448,6 +470,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="tip"><strong>Boss link:</strong> <a href="https://davidbillerkf.github.io/KF-Calender" target="_blank">davidbillerkf.github.io/KF-Calender</a></div>
   <div class="divider"></div>
   <div style="display:flex;justify-content:flex-end"><button onclick="closeModal('m-export')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
+</div></div>
+
+<!-- Excel export modal -->
+<div class="ov" id="m-xls"><div class="md">
+  <h3>Export to Excel</h3>
+  <div class="mrow"><label>Category</label>
+    <select id="xls-cat" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a">
+      <option value="ap">AP</option><option value="ar">AR</option><option value="net">Net (AP + AR)</option>
+    </select>
+  </div>
+  <div class="mrow"><label>From</label><input type="date" id="xls-from"></div>
+  <div class="mrow"><label>To</label><input type="date" id="xls-to"></div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+    <button onclick="xlsPreset('month')" style="font-size:10px;padding:4px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">This month</button>
+    <button onclick="xlsPreset('lastmonth')" style="font-size:10px;padding:4px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">Last month</button>
+    <button onclick="xlsPreset('year')" style="font-size:10px;padding:4px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">This year</button>
+    <button onclick="xlsPreset('all')" style="font-size:10px;padding:4px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">All (2026–2027)</button>
+  </div>
+  <div class="mbtns"><button onclick="closeModal('m-xls')">Cancel</button><button class="sv ap" onclick="doXlsExport()">Download .xlsx</button></div>
 </div></div>
 
 <!-- Settings modal -->
@@ -536,21 +577,21 @@ const COLORS=[
 ];
 const DEF_MARKETS=['General Market','Local Market','Care First'];
 const DEF_AP=[
-  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,rd:null, grp:'Payroll', mkt:true},
-  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,rd:null, grp:'Payroll', mkt:true},
-  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,rd:null, grp:'Payroll', mkt:true},
-  {id:'rg',  name:'RBT GA Payroll',     c:COLORS[3],on:true,rd:null, grp:'Payroll'},
-  {id:'rm',  name:'RBT Monsey Payroll', c:COLORS[4],on:true,rd:null, grp:'Payroll'},
-  {id:'ag',  name:'ABA GA Payroll',     c:COLORS[5],on:true,rd:null, grp:'Payroll'},
-  {id:'am',  name:'ABA Monsey Payroll', c:COLORS[6],on:true,rd:null, grp:'Payroll'},
-  {id:'dv',  name:'Divvy',              c:COLORS[7],on:true,rd:11,   grp:'Credit Cards'},
-  {id:'ik',  name:'Ink Staffing',       c:COLORS[5],on:true,rd:1,    grp:'Credit Cards'},
-  {id:'ch',  name:'Chase CC',           c:COLORS[1],on:true,rd:10,   grp:'Credit Cards'},
+  {id:'md',  name:'Medical Payroll',    c:COLORS[0],on:true,recur:null, grp:'Payroll', mkt:true},
+  {id:'mg',  name:'Management Payroll', c:COLORS[1],on:true,recur:null, grp:'Payroll', mkt:true},
+  {id:'of',  name:'Offshore Payroll',   c:COLORS[2],on:true,recur:null, grp:'Payroll', mkt:true},
+  {id:'rg',  name:'RBT GA Payroll',     c:COLORS[3],on:true,recur:null, grp:'Payroll'},
+  {id:'rm',  name:'RBT Monsey Payroll', c:COLORS[4],on:true,recur:null, grp:'Payroll'},
+  {id:'ag',  name:'ABA GA Payroll',     c:COLORS[5],on:true,recur:null, grp:'Payroll'},
+  {id:'am',  name:'ABA Monsey Payroll', c:COLORS[6],on:true,recur:null, grp:'Payroll'},
+  {id:'dv',  name:'Divvy',              c:COLORS[7],on:true,recur:{freq:'monthly',day:11}, grp:'Credit Cards'},
+  {id:'ik',  name:'Ink Staffing',       c:COLORS[5],on:true,recur:{freq:'monthly',day:1},  grp:'Credit Cards'},
+  {id:'ch',  name:'Chase CC',           c:COLORS[1],on:true,recur:{freq:'monthly',day:10}, grp:'Credit Cards'},
 ];
 const DEF_AR=[
-  {id:'ac',  name:'Client Invoices',    c:COLORS[2],on:true,rd:null, grp:'Clients'},
-  {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,rd:null, grp:'Insurance', payors:[]},
-  {id:'agr', name:'Grants',             c:COLORS[4],on:true,rd:null, grp:'Grants'},
+  {id:'ac',  name:'Client Invoices',    c:COLORS[2],on:true,recur:null, grp:'Clients'},
+  {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,recur:null, grp:'Insurance', payors:[]},
+  {id:'agr', name:'Grants',             c:COLORS[4],on:true,recur:null, grp:'Grants'},
 ];
 const AP_EV=[
   ['Medical Payroll','2026-01-07'],['Management Payroll','2026-01-07'],['Offshore Payroll','2026-01-07'],
@@ -769,16 +810,24 @@ function finalizeData(){
   if(!D.ap.amounts)D.ap.amounts={};
   if(!D.ar.amounts)D.ar.amounts={};
   if(!D.markets||!D.markets.length)D.markets=[...DEF_MARKETS];
-  /* Backfill grp, payors and mkt from defaults — handles old saved/baked data */
+  /* Backfill grp, payors, mkt and recur from defaults — handles old saved/baked data */
   const defApMap={}; DEF_AP.forEach(t=>defApMap[t.id]=t);
   const defArMap={}; DEF_AR.forEach(t=>defArMap[t.id]=t);
+  function backfillRecur(t){
+    /* migrate the old single "recurring day of month" field to the new recur shape */
+    if(t.recur===undefined){
+      t.recur=(t.rd!==undefined&&t.rd!==null)?{freq:'monthly',day:t.rd}:null;
+    }
+  }
   D.ap.types.forEach(t=>{
     if(!t.grp)(defApMap[t.id]?t.grp=defApMap[t.id].grp:t.grp='Other');
     if(t.mkt===undefined)t.mkt=!!(defApMap[t.id]&&defApMap[t.id].mkt);
+    backfillRecur(t);
   });
   D.ar.types.forEach(t=>{
     if(!t.grp)(defArMap[t.id]?t.grp=defArMap[t.id].grp:t.grp='Other');
     if(defArMap[t.id]&&Array.isArray(defArMap[t.id].payors)&&!Array.isArray(t.payors))t.payors=[];
+    backfillRecur(t);
   });
 }
 
@@ -835,17 +884,46 @@ function EV(c){return D[c].events;}
 function gt(name,c){return T(c).find(t=>t.name===name);}
 function gtid(id,c){return T(c).find(t=>t.id===id);}
 function ak(d,n){return d+'||'+n;}
+/* ---- RECURRENCE ----
+   t.recur = null                                              -> manual dates only
+   t.recur = {freq:'monthly', day:1-31}                        -> same day every month
+   t.recur = {freq:'weekly', weekday:0-6}                      -> every week (0=Sun)
+   t.recur = {freq:'biweekly', weekday:0-6, anchor:'YYYY-MM-DD'} -> every 14 days from anchor */
+function recurMatchesDate(recur,ds){
+  if(!recur||!recur.freq)return false;
+  const[y,m,d]=ds.split('-').map(Number);
+  if(y<2026||y>2027)return false;
+  if(recur.freq==='monthly')return recur.day===d;
+  const dow=new Date(ds+'T00:00:00').getDay();
+  if(recur.freq==='weekly')return recur.weekday===dow;
+  if(recur.freq==='biweekly'){
+    if(recur.weekday!==dow||!recur.anchor)return false;
+    const anchor=new Date(recur.anchor+'T00:00:00');
+    const cur=new Date(ds+'T00:00:00');
+    const diffDays=Math.round((cur-anchor)/86400000);
+    return diffDays>=0&&diffDays%14===0;
+  }
+  return false;
+}
+function datesForRecur(recur){
+  if(!recur||!recur.freq)return[];
+  const out=[];
+  for(let dt=new Date(2026,0,1);dt<=new Date(2027,11,31);dt.setDate(dt.getDate()+1)){
+    const ds=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    if(recurMatchesDate(recur,ds))out.push(ds);
+  }
+  return out;
+}
 function evForDate(ds,c){
   const all=[];
   EV(c).forEach(r=>{if(r[1]===ds&&!all.includes(r[0]))all.push(r[0]);});
-  const d=+ds.split('-')[2],y=+ds.split('-')[0];
-  T(c).forEach(t=>{if(t.rd===d&&y>=2026&&y<=2027&&!all.includes(t.name))all.push(t.name);});
+  T(c).forEach(t=>{if(recurMatchesDate(t.recur,ds)&&!all.includes(t.name))all.push(t.name);});
   return all;
 }
 function allEvForType(name,c){
   const t=gt(name,c);if(!t)return[];
   const res=[];EV(c).forEach(r=>{if(r[0]===name)res.push(r[1]);});
-  if(t.rd){for(let y=2026;y<=2027;y++){const mm=12;for(let m=1;m<=mm;m++){const ds=`${y}-${String(m).padStart(2,'0')}-${String(t.rd).padStart(2,'0')}`;if(!res.includes(ds))res.push(ds);}}}
+  datesForRecur(t.recur).forEach(ds=>{if(!res.includes(ds))res.push(ds);});
   return res.sort();
 }
 function estimate(name,year,month,c){
@@ -877,6 +955,31 @@ function dispAmtEff(ds,name,c){
   }
   return dispAmt(ds,name,c);
 }
+function dsFromDate(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;}
+function addDays(ds,n){
+  const dt=new Date(ds+'T00:00:00');
+  dt.setDate(dt.getDate()+n);
+  return dsFromDate(dt);
+}
+/* Same day-total logic used by render()'s primary total, reused here for the
+   2-day-ahead preview badge so the two numbers can never disagree. */
+function computeDayTotal(ds,viewCat){
+  if(viewCat==='net'){
+    let ar=0,ap=0,anyEst=false;
+    ['ap','ar'].forEach(cc=>{
+      evForDate(ds,cc).forEach(name=>{
+        const t=gt(name,cc);if(!t||!t.on)return;
+        const da=dispAmtEff(ds,name,cc);if(!da)return;
+        if(cc==='ar')ar+=da.v;else ap+=da.v;
+        if(da.est)anyEst=true;
+      });
+    });
+    return {val:ar-ap,anyEst,hasAny:(ar>0||ap>0)};
+  }
+  let tot=0,anyEst=false;
+  evForDate(ds,viewCat).forEach(n=>{const da=dispAmtEff(ds,n,viewCat);if(da){tot+=da.v;if(da.est)anyEst=true;}});
+  return {val:tot,anyEst,hasAny:tot>0};
+}
 
 /* ---- CATEGORY SWITCH ---- */
 function setCat(c){
@@ -901,6 +1004,13 @@ function toggleSb(){
   sb.classList.toggle('closed',!sbOpen);
   pill.classList.toggle('show',!sbOpen);
   icon.className=sbOpen?'ti ti-chevron-left':'ti ti-chevron-right';
+}
+function selectAllTypes(){setAllTypesOn(true);}
+function deselectAllTypes(){setAllTypesOn(false);}
+function setAllTypesOn(on){
+  const cats=cat==='net'?['ap','ar']:[cat];
+  cats.forEach(cc=>{T(cc).forEach(t=>{t.on=on;});});
+  save();buildSb();render();
 }
 function buildSb(){
   const wrap=document.getElementById('sb-list');wrap.innerHTML='';
@@ -1077,6 +1187,15 @@ function render(){
     if(now.getFullYear()===cy&&now.getMonth()===cm&&now.getDate()===d)cell.classList.add(todCls);
     const dn=document.createElement('div');dn.className='dnum';dn.textContent=d;cell.appendChild(dn);
     const dt=document.createElement('div');cell.appendChild(dt);
+    const ds2=addDays(ds,2);
+    const preview=computeDayTotal(ds2,cat);
+    if(preview.hasAny){
+      const pv=document.createElement('div');pv.className='dpreview';
+      pv.title='Total due in 2 days ('+ds2+')';
+      const sign=cat==='net'?(preview.val>=0?'+':'-'):'';
+      pv.textContent='→ in 2d: '+(preview.anyEst?'~':'')+sign+'$'+fmt(preview.val);
+      cell.appendChild(pv);
+    }
     if(cat==='net'){
       let ar=0,ap=0,anyEst=false;
       ['ap','ar'].forEach(cc=>{
@@ -1312,11 +1431,46 @@ function buildCP(sel){
   const cp=document.getElementById('m-type-colors');cp.innerHTML='';
   COLORS.forEach((c,i)=>{const d=document.createElement('div');d.className='cpick'+(i===sel?' sel':'');d.style.cssText=`background:${c.bg};border:2px solid ${i===sel?c.tx:'transparent'}`;d.onclick=()=>{_typeCI=i;buildCP(i);};cp.appendChild(d);});
 }
+function onRecurFreqChange(){
+  const freq=document.getElementById('m-type-freq').value;
+  document.getElementById('m-type-day-row').style.display=freq==='monthly'?'block':'none';
+  document.getElementById('m-type-weekday-row').style.display=(freq==='weekly'||freq==='biweekly')?'block':'none';
+  document.getElementById('m-type-anchor-row').style.display=freq==='biweekly'?'block':'none';
+}
+function resetRecurForm(){
+  document.getElementById('m-type-freq').value='';
+  document.getElementById('m-type-day').value='';
+  document.getElementById('m-type-weekday').value='0';
+  document.getElementById('m-type-anchor').value='';
+  onRecurFreqChange();
+}
+function populateRecurForm(recur){
+  document.getElementById('m-type-freq').value=recur&&recur.freq?recur.freq:'';
+  document.getElementById('m-type-day').value=(recur&&recur.day)?recur.day:'';
+  document.getElementById('m-type-weekday').value=(recur&&recur.weekday!==undefined)?recur.weekday:'0';
+  document.getElementById('m-type-anchor').value=(recur&&recur.anchor)?recur.anchor:'';
+  onRecurFreqChange();
+}
+function readRecurForm(){
+  const freq=document.getElementById('m-type-freq').value;
+  if(!freq)return null;
+  if(freq==='monthly'){
+    const day=parseInt(document.getElementById('m-type-day').value);
+    return day?{freq:'monthly',day}:null;
+  }
+  const weekday=parseInt(document.getElementById('m-type-weekday').value);
+  if(freq==='weekly')return{freq:'weekly',weekday};
+  if(freq==='biweekly'){
+    const anchor=document.getElementById('m-type-anchor').value.trim();
+    return anchor?{freq:'biweekly',weekday,anchor}:null;
+  }
+  return null;
+}
 function openNewType(){
   if(cat==='net')return;
   _typeId=null;_typeCI=0;
   document.getElementById('m-type-title').textContent=cat.toUpperCase()+' — New type';
-  document.getElementById('m-type-name').value='';document.getElementById('m-type-day').value='';buildCP(0);
+  document.getElementById('m-type-name').value='';resetRecurForm();buildCP(0);
   const btns=document.getElementById('m-type-btns');btns.innerHTML='';
   const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-type');btns.appendChild(can);
   const sv=document.createElement('button');sv.className='sv '+cat;sv.textContent='Add type';sv.onclick=saveType;btns.appendChild(sv);
@@ -1355,7 +1509,7 @@ function openEditType(id,c){
   const t=gtid(id,c);if(!t)return;_typeId=id;_typeCI=COLORS.findIndex(x=>x.bg===t.c.bg);if(_typeCI<0)_typeCI=0;
   document.getElementById('m-type-title').textContent=c.toUpperCase()+' — Edit type';
   document.getElementById('m-type-name').value=t.name;
-  document.getElementById('m-type-day').value=t.rd||'';
+  populateRecurForm(t.recur);
   buildCP(_typeCI);
   populateGrpSelect(c, t.grp||'Other');
   const btns=document.getElementById('m-type-btns');btns.innerHTML='';
@@ -1366,17 +1520,17 @@ function openEditType(id,c){
   const sv=document.createElement('button');sv.className='sv '+c;sv.textContent='Save';
   sv.onclick=()=>{
     const name=document.getElementById('m-type-name').value.trim();if(!name)return;
-    const rd=parseInt(document.getElementById('m-type-day').value)||null;
+    const recur=readRecurForm();
     const grp=document.getElementById('m-type-grp').value||t.grp||'Other';
-    t.name=name;t.c=COLORS[_typeCI];t.rd=rd;t.grp=grp;
+    t.name=name;t.c=COLORS[_typeCI];t.recur=recur;delete t.rd;t.grp=grp;
     save();closeModal('m-type');render();buildSb();
   };
   btns.appendChild(sv);openModal('m-type');
 }
 function saveType(){
   const name=document.getElementById('m-type-name').value.trim();if(!name)return;
-  const rd=parseInt(document.getElementById('m-type-day').value)||null;
-  D[cat].types.push({id:cat+Date.now(),name,c:COLORS[_typeCI],on:true,rd});
+  const recur=readRecurForm();
+  D[cat].types.push({id:cat+Date.now(),name,c:COLORS[_typeCI],on:true,recur});
   save();closeModal('m-type');render();buildSb();
 }
 
@@ -1394,6 +1548,72 @@ function doExport(){
   const blob=new Blob([out],{type:'text/html'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ---- EXCEL EXPORT ---- */
+function openXlsExport(){
+  document.getElementById('xls-cat').value=cat==='net'?'net':cat;
+  xlsPreset('month');
+  openModal('m-xls');
+}
+function xlsPreset(kind){
+  let from,to;
+  if(kind==='month'){from=new Date(cy,cm,1);to=new Date(cy,cm+1,0);}
+  else if(kind==='lastmonth'){from=new Date(cy,cm-1,1);to=new Date(cy,cm,0);}
+  else if(kind==='year'){from=new Date(cy,0,1);to=new Date(cy,11,31);}
+  else{from=new Date(2026,0,1);to=new Date(2027,11,31);}
+  document.getElementById('xls-from').value=dsFromDate(from);
+  document.getElementById('xls-to').value=dsFromDate(to);
+}
+/* Collects entries the same way buildRp() does, but bounded to a date range —
+   used only by the Excel exporter so buildRp's own logic stays untouched. */
+function collectEntriesForExport(catsArr,fromDs,toDs){
+  const allDates=new Set();
+  catsArr.forEach(cc=>{
+    EV(cc).forEach(r=>{if(r[1]>=fromDs&&r[1]<=toDs)allDates.add(r[1]);});
+    T(cc).forEach(t=>{datesForRecur(t.recur).forEach(ds=>{if(ds>=fromDs&&ds<=toDs)allDates.add(ds);});});
+    Object.keys(A(cc)).forEach(k=>{const ds=k.split('||')[0];if(ds>=fromDs&&ds<=toDs)allDates.add(ds);});
+  });
+  const sorted=[...allDates].sort();
+  const rows=[];
+  sorted.forEach(ds=>{
+    catsArr.forEach(cc=>{
+      evForDate(ds,cc).forEach(name=>{
+        const t=gt(name,cc);if(!t||!t.on)return;
+        const da=dispAmtEff(ds,name,cc);if(!da)return;
+        rows.push({ds,name,da,cc});
+      });
+    });
+  });
+  return rows;
+}
+function doXlsExport(){
+  if(typeof XLSX==='undefined'){alert('The Excel export library failed to load. Check your internet connection and try again.');return;}
+  const catSel=document.getElementById('xls-cat').value;
+  const fromDs=document.getElementById('xls-from').value;
+  const toDs=document.getElementById('xls-to').value;
+  if(!fromDs||!toDs){alert('Pick a From and To date.');return;}
+  const catsArr=catSel==='net'?['ap','ar']:[catSel];
+  const rows=collectEntriesForExport(catsArr,fromDs,toDs);
+  const showCatCol=catSel==='net';
+  const aoa=[showCatCol?['Date','Item','Category','Amount','Running Total']:['Date','Item','Amount','Running Total']];
+  let running=0;
+  rows.forEach(({ds,name,da,cc})=>{
+    const sign=cc==='ar'?1:-1;
+    running+=da.v*sign;
+    const row=[ds,name+(da.est?' (estimated)':'')];
+    if(showCatCol)row.push(cc.toUpperCase());
+    row.push(Number((da.v*sign).toFixed(2)));
+    row.push(Number(running.toFixed(2)));
+    aoa.push(row);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=showCatCol?[{wch:12},{wch:28},{wch:8},{wch:14},{wch:14}]:[{wch:12},{wch:28},{wch:14},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,catSel.toUpperCase());
+  const marketSuffix=(catSel==='ap'&&selectedMarket)?'_'+selectedMarket.replace(/\s+/g,'-'):'';
+  XLSX.writeFile(wb,`kf-calendar_${catSel}${marketSuffix}_${fromDs}_to_${toDs}.xlsx`);
+  closeModal('m-xls');
 }
 
 /* ---- SETTINGS ---- */
@@ -1462,7 +1682,7 @@ function removeMarket(name){
 /* ---- MODAL HELPERS ---- */
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['m-amt','m-type','m-ev','m-export','m-settings','m-payor','m-payor-date'].forEach(id=>{
+['m-amt','m-type','m-ev','m-export','m-xls','m-settings','m-payor','m-payor-date'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
 
@@ -1528,7 +1748,7 @@ function openNewTypeInGroup(grpName,cc){
   }
   _typeId=null;_typeCI=0;
   document.getElementById('m-type-title').textContent=cc.toUpperCase()+' — New type';
-  document.getElementById('m-type-name').value='';document.getElementById('m-type-day').value='';buildCP(0);
+  document.getElementById('m-type-name').value='';resetRecurForm();buildCP(0);
   populateGrpSelect(cc, _newTypeGrp);
   const btns=document.getElementById('m-type-btns');btns.innerHTML='';
   // payor toggle
@@ -1541,10 +1761,10 @@ function openNewTypeInGroup(grpName,cc){
   const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Add type';
   sv.onclick=()=>{
     const name=document.getElementById('m-type-name').value.trim();if(!name)return;
-    const rd=parseInt(document.getElementById('m-type-day').value)||null;
+    const recur=readRecurForm();
     const hasPayors=document.getElementById('tp-payor-chk')&&document.getElementById('tp-payor-chk').checked;
     const selGrp=document.getElementById('m-type-grp').value||_newTypeGrp||'Other';
-    const newT={id:cc+Date.now(),name,c:COLORS[_typeCI],on:true,rd,grp:selGrp};
+    const newT={id:cc+Date.now(),name,c:COLORS[_typeCI],on:true,recur,grp:selGrp};
     if(hasPayors)newT.payors=[];
     D[cc].types.push(newT);
     save();closeModal('m-type');ptRow.remove();render();buildSb();
@@ -1588,7 +1808,7 @@ function buildRp(){
   const allDates=new Set();
   cats.forEach(cc=>{
     EV(cc).forEach(r=>allDates.add(r[1]));
-    T(cc).forEach(t=>{if(t.rd){for(let y=2026;y<=2027;y++)for(let m=1;m<=12;m++)allDates.add(`${y}-${String(m).padStart(2,'0')}-${String(t.rd).padStart(2,'0')}`);} });
+    T(cc).forEach(t=>{datesForRecur(t.recur).forEach(ds=>allDates.add(ds));});
     Object.keys(A(cc)).forEach(k=>allDates.add(k.split('||')[0]));
   });
   const sorted=[...allDates].sort();
