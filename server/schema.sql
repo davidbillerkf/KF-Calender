@@ -9,14 +9,15 @@
 --                own table keyed the same way the frontend already keys it in memory.
 --
 -- Key convention (matches the frontend's `ak(date, name)` helper, `date + '||' + name`):
---   "2026-01-07||Medical Payroll"                     -> flat amount for a type on a date
---   "2026-01-07||Blue Cross__Insurance Payments"       -> AR payor sub-amount (payorName__typeName)
+--   "2026-01-07||Medical Payroll"                       -> flat amount for a type on a date
+--   "2026-01-07||Blue Cross__Insurance Payments"        -> AR payor sub-amount (payorName__typeName)
+--   "2026-01-07||General Market__Medical Payroll"       -> AP market sub-amount (marketName__typeName)
+-- The flat "date||typeName" key is the total: when a market breakdown exists
+-- for a date+type, the frontend keeps it in sync as the sum of that date's
+-- market sub-amounts, the same additive-detail pattern AR payors already use.
 --
--- Per-market breakdown (planned, not yet built in the UI) reuses this exact
--- convention with no schema change required:
---   "2026-01-07||GA__Medical Payroll"                  -> market sub-amount (marketName__typeName)
--- The flat "date||typeName" key remains the total/override; per-market keys are
--- additive detail under it, the same way payor keys already work for AR.
+-- The list of market names (e.g. "General Market") is company-wide, not
+-- per-type, so it lives in app_state.markets rather than in the amounts table.
 
 CREATE TABLE IF NOT EXISTS app_state (
   id          integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -25,8 +26,12 @@ CREATE TABLE IF NOT EXISTS app_state (
   ar_types    jsonb NOT NULL,
   ar_events   jsonb NOT NULL,
   pw          text,
+  markets     jsonb NOT NULL DEFAULT '[]'::jsonb,
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Additive migration for databases created before the `markets` column existed.
+ALTER TABLE app_state ADD COLUMN IF NOT EXISTS markets jsonb NOT NULL DEFAULT '[]'::jsonb;
 
 CREATE TABLE IF NOT EXISTS amounts (
   category    text NOT NULL CHECK (category IN ('ap', 'ar')),
