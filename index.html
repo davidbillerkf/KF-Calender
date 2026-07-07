@@ -961,6 +961,16 @@ function addDays(ds,n){
   dt.setDate(dt.getDate()+n);
   return dsFromDate(dt);
 }
+function addBusinessDays(ds,n){
+  const dt=new Date(ds+'T00:00:00');
+  let added=0;
+  while(added<n){
+    dt.setDate(dt.getDate()+1);
+    const dow=dt.getDay();
+    if(dow!==0&&dow!==6)added++;
+  }
+  return dsFromDate(dt);
+}
 /* Same day-total logic used by render()'s primary total, reused here for the
    2-day-ahead preview badge so the two numbers can never disagree. */
 function computeDayTotal(ds,viewCat){
@@ -1187,13 +1197,13 @@ function render(){
     if(now.getFullYear()===cy&&now.getMonth()===cm&&now.getDate()===d)cell.classList.add(todCls);
     const dn=document.createElement('div');dn.className='dnum';dn.textContent=d;cell.appendChild(dn);
     const dt=document.createElement('div');cell.appendChild(dt);
-    const ds2=addDays(ds,2);
+    const ds2=addBusinessDays(ds,2);
     const preview=computeDayTotal(ds2,cat);
     if(preview.hasAny){
       const pv=document.createElement('div');pv.className='dpreview';
-      pv.title='Total due in 2 days ('+ds2+')';
+      pv.title='Total due in 2 business days ('+ds2+')';
       const sign=cat==='net'?(preview.val>=0?'+':'-'):'';
-      pv.textContent='→ in 2d: '+(preview.anyEst?'~':'')+sign+'$'+fmt(preview.val);
+      pv.textContent='→ 2 biz days: '+(preview.anyEst?'~':'')+sign+'$'+fmt(preview.val);
       cell.appendChild(pv);
     }
     if(cat==='net'){
