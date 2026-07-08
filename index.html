@@ -344,7 +344,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="icon-btn icon-only" title="Month Snapshot" onclick="openSnapshot()"><i class="ti ti-camera" style="font-size:15px"></i></button>
     <button class="icon-btn icon-only" title="Export to Excel" onclick="openXlsExport()"><i class="ti ti-download" style="font-size:15px"></i></button>
     <button class="icon-btn icon-only" title="Settings" onclick="openSettings()"><i class="ti ti-settings" style="font-size:15px"></i></button>
-    <button class="icon-btn upload-btn ap" id="upload-btn" onclick="openExport()"><i class="ti ti-upload" style="font-size:11px"></i> Update GitHub</button>
     <div class="nav-row">
       <button onclick="navM(-1)"><i class="ti ti-chevron-left"></i></button>
       <span class="mlabel" id="mlabel">June 2026</span>
@@ -357,12 +356,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="content">
   <div class="sb" id="sb">
     <div class="sb-head">
-      <span class="sb-head-title" id="sb-title">AP Types</span>
+      <div style="display:flex;align-items:center;gap:7px;min-width:0">
+        <div class="sg-chk" id="sb-selectall-chk" onclick="toggleAllTypes()" style="cursor:pointer"></div>
+        <span class="sb-head-title" id="sb-title">AP Types</span>
+      </div>
       <button class="sb-add ap" id="sb-add" onclick="openNewType()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
-    </div>
-    <div style="display:flex;gap:6px;padding:7px 12px;border-bottom:0.5px solid #eee">
-      <button onclick="selectAllTypes()" style="font-size:10px;padding:3px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">Select all</button>
-      <button onclick="deselectAllTypes()" style="font-size:10px;padding:3px 9px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#666;cursor:pointer">Deselect all</button>
     </div>
     <div id="sb-list"><div class="sg-grp-hdr"><span class="sg-grp-label">Payroll</span><button class="sg-grp-add" title="Add type to Payroll"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAECE7;border:1px solid #712B1355"></div><span class="sg-name">Medical Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Management Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EAF3DE;border:1px solid #27500A55"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E1F5EE;border:1px solid #08504155"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EEEDFE;border:1px solid #3C348955"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FBEAF0;border:1px solid #72243E55"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg-grp-hdr"><span class="sg-grp-label">Credit Cards</span><button class="sg-grp-add" title="Add type to Credit Cards"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#F1EFE8;border:1px solid #5F5E5A55"></div><span class="sg-name">Divvy</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">Ink Staffing</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Chase CC</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><button class="sg-act" style="margin: 6px 12px; font-size: 10px;"><i class="ti ti-folder-plus" style="font-size:10px"></i> New group</button></div>
     <button class="sb-toggle" onclick="toggleSb()"><i class="ti ti-chevron-left" id="sb-icon"></i></button>
@@ -507,6 +505,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="pw-note">Used to break Medical/Management/Offshore Payroll amounts down by market when entering them.</div>
     <div id="markets-list"></div>
     <div class="pw-inp-row"><input type="text" id="market-new" placeholder="New market name"><button onclick="addMarket()">Add</button></div>
+  </div>
+  <div class="pw-box">
+    <h4><i class="ti ti-upload" style="font-size:12px"></i> Publish to GitHub</h4>
+    <div class="pw-note">Downloads a fresh index.html with your amounts baked in, to upload to GitHub as a manual backup. Not needed for normal use — the calendar already syncs live through Railway.</div>
+    <button onclick="closeModal('m-settings');openExport()" style="width:100%;padding:7px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-size:11px;font-weight:500">Update GitHub…</button>
   </div>
   <div style="display:flex;justify-content:flex-end"><button onclick="closeModal('m-settings')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
 </div></div>
@@ -1001,7 +1004,6 @@ function setCat(c){
   });
   document.getElementById('sb-title').textContent=(c==='net'?'All':c.toUpperCase())+' Types';
   document.getElementById('sb-add').className='sb-add'+(c==='net'?' disabled':' '+c);
-  document.getElementById('upload-btn').className='icon-btn upload-btn '+c;
   const pill=document.getElementById('sb-pill');
   pill.className='sb-pill '+c+'-p'+(sbOpen?'':' show');
   buildSb();render();
@@ -1015,15 +1017,28 @@ function toggleSb(){
   pill.classList.toggle('show',!sbOpen);
   icon.className=sbOpen?'ti ti-chevron-left':'ti ti-chevron-right';
 }
-function selectAllTypes(){setAllTypesOn(true);}
-function deselectAllTypes(){setAllTypesOn(false);}
 function setAllTypesOn(on){
   const cats=cat==='net'?['ap','ar']:[cat];
   cats.forEach(cc=>{T(cc).forEach(t=>{t.on=on;});});
   save();buildSb();render();
 }
+function toggleAllTypes(){
+  const cats=cat==='net'?['ap','ar']:[cat];
+  const allTypes=cats.flatMap(cc=>T(cc));
+  const allOn=allTypes.length>0&&allTypes.every(t=>t.on);
+  setAllTypesOn(!allOn);
+}
 function buildSb(){
   const wrap=document.getElementById('sb-list');wrap.innerHTML='';
+  const chk=document.getElementById('sb-selectall-chk');
+  if(chk){
+    const cats=cat==='net'?['ap','ar']:[cat];
+    const allTypes=cats.flatMap(cc=>T(cc));
+    const allOn=allTypes.length>0&&allTypes.every(t=>t.on);
+    chk.className='sg-chk'+(allOn?' on '+(cat==='ar'?'ar':'ap'):'');
+    chk.textContent=allOn?'✓':'';
+    chk.title=allOn?'Deselect all':'Select all';
+  }
   const cats=cat==='net'?['ap','ar']:[cat];
   cats.forEach(cc=>{
     // group types by grp field
@@ -1203,7 +1218,7 @@ function render(){
       const pv=document.createElement('div');pv.className='dpreview';
       pv.title='Total due in 2 business days ('+ds2+')';
       const sign=cat==='net'?(preview.val>=0?'+':'-'):'';
-      pv.textContent='→ 2 biz days: '+(preview.anyEst?'~':'')+sign+'$'+fmt(preview.val);
+      pv.textContent='→ '+(preview.anyEst?'~':'')+sign+'$'+fmt(preview.val);
       cell.appendChild(pv);
     }
     if(cat==='net'){
