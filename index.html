@@ -1028,6 +1028,18 @@ function toggleAllTypes(){
   const allOn=allTypes.length>0&&allTypes.every(t=>t.on);
   setAllTypesOn(!allOn);
 }
+function renameGroup(oldName,cc){
+  const nv=prompt('Rename group "'+oldName+'" to:',oldName);
+  if(!nv||!nv.trim()||nv.trim()===oldName)return;
+  const newName=nv.trim();
+  T(cc).forEach(t=>{if((t.grp||'Other')===oldName)t.grp=newName;});
+  save();buildSb();
+}
+function deleteGroup(name,cc){
+  if(!confirm('Delete group "'+name+'"? Its types will be moved to "Other" — nothing is deleted.'))return;
+  T(cc).forEach(t=>{if((t.grp||'Other')===name)t.grp='Other';});
+  save();buildSb();
+}
 function buildSb(){
   const wrap=document.getElementById('sb-list');wrap.innerHTML='';
   const chk=document.getElementById('sb-selectall-chk');
@@ -1052,11 +1064,22 @@ function buildSb(){
       // group header
       const ghdr=document.createElement('div');ghdr.className='sg-grp-hdr';
       const gl=document.createElement('span');gl.className='sg-grp-label';gl.textContent=grpName;
-      const ga=document.createElement('button');ga.className='sg-grp-add';
-      ga.title='Add type to '+grpName;
-      ga.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add';
-      ga.onclick=()=>openNewTypeInGroup(grpName,cc);
-      ghdr.appendChild(gl);if(cat!=='net')ghdr.appendChild(ga);
+      ghdr.appendChild(gl);
+      if(cat!=='net'){
+        const actWrap=document.createElement('div');actWrap.style.cssText='display:flex;gap:2px;align-items:center';
+        const gEdit=document.createElement('button');gEdit.className='sg-grp-add';gEdit.title='Rename group';
+        gEdit.innerHTML='<i class="ti ti-pencil" style="font-size:10px"></i>';
+        gEdit.onclick=()=>renameGroup(grpName,cc);
+        const gDel=document.createElement('button');gDel.className='sg-grp-add';gDel.title='Delete group';
+        gDel.innerHTML='<i class="ti ti-trash" style="font-size:10px"></i>';
+        gDel.onclick=()=>deleteGroup(grpName,cc);
+        const ga=document.createElement('button');ga.className='sg-grp-add';
+        ga.title='Add type to '+grpName;
+        ga.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add';
+        ga.onclick=()=>openNewTypeInGroup(grpName,cc);
+        actWrap.appendChild(gEdit);actWrap.appendChild(gDel);actWrap.appendChild(ga);
+        ghdr.appendChild(actWrap);
+      }
       wrap.appendChild(ghdr);
 
       groups[grpName].forEach(t=>{
