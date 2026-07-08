@@ -98,6 +98,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sg-acts{display:flex;gap:4px;padding:5px 0 2px}
 .sg-act{font-size:10px;padding:2px 7px;border-radius:20px;border:0.5px solid #ddd;background:transparent;color:#888;cursor:pointer}
 .sg-act:hover{background:#fff;color:#1a1a1a}
+.sg-gear{background:transparent;border:none;cursor:pointer;color:#ccc;padding:2px;border-radius:4px;display:flex;align-items:center;flex-shrink:0}
+.sg-gear:hover{background:#eee;color:#534AB7}
+.sg-grp-arr{font-size:8px;color:#ccc;transition:transform .15s;flex-shrink:0}
+.sg-grp-arr.open{transform:rotate(90deg)}
+.sg-grp-gear{background:transparent;border:none;cursor:pointer;color:#aaa;padding:2px 5px;border-radius:5px;display:flex;align-items:center;flex-shrink:0}
+.sg-grp-gear:hover{background:#e8e8e0;color:#534AB7}
+.dropdown-menu{position:fixed;background:#fff;border:0.5px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.14);overflow:hidden;min-width:150px;z-index:100}
+.dropdown-menu-item{display:flex;align-items:center;gap:7px;width:100%;text-align:left;padding:8px 12px;font-size:11px;border:none;background:transparent;cursor:pointer;color:#1a1a1a}
+.dropdown-menu-item:hover{background:#f5f5f0}
+.dropdown-menu-item.danger{color:#a32d2d}
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;padding:10px 12px;gap:7px;min-width:0;overflow:auto}
@@ -360,7 +370,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="sg-chk" id="sb-selectall-chk" onclick="toggleAllTypes()" style="cursor:pointer"></div>
         <span class="sb-head-title" id="sb-title">AP Types</span>
       </div>
-      <button class="sb-add ap" id="sb-add" onclick="openNewType()"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
+      <button class="sb-add ap" id="sb-add" onclick="showMenu(this,[{label:'New Type',icon:'ti-plus',onclick:()=>openNewType()},{label:'New Group',icon:'ti-folder-plus',onclick:()=>openNewTypeInGroup(null,cat)}])"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
     </div>
     <div id="sb-list"><div class="sg-grp-hdr"><span class="sg-grp-label">Payroll</span><button class="sg-grp-add" title="Add type to Payroll"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAECE7;border:1px solid #712B1355"></div><span class="sg-name">Medical Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Management Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EAF3DE;border:1px solid #27500A55"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E1F5EE;border:1px solid #08504155"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EEEDFE;border:1px solid #3C348955"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FBEAF0;border:1px solid #72243E55"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg-grp-hdr"><span class="sg-grp-label">Credit Cards</span><button class="sg-grp-add" title="Add type to Credit Cards"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#F1EFE8;border:1px solid #5F5E5A55"></div><span class="sg-name">Divvy</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">Ink Staffing</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Chase CC</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><button class="sg-act" style="margin: 6px 12px; font-size: 10px;"><i class="ti ti-folder-plus" style="font-size:10px"></i> New group</button></div>
     <button class="sb-toggle" onclick="toggleSb()"><i class="ti ti-chevron-left" id="sb-icon"></i></button>
@@ -760,6 +770,7 @@ var D={ap:{types:null,events:null,amounts:{}},ar:{types:null,events:null,amounts
 var cat='ap',sbOpen=true;
 var selectedMarket=null;
 var _openGroups={};
+var _closedGrps={};
 var _amtKey=null,_amtCat=null,_amtDs=null,_amtName=null,_amtMktCleared=false,_evKey=null,_evNew=null,_evCat=null,_typeId=null,_typeCI=0;
 const _now=new Date(); var cy=_now.getFullYear(),cm=_now.getMonth();
 
@@ -1061,36 +1072,39 @@ function buildSb(){
       groups[g].push(t);
     });
     groupOrder.forEach(grpName=>{
+      const grpKey=cc+'::'+grpName;const isGrpOpen=!_closedGrps[grpKey];
       // group header
       const ghdr=document.createElement('div');ghdr.className='sg-grp-hdr';
+      const leftWrap=document.createElement('div');leftWrap.style.cssText='display:flex;align-items:center;gap:5px;cursor:pointer;min-width:0;flex:1';
+      const garr=document.createElement('span');garr.className='sg-grp-arr'+(isGrpOpen?' open':'');garr.innerHTML='&#9654;';
       const gl=document.createElement('span');gl.className='sg-grp-label';gl.textContent=grpName;
-      ghdr.appendChild(gl);
+      leftWrap.appendChild(garr);leftWrap.appendChild(gl);
+      leftWrap.onclick=()=>{_closedGrps[grpKey]=isGrpOpen;buildSb();};
+      ghdr.appendChild(leftWrap);
       if(cat!=='net'){
-        const actWrap=document.createElement('div');actWrap.style.cssText='display:flex;gap:2px;align-items:center';
-        const gEdit=document.createElement('button');gEdit.className='sg-grp-add';gEdit.title='Rename group';
-        gEdit.innerHTML='<i class="ti ti-pencil" style="font-size:10px"></i>';
-        gEdit.onclick=()=>renameGroup(grpName,cc);
-        const gDel=document.createElement('button');gDel.className='sg-grp-add';gDel.title='Delete group';
-        gDel.innerHTML='<i class="ti ti-trash" style="font-size:10px"></i>';
-        gDel.onclick=()=>deleteGroup(grpName,cc);
-        const ga=document.createElement('button');ga.className='sg-grp-add';
-        ga.title='Add type to '+grpName;
-        ga.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add';
-        ga.onclick=()=>openNewTypeInGroup(grpName,cc);
-        actWrap.appendChild(gEdit);actWrap.appendChild(gDel);actWrap.appendChild(ga);
-        ghdr.appendChild(actWrap);
+        const gear=document.createElement('button');gear.className='sg-grp-gear';gear.title='Group options';
+        gear.innerHTML='<i class="ti ti-settings" style="font-size:11px"></i>';
+        gear.onclick=e=>{e.stopPropagation();showMenu(gear,[
+          {label:'Add type here',icon:'ti-plus',onclick:()=>openNewTypeInGroup(grpName,cc)},
+          {label:'Rename group',icon:'ti-pencil',onclick:()=>renameGroup(grpName,cc)},
+          {label:'Delete group',icon:'ti-trash',danger:true,onclick:()=>deleteGroup(grpName,cc)},
+        ]);};
+        ghdr.appendChild(gear);
       }
       wrap.appendChild(ghdr);
+      if(!isGrpOpen)return;
 
       groups[grpName].forEach(t=>{
         const key=cc+t.id;const isOpen=!!_openGroups[key];
         const sg=document.createElement('div');sg.className='sg';
-        const row=document.createElement('button');row.className='sg-row';
+        const row=document.createElement('div');row.className='sg-row';row.tabIndex=0;row.setAttribute('role','button');
         const badge=cat==='net'?`<span class="sg-badge ${cc}">${cc.toUpperCase()}</span>`:'';
-        row.innerHTML=`<div class="sg-dot" style="background:${t.c.bg};border:1px solid ${t.c.tx}55"></div><span class="sg-name">${t.name}</span>${badge}<span class="sg-arr${isOpen?' open':''}">&#9654;</span><div class="sg-chk${t.on?' on':''} ${cc}">✓</div>`;
+        row.innerHTML=`<div class="sg-dot" style="background:${t.c.bg};border:1px solid ${t.c.tx}55"></div><span class="sg-name">${t.name}</span>${badge}<button class="sg-gear" title="Edit type"><i class="ti ti-settings" style="font-size:10px"></i></button><span class="sg-arr${isOpen?' open':''}">&#9654;</span><div class="sg-chk${t.on?' on':''} ${cc}">✓</div>`;
         row.onclick=e=>{
           const chk=row.querySelector('.sg-chk');
+          const gear=row.querySelector('.sg-gear');
           if(e.target===chk||chk.contains(e.target)){t.on=!t.on;save();render();buildSb();return;}
+          if(e.target===gear||gear.contains(e.target)){openEditType(t.id,cc);return;}
           _openGroups[key]=!isOpen;buildSb();
         };
         sg.appendChild(row);
@@ -1102,29 +1116,15 @@ function buildSb(){
             buildPayorSection(body,t,cc);
           } else {
             buildTypeEvents(body,t,cc);
-          }
-
-          const acts=document.createElement('div');acts.className='sg-acts';
-          const eb=document.createElement('button');eb.className='sg-act';eb.innerHTML='<i class="ti ti-settings" style="font-size:10px"></i> Edit type';eb.onclick=()=>openEditType(t.id,cc);
-          if(!Array.isArray(t.payors)){
+            const acts=document.createElement('div');acts.className='sg-acts';
             const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openAddDate(t.name,cc);
-            acts.appendChild(ab);
+            acts.appendChild(ab);body.appendChild(acts);
           }
-          acts.appendChild(eb);body.appendChild(acts);sg.appendChild(body);
+          sg.appendChild(body);
         }
         wrap.appendChild(sg);
       });
     });
-
-    // "Add new group" button at bottom
-    if(cat!=='net'){
-      const newGrpBtn=document.createElement('button');
-      newGrpBtn.className='sg-act';
-      newGrpBtn.style.cssText='margin:6px 12px;font-size:10px';
-      newGrpBtn.innerHTML='<i class="ti ti-folder-plus" style="font-size:10px"></i> New group';
-      newGrpBtn.onclick=()=>openNewTypeInGroup(null,cc);
-      wrap.appendChild(newGrpBtn);
-    }
   });
 }
 
@@ -1519,6 +1519,7 @@ function openNewType(){
   _typeId=null;_typeCI=0;
   document.getElementById('m-type-title').textContent=cat.toUpperCase()+' — New type';
   document.getElementById('m-type-name').value='';resetRecurForm();buildCP(0);
+  populateGrpSelect(cat,null);
   const btns=document.getElementById('m-type-btns');btns.innerHTML='';
   const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-type');btns.appendChild(can);
   const sv=document.createElement('button');sv.className='sv '+cat;sv.textContent='Add type';sv.onclick=saveType;btns.appendChild(sv);
@@ -1534,6 +1535,9 @@ function populateGrpSelect(cc, currentGrp){
   /* always include default groups */
   if(cc==='ap'){['Payroll','Credit Cards'].forEach(g=>grps.add(g));}
   else{['Clients','Insurance','Grants'].forEach(g=>grps.add(g));}
+  /* a freshly-prompted group name (e.g. from "New Group") has no types yet,
+     so it won't be in the set above — make sure it's still selectable */
+  if(currentGrp)grps.add(currentGrp);
   [...grps].sort().forEach(g=>{
     const o=document.createElement('option');o.value=g;o.textContent=g;
     if(g===currentGrp)o.selected=true;
@@ -1578,7 +1582,8 @@ function openEditType(id,c){
 function saveType(){
   const name=document.getElementById('m-type-name').value.trim();if(!name)return;
   const recur=readRecurForm();
-  D[cat].types.push({id:cat+Date.now(),name,c:COLORS[_typeCI],on:true,recur});
+  const grp=document.getElementById('m-type-grp').value||'Other';
+  D[cat].types.push({id:cat+Date.now(),name,c:COLORS[_typeCI],on:true,recur,grp});
   save();closeModal('m-type');render();buildSb();
 }
 
@@ -1728,6 +1733,36 @@ function removeMarket(name){
 }
 
 /* ---- MODAL HELPERS ---- */
+/* ---- FLOATING DROPDOWN MENU ---- */
+function showMenu(anchorEl,items){
+  closeAnyMenu();
+  const menu=document.createElement('div');menu.className='dropdown-menu';menu.id='active-dropdown-menu';
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.className='dropdown-menu-item'+(it.danger?' danger':'');
+    b.innerHTML=(it.icon?`<i class="ti ${it.icon}" style="font-size:11px"></i> `:'')+it.label;
+    b.onclick=e=>{e.stopPropagation();closeAnyMenu();it.onclick();};
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const rect=anchorEl.getBoundingClientRect();
+  menu.style.top=(rect.bottom+4)+'px';
+  menu.style.left=Math.max(4,Math.min(rect.left,window.innerWidth-160))+'px';
+  requestAnimationFrame(()=>{
+    const w=menu.offsetWidth;
+    menu.style.left=Math.max(4,Math.min(rect.left,window.innerWidth-w-4))+'px';
+  });
+  setTimeout(()=>document.addEventListener('click',closeAnyMenuOnOutsideClick),0);
+}
+function closeAnyMenuOnOutsideClick(e){
+  const m=document.getElementById('active-dropdown-menu');
+  if(m&&!m.contains(e.target))closeAnyMenu();
+}
+function closeAnyMenu(){
+  const m=document.getElementById('active-dropdown-menu');
+  if(m)m.remove();
+  document.removeEventListener('click',closeAnyMenuOnOutsideClick);
+}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 ['m-amt','m-type','m-ev','m-export','m-xls','m-settings','m-payor','m-payor-date'].forEach(id=>{
@@ -1794,13 +1829,14 @@ function openNewTypeInGroup(grpName,cc){
     if(!g)return;
     _newTypeGrp=g;
   }
+  const stalePt=document.getElementById('tp-payor-row');if(stalePt)stalePt.remove();
   _typeId=null;_typeCI=0;
   document.getElementById('m-type-title').textContent=cc.toUpperCase()+' — New type';
   document.getElementById('m-type-name').value='';resetRecurForm();buildCP(0);
   populateGrpSelect(cc, _newTypeGrp);
   const btns=document.getElementById('m-type-btns');btns.innerHTML='';
   // payor toggle
-  const ptRow=document.createElement('div');ptRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
+  const ptRow=document.createElement('div');ptRow.id='tp-payor-row';ptRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
   const ptChk=document.createElement('input');ptChk.type='checkbox';ptChk.id='tp-payor-chk';
   const ptLbl=document.createElement('label');ptLbl.htmlFor='tp-payor-chk';ptLbl.style.cssText='font-size:11px;color:#888';ptLbl.textContent='Has individual payors (like Insurance)';
   ptRow.appendChild(ptChk);ptRow.appendChild(ptLbl);
