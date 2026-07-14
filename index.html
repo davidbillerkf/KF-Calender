@@ -125,6 +125,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .grid{display:grid;grid-template-columns:repeat(7,1fr) 54px;gap:2px}
 .dc{min-height:86px;border-radius:8px;border:0.5px solid #e8e8e0;padding:3px 4px;background:#fff;display:flex;flex-direction:column}
 .dc:hover{border-color:#bbb}
+.dc.dc-clickable{cursor:pointer}
+.dc.dc-clickable:hover{border-color:#534AB7;background:#FAFAFE}
 .dc.empty{background:transparent;border-color:transparent}
 .dc.tod-ap{border:1.5px solid #534AB7;background:#FAFAFE}
 .dc.tod-ar{border:1.5px solid #0F6E56;background:#F5FBF8}
@@ -577,6 +579,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="pw-note" style="margin-bottom:10px">Blended rate per payor: actual ÷ billed, trailing 3 months (falls back to all-time if no recent data).</div>
   <div id="collrate-body" style="max-height:60vh;overflow-y:auto"></div>
   <div style="display:flex;justify-content:flex-end;margin-top:14px"><button onclick="closeModal('m-collrate')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
+</div></div>
+
+<!-- Day detail modal (Net view) -->
+<div class="ov" id="m-daydetail"><div class="md" style="width:340px">
+  <h3 id="m-daydetail-title">Day detail</h3>
+  <div id="daydetail-body" style="max-height:60vh;overflow-y:auto"></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:14px"><button onclick="closeModal('m-daydetail')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
 </div></div>
 
 <!-- Snapshot modal -->
@@ -1490,38 +1499,23 @@ function render(){
       cell.appendChild(pv);
     }
     if(cat==='net'){
-      let ar=0,ap=0,anyEst=false;
+      dt.remove();
+      let ar=0,ap=0,anyEstAr=false,anyEstAp=false;
       ['ap','ar'].forEach(cc=>{
         evForDate(ds,cc).forEach(name=>{
           const t=gt(name,cc);if(!t||!t.on)return;
           const da=dispAmtEff(ds,name,cc);if(!da)return;
-          if(cc==='ar')ar+=da.v;else ap+=da.v;
-          if(da.est){anyEst=true;hasEst=true;estCt++;}
+          if(cc==='ar'){ar+=da.v;if(da.est)anyEstAr=true;}else{ap+=da.v;if(da.est)anyEstAp=true;}
+          if(da.est){hasEst=true;estCt++;}
         });
         const pt=payorDayTotal(ds,cc);
-        if(cc==='ar')ar+=pt.tot;else ap+=pt.tot;
-        if(pt.anyEst){anyEst=true;hasEst=true;}
+        if(cc==='ar'){ar+=pt.tot;if(pt.anyEst)anyEstAr=true;}else{ap+=pt.tot;if(pt.anyEst)anyEstAp=true;}
+        if(pt.anyEst)hasEst=true;
       });
-      const net=ar-ap;
-      dt.className='dday-tot '+(anyEst?'est':net>=0?'pos':'neg');
-      if(ar>0||ap>0)dt.textContent=(anyEst?'~':'')+(net>=0?'+':'')+fmt(net);
-      ['ap','ar'].forEach(cc=>{
-        evForDate(ds,cc).forEach(name=>{
-          const t=gt(name,cc);if(!t||!t.on)return;
-          const k=ak(ds,name);const da=dispAmtEff(ds,name,cc);
-          if(selectedMarket&&!da)return;
-          const hasMkt=cc==='ap'&&!selectedMarket&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
-          const el=makeEvEl(name,t,da,cc==='ar'?'+':'-',()=>openAmt(ds,name,k,da,cc),hasMkt);
-          cell.appendChild(el);
-        });
-        evPayorsForDate(ds,cc).forEach(({t,p})=>{
-          if(!t.on)return;
-          const da=payorDispAmt(ds,p,t,cc);
-          if(selectedMarket&&!da)return;
-          const el=makeEvEl(p.name,p,da,cc==='ar'?'+':'-',()=>openPayorDateModal(t,cc,p,ds),false);
-          cell.appendChild(el);
-        });
-      });
+      const anchor=dn.nextSibling;
+      if(ar>0){const arLine=document.createElement('div');arLine.className='dday-tot ar'+(anyEstAr?' est':'');arLine.textContent=(anyEstAr?'~':'')+'+$'+fmt(ar);cell.insertBefore(arLine,anchor);}
+      if(ap>0){const apLine=document.createElement('div');apLine.className='dday-tot ap'+(anyEstAp?' est':'');apLine.textContent=(anyEstAp?'~':'')+'-$'+fmt(ap);cell.insertBefore(apLine,anchor);}
+      if(ar>0||ap>0){cell.classList.add('dc-clickable');cell.onclick=()=>openDayDetail(ds);}
     } else {
       let tot=0,anyEst=false;
       evForDate(ds,cat).forEach(n=>{const da=dispAmtEff(ds,n,cat);if(da){tot+=da.v;if(da.est)anyEst=true;}});
@@ -2044,7 +2038,7 @@ function closeAnyMenu(){
 }
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['m-amt','m-type','m-ev','m-export','m-xls','m-settings','m-payor','m-payor-date','m-collrate'].forEach(id=>{
+['m-amt','m-type','m-ev','m-export','m-xls','m-settings','m-payor','m-payor-date','m-collrate','m-daydetail'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
 
@@ -2257,6 +2251,50 @@ function openCollRateReport(){
     body.appendChild(row);
   });
   openModal('m-collrate');
+}
+
+/* ---- NET VIEW DAY DETAIL ----
+   Net calendar cells only show AR-in/AP-out summary lines (no individual
+   chips, which got crowded combining both sides). Clicking a day opens this
+   popup with the itemized breakdown; each row still opens the same edit
+   modal a chip would have. */
+function openDayDetail(ds){
+  document.getElementById('m-daydetail-title').textContent=ds;
+  const body=document.getElementById('daydetail-body');body.innerHTML='';
+  let any=false;
+  ['ap','ar'].forEach(cc=>{
+    evForDate(ds,cc).forEach(name=>{
+      const t=gt(name,cc);if(!t||!t.on)return;
+      const k=ak(ds,name);const da=dispAmtEff(ds,name,cc);
+      if(selectedMarket&&!da)return;
+      any=true;
+      body.appendChild(buildDayDetailRow(name,t.c,da,cc,()=>{closeModal('m-daydetail');openAmt(ds,name,k,da,cc);}));
+    });
+    evPayorsForDate(ds,cc).forEach(({t,p})=>{
+      if(!t.on)return;
+      const da=payorDispAmt(ds,p,t,cc);
+      if(selectedMarket&&!da)return;
+      any=true;
+      body.appendChild(buildDayDetailRow(p.name,p.c||t.c,da,cc,()=>{closeModal('m-daydetail');openPayorDateModal(t,cc,p,ds);}));
+    });
+  });
+  if(!any)body.innerHTML='<div style="font-size:12px;color:#999;padding:8px 0">No entries for this day.</div>';
+  openModal('m-daydetail');
+}
+function buildDayDetailRow(name,color,da,cc,onclick){
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:0.5px solid #eee;cursor:pointer';
+  row.onclick=onclick;
+  const left=document.createElement('div');left.style.cssText='display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;min-width:0;overflow:hidden';
+  const dot=document.createElement('div');dot.style.cssText=`width:7px;height:7px;border-radius:2px;flex-shrink:0;background:${color.bg};border:1px solid ${color.tx}55`;
+  const nm=document.createElement('span');nm.textContent=name;nm.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+  left.appendChild(dot);left.appendChild(nm);
+  const val=document.createElement('span');
+  const sign=cc==='ar'?'+':'-';
+  val.style.cssText='font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;'+(da&&da.est?'color:#EF9F27':cc==='ar'?'color:#0F6E56':'color:#a32d2d');
+  val.textContent=da?(da.est?'~':'')+sign+'$'+fmt(da.v):sign+'$0';
+  row.appendChild(left);row.appendChild(val);
+  return row;
 }
 
 /* ---- NEW TYPE IN GROUP ---- */
