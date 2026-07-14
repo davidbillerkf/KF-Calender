@@ -529,6 +529,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <h3 id="m-payor-title">Add Payor</h3>
   <div class="mrow"><label>Payor name</label><input type="text" id="m-payor-name" placeholder="e.g. BlueCross BlueShield"></div>
   <div class="mrow"><label>Color</label><div class="color-picker" id="m-payor-colors"></div></div>
+  <div class="mrow"><label>Status</label>
+    <select id="m-payor-status" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a">
+      <option value="active">Active</option>
+      <option value="pending">Pending (schedule not yet set)</option>
+    </select>
+  </div>
+  <div class="mrow"><label>Markets</label><div id="m-payor-markets"></div></div>
+  <div class="mrow"><label>Cycle</label>
+    <select id="m-payor-cycle-freq" onchange="onPayorCycleFreqChange()" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a">
+      <option value="">None (manual dates only)</option>
+      <option value="weekly">Weekly</option>
+      <option value="biweekly">Bi-weekly</option>
+    </select>
+  </div>
+  <div class="mrow" id="m-payor-cycle-startdow-row" style="display:none">
+    <label>Cycle starts on</label>
+    <select id="m-payor-cycle-startdow" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a"></select>
+  </div>
+  <div class="mrow" id="m-payor-cycle-lag-row" style="display:none">
+    <label>Days from cycle end to pay date</label>
+    <input type="number" id="m-payor-cycle-lag" min="0">
+  </div>
+  <div class="mrow" id="m-payor-cycle-target-row" style="display:none">
+    <label>Pay date must fall on</label>
+    <select id="m-payor-cycle-target" style="width:100%;font-size:13px;padding:7px 10px;border:0.5px solid #ddd;border-radius:9px;background:#fff;color:#1a1a1a"></select>
+  </div>
   <div class="mbtns" id="m-payor-btns"></div>
 </div></div>
 
@@ -606,6 +632,37 @@ const DEF_AR=[
   {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,recur:null, grp:'Insurance', payors:[]},
   {id:'agr', name:'Grants',             c:COLORS[4],on:true,recur:null, grp:'Grants'},
 ];
+/* ---- AR PAYOR SEED DATA (Medicaid/HealthFirst/Aetna/Fidelis/Optum/Other
+   Payers/NYNM/Somos cycle rules verified against worked examples; pending
+   payors listed with no cycle rule until their schedule arrives) ---- */
+const AR_PAYOR_RULES={
+  'Medicaid':     {cycleStartDow:4, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:21, payTargetDow:4},
+  'HealthFirst':  {cycleStartDow:6, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:7,  payTargetDow:null},
+  'Aetna':        {cycleStartDow:3, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:7,  payTargetDow:null},
+  'Fidelis':      {cycleStartDow:0, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:21, payTargetDow:1},
+  'Optum':        {cycleStartDow:0, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:7,  payTargetDow:null},
+  'Other Payers': {cycleStartDow:0, cycleSpanDays:7,  incrementDays:7,  payOffsetDays:25, payTargetDow:null},
+  'NYNM':         {cycleStartDow:4, cycleSpanDays:14, incrementDays:14, payOffsetDays:33, payTargetDow:1},
+};
+const AR_MARKETS_STANDARD=['General Market','Local Market'];
+const AR_PENDING_PAYORS=['Anthem','Carelon','NYS DOH','Bank Card','ANTHEM BLUE','Cigna','EVERNORTH','Highmark 05C','HNB - ECHO','PNC - ECHO','MVP Health Plan','OXFORD HEALTH','UMR','United Healthcare','Pay Plus (1199)','Horizon','Highmark','Patient Copay','Independent Health Corp.','WTA Benefits Trust','Sweet Home','American Plan Administrators','GA Medicaid','Tricare','GA BCBS','Amerigroup'];
+function seedArPayors(){
+  const ins=D.ar.types.find(t=>t.id==='ai'||t.name==='Insurance Payments');
+  if(!ins)return;
+  if(!Array.isArray(ins.payors))ins.payors=[];
+  if(ins.payors.some(p=>p.name==='Medicaid'))return; /* already seeded */
+  let ci=0;
+  const nextColor=()=>COLORS[(ci++)%COLORS.length];
+  ['Medicaid','HealthFirst','Aetna','Fidelis','Optum'].forEach(name=>{
+    ins.payors.push({name,c:nextColor(),status:'active',cycleRule:AR_PAYOR_RULES[name],markets:[...AR_MARKETS_STANDARD],dates:[]});
+  });
+  ins.payors.push({name:'Other Payers',c:nextColor(),status:'active',cycleRule:AR_PAYOR_RULES['Other Payers'],markets:[...AR_MARKETS_STANDARD],dates:[],subPayors:[]});
+  ins.payors.push({name:'NYNM',c:nextColor(),status:'active',cycleRule:AR_PAYOR_RULES['NYNM'],markets:[...AR_MARKETS_STANDARD],dates:[]});
+  ins.payors.push({name:'Somos',c:nextColor(),status:'active',cycleRule:null,markets:['Care First'],dates:[]});
+  AR_PENDING_PAYORS.forEach(name=>{
+    ins.payors.push({name,c:nextColor(),status:'pending',cycleRule:null,markets:[...AR_MARKETS_STANDARD],dates:[]});
+  });
+}
 const AP_EV=[
   ['Medical Payroll','2026-01-07'],['Management Payroll','2026-01-07'],['Offshore Payroll','2026-01-07'],
   ['Medical Payroll','2026-01-21'],['Management Payroll','2026-01-21'],['Offshore Payroll','2026-01-21'],
@@ -843,6 +900,7 @@ function finalizeData(){
     if(defArMap[t.id]&&Array.isArray(defArMap[t.id].payors)&&!Array.isArray(t.payors))t.payors=[];
     backfillRecur(t);
   });
+  seedArPayors();
 }
 
 function save(){
@@ -934,6 +992,33 @@ function evForDate(ds,c){
   T(c).forEach(t=>{if(recurMatchesDate(t.recur,ds)&&!all.includes(t.name))all.push(t.name);});
   return all;
 }
+/* ---- PAYOR CALENDAR ENTRIES ----
+   Payors render as their own chips (distinct from their parent type),
+   reusing the existing "date||payorName__typeName" amount key. Pending
+   payors have no cycleRule yet and never generate/show cycles. */
+function payorCompositeName(t,p){return p.name+'__'+t.name;}
+function evPayorsForDate(ds,c){
+  const out=[];
+  T(c).forEach(t=>{
+    if(!Array.isArray(t.payors))return;
+    t.payors.forEach(p=>{
+      if(p.status==='pending')return;
+      let matches=p.dates&&p.dates.includes(ds);
+      if(!matches&&p.cycleRule)matches=datesForPayorCycles(p.cycleRule).some(cyc=>cyc.payDate===ds);
+      if(matches)out.push({t,p});
+    });
+  });
+  return out;
+}
+function payorDayTotal(ds,c){
+  let tot=0,anyEst=false;
+  evPayorsForDate(ds,c).forEach(({t,p})=>{
+    if(!t.on)return;
+    const da=dispAmt(ds,payorCompositeName(t,p),c);
+    if(da){tot+=da.v;if(da.est)anyEst=true;}
+  });
+  return{tot,anyEst};
+}
 function allEvForType(name,c){
   const t=gt(name,c);if(!t)return[];
   const res=[];EV(c).forEach(r=>{if(r[0]===name)res.push(r[1]);});
@@ -984,6 +1069,35 @@ function addBusinessDays(ds,n){
     if(dow!==0&&dow!==6)added++;
   }
   return dsFromDate(dt);
+}
+/* ---- AR PAYOR CYCLE GENERATION ----
+   cycleRule: {cycleStartDow, cycleSpanDays, incrementDays, payOffsetDays, payTargetDow}
+   payTargetDow===null means "exact offset, no weekday search". Inclusive:
+   if the offset date already falls on payTargetDow, it is not moved forward. */
+function nextWeekdayOnOrAfter(ds,targetDow){
+  let cur=ds;
+  while(new Date(cur+'T00:00:00').getDay()!==targetDow)cur=addDays(cur,1);
+  return cur;
+}
+const _cycleCache={};
+function datesForPayorCycles(cycleRule){
+  if(!cycleRule)return[];
+  const ck=JSON.stringify(cycleRule);
+  if(_cycleCache[ck])return _cycleCache[ck];
+  const out=[];
+  let start=nextWeekdayOnOrAfter('2026-01-01',cycleRule.cycleStartDow);
+  const boundary='2027-12-31';
+  while(start<=boundary){
+    const end=addDays(start,cycleRule.cycleSpanDays-1);
+    let payDate=addDays(end,cycleRule.payOffsetDays);
+    if(cycleRule.payTargetDow!==null&&cycleRule.payTargetDow!==undefined){
+      payDate=nextWeekdayOnOrAfter(payDate,cycleRule.payTargetDow);
+    }
+    out.push({cycleStart:start,cycleEnd:end,payDate});
+    start=addDays(start,cycleRule.incrementDays);
+  }
+  _cycleCache[ck]=out;
+  return out;
 }
 /* Same day-total logic used by render()'s primary total, reused here for the
    2-day-ahead preview badge so the two numbers can never disagree. */
@@ -1169,9 +1283,18 @@ function buildPayorSection(body,t,cc){
       const pn=document.createElement('span');pn.className='payor-name';pn.textContent=p.name;
       const pe=document.createElement('button');pe.className='payor-edit';pe.textContent='Edit';
       pe.onclick=()=>openPayorModal(t,cc,p);
-      const paddate=document.createElement('button');paddate.className='payor-edit';paddate.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i>';paddate.title='Add date';
-      paddate.onclick=()=>openPayorDateModal(t,cc,p,null);
-      pr.appendChild(dot);pr.appendChild(pn);pr.appendChild(pe);pr.appendChild(paddate);ps.appendChild(pr);
+      pr.appendChild(dot);pr.appendChild(pn);
+      if(p.status==='pending'){
+        const badge=document.createElement('span');badge.className='badge off';badge.style.cssText+='margin-right:2px';badge.textContent='Pending';
+        pr.appendChild(badge);
+      }
+      pr.appendChild(pe);
+      if(p.status!=='pending'){
+        const paddate=document.createElement('button');paddate.className='payor-edit';paddate.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i>';paddate.title='Add date';
+        paddate.onclick=()=>openPayorDateModal(t,cc,p,null);
+        pr.appendChild(paddate);
+      }
+      ps.appendChild(pr);
 
       // payor dates
       if(p.dates&&p.dates.length){
@@ -1253,6 +1376,9 @@ function render(){
           if(cc==='ar')ar+=da.v;else ap+=da.v;
           if(da.est){anyEst=true;hasEst=true;estCt++;}
         });
+        const pt=payorDayTotal(ds,cc);
+        if(cc==='ar')ar+=pt.tot;else ap+=pt.tot;
+        if(pt.anyEst){anyEst=true;hasEst=true;}
       });
       const net=ar-ap;
       dt.className='dday-tot '+(anyEst?'est':net>=0?'pos':'neg');
@@ -1265,10 +1391,17 @@ function render(){
           const el=makeEvEl(name,t,da,cc==='ar'?'+':'-',()=>openAmt(ds,name,k,da,cc),hasMkt);
           cell.appendChild(el);
         });
+        evPayorsForDate(ds,cc).forEach(({t,p})=>{
+          if(!t.on)return;
+          const da=dispAmt(ds,payorCompositeName(t,p),cc);
+          const el=makeEvEl(p.name,p,da,cc==='ar'?'+':'-',()=>openPayorDateModal(t,cc,p,ds),false);
+          cell.appendChild(el);
+        });
       });
     } else {
       let tot=0,anyEst=false;
       evForDate(ds,cat).forEach(n=>{const da=dispAmtEff(ds,n,cat);if(da){tot+=da.v;if(da.est)anyEst=true;}});
+      const pt0=payorDayTotal(ds,cat);tot+=pt0.tot;if(pt0.anyEst)anyEst=true;
       dt.className='dday-tot '+cat+(anyEst?' est':'');
       if(tot>0)dt.textContent=(anyEst?'~':'')+'$'+fmt(tot);
       evForDate(ds,cat).forEach(name=>{
@@ -1280,6 +1413,13 @@ function render(){
         const el=makeEvEl(name,t,da,'',()=>openAmt(ds,name,k,da,cat),hasMkt);
         cell.appendChild(el);
       });
+      evPayorsForDate(ds,cat).forEach(({t,p})=>{
+        if(!t.on)return;
+        const da=dispAmt(ds,payorCompositeName(t,p),cat);
+        if(da&&da.est){hasEst=true;estCt++;}
+        const el=makeEvEl(p.name,p,da,'',()=>openPayorDateModal(t,cat,p,ds),false);
+        cell.appendChild(el);
+      });
     }
     // accumulate weekly totals
     ['ap','ar'].forEach(cc=>{
@@ -1288,6 +1428,8 @@ function render(){
         const da2=dispAmtEff(ds,name,cc);if(!da2)return;
         if(cc==='ap')wkAP+=da2.v;else wkAR+=da2.v;
       });
+      const pt2=payorDayTotal(ds,cc);
+      if(cc==='ap')wkAP+=pt2.tot;else wkAR+=pt2.tot;
     });
     wkDays++;
     const dow=new Date(ds+'T00:00:00').getDay(); // 0=Sun..6=Sat
@@ -1325,7 +1467,10 @@ function buildTotals(hasEst){
     let ap=0,ar=0,apE=0,arE=0;
     for(let d=1;d<=days;d++){
       const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      ['ap','ar'].forEach(cc=>{evForDate(ds,cc).forEach(name=>{const t=gt(name,cc);if(!t||!t.on)return;const da=dispAmt(ds,name,cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});});
+      ['ap','ar'].forEach(cc=>{
+        evForDate(ds,cc).forEach(name=>{const t=gt(name,cc);if(!t||!t.on)return;const da=dispAmt(ds,name,cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});
+        evPayorsForDate(ds,cc).forEach(({t,p})=>{if(!t.on)return;const da=dispAmt(ds,payorCompositeName(t,p),cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});
+      });
     }
     const net=ar-ap,netE=(ar+arE)-(ap+apE);
     add(tr,'cap',`AP (out)`,`-$${fmt(ap)}`);
@@ -1333,15 +1478,16 @@ function buildTotals(hasEst){
     add(tr,net>=0?'cpos':'cneg','Net',(net>=0?'+':'-')+'$'+fmt(net));
     if(hasEst)add(tr,'cest','Est. net',(netE>=0?'+':'-')+'~$'+fmt(netE));
   } else {
-    let tot=0,totE=0;const byT={};
+    let tot=0,totE=0;const byT={}; /* byT[name] = {v, color:{bg,tx}} — covers both types and payors */
     for(let d=1;d<=days;d++){
       const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      evForDate(ds,cat).forEach(name=>{const t=gt(name,cat);if(!t||!t.on)return;const da=dispAmtEff(ds,name,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;byT[name]=(byT[name]||0)+da.v;}});
+      evForDate(ds,cat).forEach(name=>{const t=gt(name,cat);if(!t||!t.on)return;const da=dispAmtEff(ds,name,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;if(!byT[name])byT[name]={v:0,color:t.c};byT[name].v+=da.v;}});
+      evPayorsForDate(ds,cat).forEach(({t,p})=>{if(!t.on)return;const da=dispAmt(ds,payorCompositeName(t,p),cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;if(!byT[p.name])byT[p.name]={v:0,color:p.c};byT[p.name].v+=da.v;}});
     }
     const confirmedLbl=cat.toUpperCase()+' confirmed'+(cat==='ap'&&selectedMarket?` (${selectedMarket})`:'');
     add(tr,'c'+cat,confirmedLbl,'$'+tot.toLocaleString('en-US',{minimumFractionDigits:2}));
     if(hasEst)add(tr,'cest','Est. total','~$'+fmt(tot+totE));
-    Object.entries(byT).forEach(([name,v])=>{const t=gt(name,cat);if(!t)return;const tc=document.createElement('div');tc.className='tc';tc.style.cssText=`border-left:3px solid ${t.c.tx};border-radius:0 10px 10px 0`;tc.innerHTML=`${name}<b>$${fmt(v)}</b>`;tr.appendChild(tc);});
+    Object.entries(byT).forEach(([name,info])=>{const tc=document.createElement('div');tc.className='tc';tc.style.cssText=`border-left:3px solid ${info.color.tx};border-radius:0 10px 10px 0`;tc.innerHTML=`${name}<b>$${fmt(info.v)}</b>`;tr.appendChild(tc);});
   }
 }
 function add(tr,cls,label,val){const tc=document.createElement('div');tc.className='tc '+cls;tc.innerHTML=`${label}<b>${val}</b>`;tr.appendChild(tc);}
@@ -1774,22 +1920,71 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 var _payorType=null,_payorCat=null,_payorObj=null,_payorCI=0;
 var _pdType=null,_pdCat=null,_pdPayor=null,_pdDateKey=null;
 
+const WEEKDAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function buildWeekdaySelect(sel,selectedVal,includeNone){
+  sel.innerHTML='';
+  if(includeNone){const o=document.createElement('option');o.value='';o.textContent='No adjustment (exact offset)';sel.appendChild(o);}
+  WEEKDAY_NAMES.forEach((nm,i)=>{const o=document.createElement('option');o.value=i;o.textContent=nm;if(String(selectedVal)===String(i))o.selected=true;sel.appendChild(o);});
+}
+function onPayorCycleFreqChange(){
+  const freq=document.getElementById('m-payor-cycle-freq').value;
+  const show=freq==='weekly'||freq==='biweekly';
+  document.getElementById('m-payor-cycle-startdow-row').style.display=show?'block':'none';
+  document.getElementById('m-payor-cycle-lag-row').style.display=show?'block':'none';
+  document.getElementById('m-payor-cycle-target-row').style.display=show?'block':'none';
+}
+function buildPayorMarketsChecklist(selectedMarkets){
+  const wrap=document.getElementById('m-payor-markets');wrap.innerHTML='';
+  D.markets.forEach(m=>{
+    const row=document.createElement('label');row.style.cssText='display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:4px;cursor:pointer';
+    const cb=document.createElement('input');cb.type='checkbox';cb.value=m;cb.checked=selectedMarkets.includes(m);
+    row.appendChild(cb);row.appendChild(document.createTextNode(m));
+    wrap.appendChild(row);
+  });
+}
+function readPayorMarkets(){return[...document.querySelectorAll('#m-payor-markets input:checked')].map(cb=>cb.value);}
+function readPayorCycleRule(){
+  const freq=document.getElementById('m-payor-cycle-freq').value;
+  if(!freq)return null;
+  const startDow=parseInt(document.getElementById('m-payor-cycle-startdow').value);
+  const lag=parseInt(document.getElementById('m-payor-cycle-lag').value)||0;
+  const targetVal=document.getElementById('m-payor-cycle-target').value;
+  const span=freq==='biweekly'?14:7;
+  return{cycleStartDow:startDow,cycleSpanDays:span,incrementDays:span,payOffsetDays:lag,payTargetDow:targetVal===''?null:parseInt(targetVal)};
+}
+function populatePayorCycleRule(cycleRule){
+  buildWeekdaySelect(document.getElementById('m-payor-cycle-startdow'),cycleRule?cycleRule.cycleStartDow:0,false);
+  buildWeekdaySelect(document.getElementById('m-payor-cycle-target'),cycleRule?cycleRule.payTargetDow:'',true);
+  document.getElementById('m-payor-cycle-lag').value=cycleRule?cycleRule.payOffsetDays:'';
+  document.getElementById('m-payor-cycle-freq').value=cycleRule?(cycleRule.cycleSpanDays===14?'biweekly':'weekly'):'';
+  onPayorCycleFreqChange();
+}
 function openPayorModal(t,cc,p){
   _payorType=t;_payorCat=cc;_payorObj=p;
   const isNew=!p;
   document.getElementById('m-payor-title').textContent=isNew?'Add Payor':'Edit Payor';
   document.getElementById('m-payor-name').value=p?p.name:'';
+  document.getElementById('m-payor-status').value=p&&p.status==='pending'?'pending':'active';
   _payorCI=p&&p.c?COLORS.findIndex(x=>x.bg===p.c.bg):0;if(_payorCI<0)_payorCI=0;
   buildPayorCP(_payorCI);
+  buildPayorMarketsChecklist(p&&p.markets?p.markets:[...DEF_MARKETS.slice(0,2)]);
+  populatePayorCycleRule(p?p.cycleRule:null);
   const btns=document.getElementById('m-payor-btns');btns.innerHTML='';
   const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-payor');btns.appendChild(can);
   if(!isNew){const del=document.createElement('button');del.className='del';del.textContent='Delete';del.onclick=()=>{_payorType.payors=_payorType.payors.filter(x=>x.name!==p.name);save();closeModal('m-payor');buildSb();};btns.appendChild(del);}
   const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Save';
   sv.onclick=()=>{
     const name=document.getElementById('m-payor-name').value.trim();if(!name)return;
-    if(isNew){if(!_payorType.payors)_payorType.payors=[];_payorType.payors.push({name,c:COLORS[_payorCI],dates:[]});}
-    else{p.name=name;p.c=COLORS[_payorCI];}
-    save();closeModal('m-payor');buildSb();
+    const status=document.getElementById('m-payor-status').value;
+    const markets=readPayorMarkets();
+    const cycleRule=readPayorCycleRule();
+    if(isNew){
+      if(!_payorType.payors)_payorType.payors=[];
+      _payorType.payors.push({name,c:COLORS[_payorCI],status,markets,cycleRule,dates:[]});
+    } else {
+      p.name=name;p.c=COLORS[_payorCI];p.status=status;p.markets=markets;p.cycleRule=cycleRule;
+    }
+    save();closeModal('m-payor');render();buildSb();
   };
   btns.appendChild(sv);openModal('m-payor');setTimeout(()=>document.getElementById('m-payor-name').focus(),60);
 }
@@ -1892,7 +2087,14 @@ function buildRp(){
   const allDates=new Set();
   cats.forEach(cc=>{
     EV(cc).forEach(r=>allDates.add(r[1]));
-    T(cc).forEach(t=>{datesForRecur(t.recur).forEach(ds=>allDates.add(ds));});
+    T(cc).forEach(t=>{
+      datesForRecur(t.recur).forEach(ds=>allDates.add(ds));
+      if(Array.isArray(t.payors))t.payors.forEach(p=>{
+        if(p.status==='pending')return;
+        if(p.dates)p.dates.forEach(ds=>allDates.add(ds));
+        if(p.cycleRule)datesForPayorCycles(p.cycleRule).forEach(cyc=>allDates.add(cyc.payDate));
+      });
+    });
     Object.keys(A(cc)).forEach(k=>allDates.add(k.split('||')[0]));
   });
   const sorted=[...allDates].sort();
@@ -1905,6 +2107,11 @@ function buildRp(){
         const t=gt(name,cc);if(!t||!t.on)return;
         const da=dispAmtEff(ds,name,cc);if(!da)return;
         rows.push({ds,name,t,da,cc});
+      });
+      evPayorsForDate(ds,cc).forEach(({t,p})=>{
+        if(!t.on)return;
+        const da=dispAmt(ds,payorCompositeName(t,p),cc);if(!da)return;
+        rows.push({ds,name:p.name,t:p,da,cc});
       });
     });
   });
