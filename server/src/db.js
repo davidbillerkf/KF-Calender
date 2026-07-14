@@ -23,9 +23,7 @@ const DEFAULT_AP_TYPES = [
 ];
 
 const DEFAULT_AR_TYPES = [
-  { id: 'ac', name: 'Client Invoices', c: { bg: '#EAF3DE', tx: '#27500A' }, on: true, recur: null, grp: 'Clients' },
   { id: 'ai', name: 'Insurance Payments', c: { bg: '#E1F5EE', tx: '#085041' }, on: true, recur: null, grp: 'Insurance', payors: [] },
-  { id: 'agr', name: 'Grants', c: { bg: '#EEEDFE', tx: '#3C3489' }, on: true, recur: null, grp: 'Grants' },
 ];
 
 const DEFAULT_MARKETS = ['General Market', 'Local Market', 'Care First'];
