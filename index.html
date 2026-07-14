@@ -247,16 +247,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sg-grp-add{background:transparent;border:none;cursor:pointer;font-size:10px;color:#aaa;padding:1px 4px;border-radius:4px;display:flex;align-items:center;gap:2px}
 .sg-grp-add:hover{background:#e8e8e0;color:#534AB7}
 /* PAYORS */
-.payor-section{padding:4px 8px 4px 12px;background:#f5f5f0;border-bottom:0.5px solid #eee}
-.payor-hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 3px}
-.payor-label{font-size:10px;font-weight:500;color:#888}
-.payor-add-btn{font-size:10px;padding:2px 6px;border-radius:12px;border:0.5px solid #0F6E56;color:#0F6E56;background:transparent;cursor:pointer}
-.payor-add-btn:hover{background:#E1F5EE}
-.payor-row{display:flex;align-items:center;gap:5px;padding:3px 0 3px 8px;border-bottom:0.5px solid #eee}
-.payor-row:last-child{border:none}
-.payor-name{font-size:11px;color:#555;flex:1;font-weight:500}
-.payor-edit{font-size:10px;padding:1px 5px;border-radius:4px;border:0.5px solid #ddd;background:transparent;color:#aaa;cursor:pointer}
-.payor-edit:hover{border-color:#534AB7;color:#534AB7}
 .payor-dates{padding:2px 0 2px 16px}
 .payor-ev-row{display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:0.5px dashed #eee}
 .payor-ev-row:last-child{border:none}
@@ -374,7 +364,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="sg-chk" id="sb-selectall-chk" onclick="toggleAllTypes()" style="cursor:pointer"></div>
         <span class="sb-head-title" id="sb-title">AP Types</span>
       </div>
-      <button class="sb-add ap" id="sb-add" onclick="showMenu(this,[{label:'New Type',icon:'ti-plus',onclick:()=>openNewType()},{label:'New Group',icon:'ti-folder-plus',onclick:()=>openNewTypeInGroup(null,cat)}])"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
+      <button class="sb-add ap" id="sb-add" onclick="openSbAddMenu(this)"><i class="ti ti-plus" style="font-size:10px"></i> New</button>
     </div>
     <div id="sb-list"><div class="sg-grp-hdr"><span class="sg-grp-label">Payroll</span><button class="sg-grp-add" title="Add type to Payroll"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAECE7;border:1px solid #712B1355"></div><span class="sg-name">Medical Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Management Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EAF3DE;border:1px solid #27500A55"></div><span class="sg-name">Offshore Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E1F5EE;border:1px solid #08504155"></div><span class="sg-name">RBT GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#EEEDFE;border:1px solid #3C348955"></div><span class="sg-name">RBT Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">ABA GA Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FBEAF0;border:1px solid #72243E55"></div><span class="sg-name">ABA Monsey Payroll</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg-grp-hdr"><span class="sg-grp-label">Credit Cards</span><button class="sg-grp-add" title="Add type to Credit Cards"><i class="ti ti-plus" style="font-size:10px"></i> Add</button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#F1EFE8;border:1px solid #5F5E5A55"></div><span class="sg-name">Divvy</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#FAEEDA;border:1px solid #63380655"></div><span class="sg-name">Ink Staffing</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><div class="sg"><button class="sg-row"><div class="sg-dot" style="background:#E6F1FB;border:1px solid #0C447C55"></div><span class="sg-name">Chase CC</span><span class="sg-arr">▶</span><div class="sg-chk on ap">✓</div></button></div><button class="sg-act" style="margin: 6px 12px; font-size: 10px;"><i class="ti ti-folder-plus" style="font-size:10px"></i> New group</button></div>
     <button class="sb-toggle" onclick="toggleSb()"><i class="ti ti-chevron-left" id="sb-icon"></i></button>
@@ -650,9 +640,7 @@ const DEF_AP=[
   {id:'ch',  name:'Chase CC',           c:COLORS[1],on:true,recur:{freq:'monthly',day:10}, grp:'Credit Cards'},
 ];
 const DEF_AR=[
-  {id:'ac',  name:'Client Invoices',    c:COLORS[2],on:true,recur:null, grp:'Clients'},
   {id:'ai',  name:'Insurance Payments', c:COLORS[3],on:true,recur:null, grp:'Insurance', payors:[]},
-  {id:'agr', name:'Grants',             c:COLORS[4],on:true,recur:null, grp:'Grants'},
 ];
 /* ---- AR PAYOR SEED DATA (Medicaid/HealthFirst/Aetna/Fidelis/Optum/Other
    Payers/NYNM/Somos cycle rules verified against worked examples; pending
@@ -958,7 +946,27 @@ function finalizeData(){
     backfillRecur(t);
   });
   seedArPayors();
-  if(fixupArPayorCycles())save();
+  let dirty=false;
+  if(pruneArToInsuranceOnly())dirty=true;
+  if(fixupArPayorCycles())dirty=true;
+  if(dirty)save();
+}
+/* AR now only supports the Insurance group — removes any other AR type
+   (and its events/amounts) left over from before that decision. Idempotent
+   and self-healing: runs on every finalizeData() pass (both the initial
+   local load and after refreshFromServer() overwrites D from the server),
+   same pattern as fixupArPayorCycles(). */
+function pruneArToInsuranceOnly(){
+  const removed=D.ar.types.filter(t=>!Array.isArray(t.payors));
+  if(!removed.length)return false;
+  const removedNames=new Set(removed.map(t=>t.name));
+  D.ar.types=D.ar.types.filter(t=>Array.isArray(t.payors));
+  D.ar.events=D.ar.events.filter(r=>!removedNames.has(r[0]));
+  Object.keys(D.ar.amounts).forEach(k=>{
+    const name=k.split('||')[1];
+    if(name&&removedNames.has(name))delete D.ar.amounts[k];
+  });
+  return true;
 }
 
 function save(){
@@ -1295,10 +1303,16 @@ function buildSb(){
       leftWrap.appendChild(garr);leftWrap.appendChild(gl);
       leftWrap.onclick=()=>{_closedGrps[grpKey]=isGrpOpen;buildSb();};
       ghdr.appendChild(leftWrap);
+      // a group is "payor-based" once any type in it holds a payors array (Insurance) —
+      // such groups list payors directly rather than nesting them under a type row
+      const payorType=groups[grpName].find(t=>Array.isArray(t.payors));
       if(cat!=='net'){
         const gear=document.createElement('button');gear.className='sg-grp-gear';gear.title='Group options';
         gear.innerHTML='<i class="ti ti-settings" style="font-size:11px"></i>';
-        gear.onclick=e=>{e.stopPropagation();showMenu(gear,[
+        gear.onclick=e=>{e.stopPropagation();showMenu(gear,payorType?[
+          {label:'Add payor',icon:'ti-plus',onclick:()=>openPayorModal(payorType,cc,null)},
+          {label:'Rename group',icon:'ti-pencil',onclick:()=>renameGroup(grpName,cc)},
+        ]:[
           {label:'Add type here',icon:'ti-plus',onclick:()=>openNewTypeInGroup(grpName,cc)},
           {label:'Rename group',icon:'ti-pencil',onclick:()=>renameGroup(grpName,cc)},
           {label:'Delete group',icon:'ti-trash',danger:true,onclick:()=>deleteGroup(grpName,cc)},
@@ -1309,6 +1323,10 @@ function buildSb(){
       if(!isGrpOpen)return;
 
       groups[grpName].forEach(t=>{
+        if(Array.isArray(t.payors)){
+          t.payors.forEach(p=>buildPayorRow(wrap,t,cc,p));
+          return;
+        }
         const key=cc+t.id;const isOpen=!!_openGroups[key];
         const sg=document.createElement('div');sg.className='sg';
         const row=document.createElement('div');row.className='sg-row';row.tabIndex=0;row.setAttribute('role','button');
@@ -1324,16 +1342,10 @@ function buildSb(){
         sg.appendChild(row);
         if(isOpen){
           const body=document.createElement('div');body.className='sg-body open';
-
-          // if this type supports payors (Insurance Payments style)
-          if(Array.isArray(t.payors)){
-            buildPayorSection(body,t,cc);
-          } else {
-            buildTypeEvents(body,t,cc);
-            const acts=document.createElement('div');acts.className='sg-acts';
-            const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openAddDate(t.name,cc);
-            acts.appendChild(ab);body.appendChild(acts);
-          }
+          buildTypeEvents(body,t,cc);
+          const acts=document.createElement('div');acts.className='sg-acts';
+          const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openAddDate(t.name,cc);
+          acts.appendChild(ab);body.appendChild(acts);
           sg.appendChild(body);
         }
         wrap.appendChild(sg);
@@ -1364,79 +1376,72 @@ function buildTypeEvents(body,t,cc){
   });
 }
 
-function buildPayorSection(body,t,cc){
-  if(!t.payors)t.payors=[];
-  const ps=document.createElement('div');ps.className='payor-section';
-  const phdr=document.createElement('div');phdr.className='payor-hdr';
-  const pl=document.createElement('span');pl.className='payor-label';pl.textContent='Payors';
-  const padd=document.createElement('button');padd.className='payor-add-btn';padd.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i> Add payor';
-  padd.onclick=()=>openPayorModal(t,cc,null);
-  phdr.appendChild(pl);phdr.appendChild(padd);ps.appendChild(phdr);
+/* Each payor renders as its own top-level sidebar row (same visual level as
+   a type), not nested inside the parent "Insurance Payments" container type —
+   that type only exists internally to hold cycleRule/status/markets/etc. */
+function buildPayorRow(wrap,t,cc,p){
+  const key=cc+t.id+'::'+p.name;const isOpen=!!_openGroups[key];
+  const sg=document.createElement('div');sg.className='sg';
+  const row=document.createElement('div');row.className='sg-row';row.tabIndex=0;row.setAttribute('role','button');
+  const badge=cat==='net'?`<span class="sg-badge ${cc}">${cc.toUpperCase()}</span>`:'';
+  const pendingBadge=p.status==='pending'?'<span class="badge off" style="margin-right:2px">Pending</span>':'';
+  const dotColor=p.c?p.c:t.c;
+  row.innerHTML=`<div class="sg-dot" style="background:${dotColor.bg};border:1px solid ${dotColor.tx}55"></div><span class="sg-name">${p.name}</span>${badge}${pendingBadge}<button class="sg-gear" title="Edit payor"><i class="ti ti-settings" style="font-size:10px"></i></button><span class="sg-arr${isOpen?' open':''}">&#9654;</span>`;
+  row.onclick=e=>{
+    const gear=row.querySelector('.sg-gear');
+    if(e.target===gear||gear.contains(e.target)){openPayorModal(t,cc,p);return;}
+    _openGroups[key]=!isOpen;buildSb();
+  };
+  sg.appendChild(row);
+  if(isOpen){
+    const body=document.createElement('div');body.className='sg-body open';
 
-  if(!t.payors.length){
-    const empty=document.createElement('div');empty.style.cssText='font-size:10px;color:#bbb;padding:6px 0 4px';empty.textContent='No payors yet. Add one above.';
-    ps.appendChild(empty);
-  } else {
-    t.payors.forEach(p=>{
-      const pr=document.createElement('div');pr.className='payor-row';
-      const dot=document.createElement('div');dot.style.cssText=`width:7px;height:7px;border-radius:2px;flex-shrink:0;background:${p.c?p.c.bg:t.c.bg};border:1px solid ${p.c?p.c.tx:t.c.tx}55`;
-      const pn=document.createElement('span');pn.className='payor-name';pn.textContent=p.name;
-      const pe=document.createElement('button');pe.className='payor-edit';pe.textContent='Edit';
-      pe.onclick=()=>openPayorModal(t,cc,p);
-      pr.appendChild(dot);pr.appendChild(pn);
-      if(p.status==='pending'){
-        const badge=document.createElement('span');badge.className='badge off';badge.style.cssText+='margin-right:2px';badge.textContent='Pending';
-        pr.appendChild(badge);
-      }
-      pr.appendChild(pe);
-      if(p.status!=='pending'){
-        const paddate=document.createElement('button');paddate.className='payor-edit';paddate.innerHTML='<i class="ti ti-plus" style="font-size:9px"></i>';paddate.title='Add date';
-        paddate.onclick=()=>openPayorDateModal(t,cc,p,null);
-        pr.appendChild(paddate);
-      }
-      ps.appendChild(pr);
-
-      // payor dates: merge auto-generated cycle pay dates with any manually-added custom dates
-      const cycleDatesSet=new Set(payorCycles(p).map(cyc=>cyc.payDate));
-      const customDates=p.dates||[];
-      const allDates=[...new Set([...cycleDatesSet,...customDates])].sort();
-      const today=dsFromDate(new Date());
-      let showDates=allDates.filter(ds=>ds>=today).slice(0,12);
-      if(showDates.length<12)showDates=[...allDates.filter(ds=>ds<today).slice(-(12-showDates.length)),...showDates];
-      if(showDates.length){
-        const pd=document.createElement('div');pd.className='payor-dates';
-        showDates.forEach(ds=>{
-          const k=ak(ds,p.name+'__'+t.name);
-          const isCycle=cycleDatesSet.has(ds);
-          const dr=document.createElement('div');dr.className='payor-ev-row';
-          const dd=document.createElement('span');dd.className='ev-date';dd.style.flex='1';dd.textContent=ds;
-          if(isCycle){
-            const da=payorDispAmt(ds,p,t,cc);
-            dr.style.cursor='pointer';
-            dr.onclick=()=>openPayorDateModal(t,cc,p,ds);
-            const val=document.createElement('span');val.className='payor-cycle-val';val.style.cssText='flex:0;white-space:nowrap;font-weight:500;'+(da&&da.est?'color:#EF9F27':'color:#1a1a1a');
-            val.textContent=da?(da.est?'~':'')+'$'+fmt(da.v):'—';
-            dr.appendChild(dd);dr.appendChild(val);
-          } else {
-            const hasReal=A(cc)[k]!==undefined;
-            const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(hasReal?'':' est');
-            inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=hasReal?A(cc)[k]:'';
-            inp._isEst=!hasReal;
-            inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
-            const sv=document.createElement('button');sv.className='ev-save '+cc;sv.textContent='Save';
-            sv.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
-            inp.addEventListener('keydown',e=>{if(e.key==='Enter')sv.click();});
-            const dl=document.createElement('button');dl.className='ev-del';dl.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
-            dl.onclick=()=>{p.dates=p.dates.filter(x=>x!==ds);delete A(cc)[k];save();render();buildSb();};
-            dr.appendChild(dd);dr.appendChild(inp);dr.appendChild(sv);dr.appendChild(dl);
-          }
-          pd.appendChild(dr);
-        });
-        ps.appendChild(pd);
-      }
-    });
+    // payor dates: merge auto-generated cycle pay dates with any manually-added custom dates
+    const cycleDatesSet=new Set(payorCycles(p).map(cyc=>cyc.payDate));
+    const customDates=p.dates||[];
+    const allDates=[...new Set([...cycleDatesSet,...customDates])].sort();
+    const today=dsFromDate(new Date());
+    let showDates=allDates.filter(ds=>ds>=today).slice(0,12);
+    if(showDates.length<12)showDates=[...allDates.filter(ds=>ds<today).slice(-(12-showDates.length)),...showDates];
+    if(showDates.length){
+      const pd=document.createElement('div');pd.className='payor-dates';
+      showDates.forEach(ds=>{
+        const k=ak(ds,p.name+'__'+t.name);
+        const isCycle=cycleDatesSet.has(ds);
+        const dr=document.createElement('div');dr.className='payor-ev-row';
+        const dd=document.createElement('span');dd.className='ev-date';dd.style.flex='1';dd.textContent=ds;
+        if(isCycle){
+          const da=payorDispAmt(ds,p,t,cc);
+          dr.style.cursor='pointer';
+          dr.onclick=()=>openPayorDateModal(t,cc,p,ds);
+          const val=document.createElement('span');val.className='payor-cycle-val';val.style.cssText='flex:0;white-space:nowrap;font-weight:500;'+(da&&da.est?'color:#EF9F27':'color:#1a1a1a');
+          val.textContent=da?(da.est?'~':'')+'$'+fmt(da.v):'—';
+          dr.appendChild(dd);dr.appendChild(val);
+        } else {
+          const hasReal=A(cc)[k]!==undefined;
+          const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(hasReal?'':' est');
+          inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=hasReal?A(cc)[k]:'';
+          inp._isEst=!hasReal;
+          inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
+          const sv=document.createElement('button');sv.className='ev-save '+cc;sv.textContent='Save';
+          sv.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
+          inp.addEventListener('keydown',e=>{if(e.key==='Enter')sv.click();});
+          const dl=document.createElement('button');dl.className='ev-del';dl.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
+          dl.onclick=()=>{p.dates=p.dates.filter(x=>x!==ds);delete A(cc)[k];save();render();buildSb();};
+          dr.appendChild(dd);dr.appendChild(inp);dr.appendChild(sv);dr.appendChild(dl);
+        }
+        pd.appendChild(dr);
+      });
+      body.appendChild(pd);
+    }
+    if(p.status!=='pending'){
+      const acts=document.createElement('div');acts.className='sg-acts';
+      const ab=document.createElement('button');ab.className='sg-act';ab.innerHTML='<i class="ti ti-plus" style="font-size:10px"></i> Add date';ab.onclick=()=>openPayorDateModal(t,cc,p,null);
+      acts.appendChild(ab);body.appendChild(acts);
+    }
+    sg.appendChild(body);
   }
-  body.appendChild(ps);
+  wrap.appendChild(sg);
 }
 
 /* ---- RENDER ---- */
@@ -1780,6 +1785,14 @@ function readRecurForm(){
   }
   return null;
 }
+function openSbAddMenu(btn){
+  if(cat==='ar'){
+    const insType=D.ar.types.find(t=>t.id==='ai'||t.name==='Insurance Payments');
+    showMenu(btn,[{label:'Add payor',icon:'ti-plus',onclick:()=>openPayorModal(insType,'ar',null)}]);
+    return;
+  }
+  showMenu(btn,[{label:'New Type',icon:'ti-plus',onclick:()=>openNewType()},{label:'New Group',icon:'ti-folder-plus',onclick:()=>openNewTypeInGroup(null,cat)}]);
+}
 function openNewType(){
   if(cat==='net')return;
   _typeId=null;_typeCI=0;
@@ -1800,7 +1813,7 @@ function populateGrpSelect(cc, currentGrp){
   T(cc).forEach(t=>{if(t.grp)grps.add(t.grp);});
   /* always include default groups */
   if(cc==='ap'){['Payroll','Credit Cards'].forEach(g=>grps.add(g));}
-  else{['Clients','Insurance','Grants'].forEach(g=>grps.add(g));}
+  else{grps.add('Insurance');}
   /* a freshly-prompted group name (e.g. from "New Group") has no types yet,
      so it won't be in the set above — make sure it's still selectable */
   if(currentGrp)grps.add(currentGrp);
