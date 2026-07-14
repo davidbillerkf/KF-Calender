@@ -1103,6 +1103,7 @@ function payorCollectionRate(p,compositeName,c,beforeDs){
   return payorCollectionStats(p,compositeName,c,beforeDs).rate;
 }
 function payorDispAmt(ds,p,t,c){
+  if(selectedMarket&&!(p.markets&&p.markets.includes(selectedMarket)))return null;
   const compositeName=payorCompositeName(t,p);
   const k=ak(ds,compositeName);
   if(A(c)[k]!==undefined)return{v:A(c)[k],est:false,stage:'actual'};
@@ -1137,12 +1138,16 @@ function dispAmt(ds,name,c){
   const e=estimate(name,y,m,c);
   return e!==null?{v:e,est:true}:null;
 }
-/* Market-filter-aware wrapper around dispAmt. When a market filter is active
-   (AP only), types without a market breakdown — and dates within a
-   market-capable type that haven't been broken down yet — are hidden
-   entirely rather than shown as a full/unattributed amount. */
+/* Market-filter-aware wrapper around dispAmt. When a market filter is active,
+   types without a market breakdown — and dates within a market-capable type
+   that haven't been broken down yet — are hidden entirely rather than shown
+   as a full/unattributed amount. AP types opt into breakdown via t.mkt; AR
+   has no per-market breakdown for plain types (only payors carry a markets
+   list, handled separately by payorDispAmt), so any AR type is hidden while
+   a market filter is active. */
 function dispAmtEff(ds,name,c){
-  if(c==='ap'&&selectedMarket){
+  if(selectedMarket){
+    if(c!=='ap')return null;
     const t=gt(name,c);
     if(!t||!t.mkt)return null;
     const v=A('ap')[mktKey(ds,selectedMarket,name)];
@@ -1218,7 +1223,6 @@ function computeDayTotal(ds,viewCat){
 /* ---- CATEGORY SWITCH ---- */
 function setCat(c){
   cat=c;
-  if(c!=='ap')selectedMarket=null;
   ['ap','ar','net'].forEach(x=>{
     const b=document.getElementById('ctab-'+x);
     b.className='ctab'+(c===x?' '+x:'');
@@ -1485,7 +1489,7 @@ function render(){
       ['ap','ar'].forEach(cc=>{
         evForDate(ds,cc).forEach(name=>{
           const t=gt(name,cc);if(!t||!t.on)return;
-          const da=dispAmt(ds,name,cc);if(!da)return;
+          const da=dispAmtEff(ds,name,cc);if(!da)return;
           if(cc==='ar')ar+=da.v;else ap+=da.v;
           if(da.est){anyEst=true;hasEst=true;estCt++;}
         });
@@ -1499,14 +1503,16 @@ function render(){
       ['ap','ar'].forEach(cc=>{
         evForDate(ds,cc).forEach(name=>{
           const t=gt(name,cc);if(!t||!t.on)return;
-          const k=ak(ds,name);const da=dispAmt(ds,name,cc);
-          const hasMkt=cc==='ap'&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
+          const k=ak(ds,name);const da=dispAmtEff(ds,name,cc);
+          if(selectedMarket&&!da)return;
+          const hasMkt=cc==='ap'&&!selectedMarket&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
           const el=makeEvEl(name,t,da,cc==='ar'?'+':'-',()=>openAmt(ds,name,k,da,cc),hasMkt);
           cell.appendChild(el);
         });
         evPayorsForDate(ds,cc).forEach(({t,p})=>{
           if(!t.on)return;
           const da=payorDispAmt(ds,p,t,cc);
+          if(selectedMarket&&!da)return;
           const el=makeEvEl(p.name,p,da,cc==='ar'?'+':'-',()=>openPayorDateModal(t,cc,p,ds),false);
           cell.appendChild(el);
         });
@@ -1520,7 +1526,7 @@ function render(){
       evForDate(ds,cat).forEach(name=>{
         const t=gt(name,cat);if(!t||!t.on)return;
         const k=ak(ds,name);const da=dispAmtEff(ds,name,cat);
-        if(cat==='ap'&&selectedMarket&&!da)return;
+        if(selectedMarket&&!da)return;
         if(da&&da.est){hasEst=true;estCt++;}
         const hasMkt=cat==='ap'&&!selectedMarket&&t.mkt&&Object.keys(getMktBreakdown(ds,name)).length>0;
         const el=makeEvEl(name,t,da,'',()=>openAmt(ds,name,k,da,cat),hasMkt);
@@ -1529,6 +1535,7 @@ function render(){
       evPayorsForDate(ds,cat).forEach(({t,p})=>{
         if(!t.on)return;
         const da=payorDispAmt(ds,p,t,cat);
+        if(selectedMarket&&!da)return;
         if(da&&da.est){hasEst=true;estCt++;}
         const el=makeEvEl(p.name,p,da,'',()=>openPayorDateModal(t,cat,p,ds),false);
         cell.appendChild(el);
@@ -1581,7 +1588,7 @@ function buildTotals(hasEst){
     for(let d=1;d<=days;d++){
       const ds=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       ['ap','ar'].forEach(cc=>{
-        evForDate(ds,cc).forEach(name=>{const t=gt(name,cc);if(!t||!t.on)return;const da=dispAmt(ds,name,cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});
+        evForDate(ds,cc).forEach(name=>{const t=gt(name,cc);if(!t||!t.on)return;const da=dispAmtEff(ds,name,cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});
         evPayorsForDate(ds,cc).forEach(({t,p})=>{if(!t.on)return;const da=payorDispAmt(ds,p,t,cc);if(!da)return;if(cc==='ap'){da.est?apE+=da.v:ap+=da.v;}else{da.est?arE+=da.v:ar+=da.v;}});
       });
     }
@@ -1597,7 +1604,7 @@ function buildTotals(hasEst){
       evForDate(ds,cat).forEach(name=>{const t=gt(name,cat);if(!t||!t.on)return;const da=dispAmtEff(ds,name,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;if(!byT[name])byT[name]={v:0,color:t.c};byT[name].v+=da.v;}});
       evPayorsForDate(ds,cat).forEach(({t,p})=>{if(!t.on)return;const da=payorDispAmt(ds,p,t,cat);if(!da)return;if(da.est)totE+=da.v;else{tot+=da.v;if(!byT[p.name])byT[p.name]={v:0,color:p.c};byT[p.name].v+=da.v;}});
     }
-    const confirmedLbl=cat.toUpperCase()+' confirmed'+(cat==='ap'&&selectedMarket?` (${selectedMarket})`:'');
+    const confirmedLbl=cat.toUpperCase()+' confirmed'+(selectedMarket?` (${selectedMarket})`:'');
     add(tr,'c'+cat,confirmedLbl,'$'+tot.toLocaleString('en-US',{minimumFractionDigits:2}));
     if(hasEst)add(tr,'cest','Est. total','~$'+fmt(tot+totE));
     Object.entries(byT).forEach(([name,info])=>{const tc=document.createElement('div');tc.className='tc';tc.style.cssText=`border-left:3px solid ${info.color.tx};border-radius:0 10px 10px 0`;tc.innerHTML=`${name}<b>$${fmt(info.v)}</b>`;tr.appendChild(tc);});
@@ -1923,7 +1930,7 @@ function doXlsExport(){
   ws['!cols']=showCatCol?[{wch:12},{wch:28},{wch:8},{wch:14},{wch:14}]:[{wch:12},{wch:28},{wch:14},{wch:14}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,catSel.toUpperCase());
-  const marketSuffix=(catSel==='ap'&&selectedMarket)?'_'+selectedMarket.replace(/\s+/g,'-'):'';
+  const marketSuffix=selectedMarket?'_'+selectedMarket.replace(/\s+/g,'-'):'';
   XLSX.writeFile(wb,`kf-calendar_${catSel}${marketSuffix}_${fromDs}_to_${toDs}.xlsx`);
   closeModal('m-xls');
 }
@@ -1952,7 +1959,7 @@ function buildMarketsList(){
 function buildMarketFilterOptions(){
   const sel=document.getElementById('market-filter');
   if(!sel)return;
-  sel.style.display=cat==='ap'?'inline-block':'none';
+  sel.style.display=D.markets&&D.markets.length?'inline-block':'none';
   const cur=selectedMarket||'';
   sel.innerHTML='<option value="">All markets</option>'+D.markets.map(m=>`<option value="${m}">${m}</option>`).join('');
   sel.value=cur;
