@@ -1392,24 +1392,41 @@ function buildPayorSection(body,t,cc){
       }
       ps.appendChild(pr);
 
-      // payor dates
-      if(p.dates&&p.dates.length){
+      // payor dates: merge auto-generated cycle pay dates with any manually-added custom dates
+      const cycleDatesSet=new Set(payorCycles(p).map(cyc=>cyc.payDate));
+      const customDates=p.dates||[];
+      const allDates=[...new Set([...cycleDatesSet,...customDates])].sort();
+      const today=dsFromDate(new Date());
+      let showDates=allDates.filter(ds=>ds>=today).slice(0,12);
+      if(showDates.length<12)showDates=[...allDates.filter(ds=>ds<today).slice(-(12-showDates.length)),...showDates];
+      if(showDates.length){
         const pd=document.createElement('div');pd.className='payor-dates';
-        p.dates.sort().forEach(ds=>{
+        showDates.forEach(ds=>{
           const k=ak(ds,p.name+'__'+t.name);
-          const hasReal=A(cc)[k]!==undefined;
+          const isCycle=cycleDatesSet.has(ds);
           const dr=document.createElement('div');dr.className='payor-ev-row';
           const dd=document.createElement('span');dd.className='ev-date';dd.style.flex='1';dd.textContent=ds;
-          const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(hasReal?'':' est');
-          inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=hasReal?A(cc)[k]:'';
-          inp._isEst=!hasReal;
-          inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
-          const sv=document.createElement('button');sv.className='ev-save '+cc;sv.textContent='Save';
-          sv.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
-          inp.addEventListener('keydown',e=>{if(e.key==='Enter')sv.click();});
-          const dl=document.createElement('button');dl.className='ev-del';dl.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
-          dl.onclick=()=>{p.dates=p.dates.filter(x=>x!==ds);delete A(cc)[k];save();render();buildSb();};
-          dr.appendChild(dd);dr.appendChild(inp);dr.appendChild(sv);dr.appendChild(dl);pd.appendChild(dr);
+          if(isCycle){
+            const da=payorDispAmt(ds,p,t,cc);
+            dr.style.cursor='pointer';
+            dr.onclick=()=>openPayorDateModal(t,cc,p,ds);
+            const val=document.createElement('span');val.className='payor-cycle-val';val.style.cssText='flex:0;white-space:nowrap;font-weight:500;'+(da&&da.est?'color:#EF9F27':'color:#1a1a1a');
+            val.textContent=da?(da.est?'~':'')+'$'+fmt(da.v):'—';
+            dr.appendChild(dd);dr.appendChild(val);
+          } else {
+            const hasReal=A(cc)[k]!==undefined;
+            const inp=document.createElement('input');inp.type='number';inp.className='ev-inp'+(hasReal?'':' est');
+            inp.placeholder='0.00';inp.step='0.01';inp.min='0';inp.value=hasReal?A(cc)[k]:'';
+            inp._isEst=!hasReal;
+            inp.addEventListener('focus',function(){if(this._isEst){this.value='';this._isEst=false;this.classList.remove('est');}});
+            const sv=document.createElement('button');sv.className='ev-save '+cc;sv.textContent='Save';
+            sv.onclick=()=>{const v=inp.value;if(v!=='')A(cc)[k]=parseFloat(v);else delete A(cc)[k];save();render();buildSb();};
+            inp.addEventListener('keydown',e=>{if(e.key==='Enter')sv.click();});
+            const dl=document.createElement('button');dl.className='ev-del';dl.innerHTML='<i class="ti ti-x" style="font-size:9px"></i>';
+            dl.onclick=()=>{p.dates=p.dates.filter(x=>x!==ds);delete A(cc)[k];save();render();buildSb();};
+            dr.appendChild(dd);dr.appendChild(inp);dr.appendChild(sv);dr.appendChild(dl);
+          }
+          pd.appendChild(dr);
         });
         ps.appendChild(pd);
       }
