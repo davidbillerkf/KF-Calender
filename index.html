@@ -1437,8 +1437,25 @@ function payorDispAmt(ds,p,t,c){
   if(selectedMarket&&!(p.markets&&p.markets.includes(selectedMarket)))return null;
   const compositeName=payorCompositeName(t,p);
   const k=ak(ds,compositeName);
+  const canSliceByMarket=selectedMarket&&p.markets&&p.markets.length>1;
+  /* When a market filter is active and this cycle actually has a market
+     breakdown, slice down to just that market's revenue instead of showing
+     the payor's full (blended) total. Payors/cycles with no breakdown fall
+     through to the full total, same as before market breakdown existed. */
+  if(canSliceByMarket){
+    const mktActual=A(c)[mktKey(ds,selectedMarket,compositeName)];
+    if(mktActual!==undefined)return{v:mktActual,est:false,stage:'actual'};
+  }
   if(A(c)[k]!==undefined)return{v:A(c)[k],est:false,stage:'actual'};
   const billedEntry=p.cycleData&&p.cycleData[ds];
+  if(canSliceByMarket){
+    const byMkt=billedEntry&&typeof billedEntry==='object'?billedEntry.byMarket:null;
+    if(byMkt&&byMkt[selectedMarket]!=null){
+      const billedMkt=byMkt[selectedMarket];
+      const rate=payorCollectionRate(p,compositeName,c,ds);
+      return{v:billedMkt*rate,est:true,stage:'expected',billed:billedMkt,rate};
+    }
+  }
   const billed=billedTotalOf(billedEntry);
   if(billed!=null){
     const bClean=billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null;
@@ -1968,30 +1985,22 @@ function billedTotalOf(v){
 }
 /* ---- Generic fixed-row (non-addable) breakdown UI, used for both the
    market split and the clean/not-clean split on Billed and Actual in the
-   payor lifecycle modal. Rows auto-sum into the target total input, which
-   becomes read-only while a breakdown is active. */
-function buildFixedBreakdownRows(wrapId,valInputId,rows,existing){
+   payor lifecycle modal. Market and clean/not-clean are independent lenses
+   on the same total — both can be active at once (e.g. so a payment can be
+   filtered by market for revenue AND tracked by clean/not-clean for denial
+   rate). Whichever box the user last edited drives the shared total input,
+   which is read-only while at least one breakdown is active. */
+function buildFixedBreakdownRows(wrapId,rows,existing,onChange){
   const wrap=document.getElementById(wrapId);wrap.innerHTML='';
   rows.forEach(r=>{
     const row=document.createElement('div');row.className='mrow';row.dataset.key=r.key;
     const lbl=document.createElement('label');lbl.textContent=r.label;
     const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.min='0';inp.placeholder='0.00';
     inp.value=existing&&existing[r.key]!=null?existing[r.key]:'';
-    inp.addEventListener('input',()=>recalcFixedBreakdown(wrapId,valInputId));
+    inp.addEventListener('input',onChange);
     row.appendChild(lbl);row.appendChild(inp);wrap.appendChild(row);
   });
-  recalcFixedBreakdown(wrapId,valInputId);
-}
-function recalcFixedBreakdown(wrapId,valInputId){
-  let sum=0,any=false;
-  document.querySelectorAll('#'+wrapId+' div[data-key]').forEach(row=>{
-    const inp=row.querySelector('input');
-    if(inp.value!==''){sum+=parseFloat(inp.value)||0;any=true;}
-  });
-  const valInp=document.getElementById(valInputId);
-  valInp.value=any?sum.toFixed(2):'';
-  valInp.readOnly=true;valInp.style.background='#f5f5f0';valInp.style.color='#888';
-  valInp.dispatchEvent(new Event('input'));
+  onChange();
 }
 function readFixedBreakdown(wrapId){
   const out={};
@@ -2001,27 +2010,50 @@ function readFixedBreakdown(wrapId){
   });
   return out;
 }
+function pdBoxSum(field,kind){
+  const box=document.getElementById(`m-pd-${field}-${kind}-box`);
+  if(!box||box.style.display!=='block')return null;
+  let sum=0,any=false;
+  document.querySelectorAll(`#m-pd-${field}-${kind}-rows div[data-key]`).forEach(row=>{
+    const inp=row.querySelector('input');
+    if(inp.value!==''){sum+=parseFloat(inp.value)||0;any=true;}
+  });
+  return{sum,any};
+}
+function recalcPdTotal(field,editedKind){
+  const mkt=pdBoxSum(field,'mkt'),clean=pdBoxSum(field,'clean');
+  if(!mkt&&!clean)return;
+  const valInp=document.getElementById(`m-pd-${field}`);
+  valInp.readOnly=true;valInp.style.background='#f5f5f0';valInp.style.color='#888';
+  const edited=editedKind==='mkt'?mkt:clean;
+  const other=editedKind==='mkt'?clean:mkt;
+  let use=null;
+  if(edited&&edited.any)use=edited.sum;
+  else if(other&&other.any)use=other.sum;
+  valInp.value=use!=null?use.toFixed(2):'';
+  valInp.dispatchEvent(new Event('input'));
+}
 function pdBreakdownRows(kind,p){
   if(kind==='mkt')return(p.markets||[]).map(m=>({key:m,label:m}));
   return[{key:'clean',label:'Clean claims'},{key:'notClean',label:'Not-clean claims'}];
 }
-/* field: 'billed'|'amt'  kind: 'mkt'|'clean' — the two breakdown kinds are
-   mutually exclusive per field (both are just different lenses on the same
-   total, editing both at once would be ambiguous about which wins). */
+/* field: 'billed'|'amt'  kind: 'mkt'|'clean' — independently toggled. */
 function togglePdBreakdown(field,kind,existing){
-  const other=kind==='mkt'?'clean':'mkt';
-  document.getElementById(`m-pd-${field}-${other}-box`).style.display='none';
-  document.getElementById(`m-pd-${field}-${other}-toggle-btn`).style.display='';
   document.getElementById(`m-pd-${field}-${kind}-box`).style.display='block';
   document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='none';
-  buildFixedBreakdownRows(`m-pd-${field}-${kind}-rows`,`m-pd-${field}`,pdBreakdownRows(kind,_pdPayor),existing||{});
+  buildFixedBreakdownRows(`m-pd-${field}-${kind}-rows`,pdBreakdownRows(kind,_pdPayor),existing||{},()=>recalcPdTotal(field,kind));
 }
 function closePdBreakdown(field,kind){
   document.getElementById(`m-pd-${field}-${kind}-box`).style.display='none';
   document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='';
-  const valInp=document.getElementById(`m-pd-${field}`);
-  valInp.readOnly=false;valInp.style.background='';valInp.style.color='';valInp.value='';
-  valInp.dispatchEvent(new Event('input'));
+  const other=kind==='mkt'?'clean':'mkt';
+  if(document.getElementById(`m-pd-${field}-${other}-box`).style.display==='block'){
+    recalcPdTotal(field,other);
+  } else {
+    const valInp=document.getElementById(`m-pd-${field}`);
+    valInp.readOnly=false;valInp.style.background='';valInp.style.color='';valInp.value='';
+    valInp.dispatchEvent(new Event('input'));
+  }
 }
 function openAmt(ds,name,key,da,c){
   _amtKey=key;_amtCat=c;_amtDs=ds;_amtName=name;_amtMktCleared=false;
@@ -2565,7 +2597,7 @@ function openPayorDateModal(t,cc,p,dateKey){
     const existingAmtMkt=getMktBreakdown(dateKey,compositeName,cc);
     const existingAmtClean=getCleanBreakdown(dateKey,compositeName,cc);
     if(canBreakdownByMarket&&Object.keys(existingAmtMkt).length)togglePdBreakdown('amt','mkt',existingAmtMkt);
-    else if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
+    if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
   }
 
   document.getElementById('m-pd-cycle-row').style.display=cyc?'':'none';
@@ -2587,7 +2619,7 @@ function openPayorDateModal(t,cc,p,dateKey){
     const existingByMarket=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarket?billedEntry.byMarket:null;
     const existingByClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byClean?billedEntry.byClean:null;
     if(canBreakdownByMarket&&existingByMarket)togglePdBreakdown('billed','mkt',existingByMarket);
-    else if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
+    if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
     const refreshExpected=()=>{
       const bv=parseFloat(document.getElementById('m-pd-billed').value);
       if(isNaN(bv)){document.getElementById('m-pd-stage3').textContent='Enter a billed amount first';return null;}
@@ -2633,21 +2665,17 @@ function openPayorDateModal(t,cc,p,dateKey){
     if(cyc){
       const billedMktActive=document.getElementById('m-pd-billed-mkt-box').style.display==='block';
       const billedCleanActive=document.getElementById('m-pd-billed-clean-box').style.display==='block';
-      if(billedMktActive){
-        const byMarket=readFixedBreakdown('m-pd-billed-mkt-rows');
-        const total=Object.values(byMarket).reduce((a,b)=>a+b,0);
-        if(Object.keys(byMarket).length){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total,byMarket,byClean:null};}
-        else if(p.cycleData)delete p.cycleData[dateKey];
-      } else if(billedCleanActive){
-        const byClean=readFixedBreakdown('m-pd-billed-clean-rows');
-        const total=Object.values(byClean).reduce((a,b)=>a+b,0);
-        if(Object.keys(byClean).length){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total,byMarket:null,byClean};}
-        else if(p.cycleData)delete p.cycleData[dateKey];
-      } else {
-        const bv=document.getElementById('m-pd-billed').value;
-        if(bv!==''){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total:parseFloat(bv),byMarket:null,byClean:null};}
-        else if(p.cycleData)delete p.cycleData[dateKey];
-      }
+      const billedByMarket=billedMktActive?readFixedBreakdown('m-pd-billed-mkt-rows'):null;
+      const billedByClean=billedCleanActive?readFixedBreakdown('m-pd-billed-clean-rows'):null;
+      const bv=document.getElementById('m-pd-billed').value;
+      if(bv!==''){
+        if(!p.cycleData)p.cycleData={};
+        p.cycleData[dateKey]={
+          total:parseFloat(bv),
+          byMarket:(billedByMarket&&Object.keys(billedByMarket).length)?billedByMarket:null,
+          byClean:(billedByClean&&Object.keys(billedByClean).length)?billedByClean:null,
+        };
+      } else if(p.cycleData)delete p.cycleData[dateKey];
 
       const actualKey=ak(dateKey,compositeName);
       (p.markets||[]).forEach(m=>delete A(cc)[mktKey(dateKey,m,compositeName)]);
@@ -2657,18 +2685,14 @@ function openPayorDateModal(t,cc,p,dateKey){
       const amtCleanActive=document.getElementById('m-pd-amt-clean-box').style.display==='block';
       if(amtMktActive){
         const byMarket=readFixedBreakdown('m-pd-amt-mkt-rows');
-        let sum=0,any=false;
-        Object.entries(byMarket).forEach(([m,v])=>{A(cc)[mktKey(dateKey,m,compositeName)]=v;sum+=v;any=true;});
-        if(any)A(cc)[actualKey]=sum;else delete A(cc)[actualKey];
-      } else if(amtCleanActive){
-        const byClean=readFixedBreakdown('m-pd-amt-clean-rows');
-        let sum=0,any=false;
-        Object.entries(byClean).forEach(([kind,v])=>{A(cc)[cleanKey(dateKey,kind,compositeName)]=v;sum+=v;any=true;});
-        if(any)A(cc)[actualKey]=sum;else delete A(cc)[actualKey];
-      } else {
-        const av=document.getElementById('m-pd-amt').value;
-        if(av!=='')A(cc)[actualKey]=parseFloat(av);else delete A(cc)[actualKey];
+        Object.entries(byMarket).forEach(([m,v])=>{A(cc)[mktKey(dateKey,m,compositeName)]=v;});
       }
+      if(amtCleanActive){
+        const byClean=readFixedBreakdown('m-pd-amt-clean-rows');
+        Object.entries(byClean).forEach(([kind,v])=>{A(cc)[cleanKey(dateKey,kind,compositeName)]=v;});
+      }
+      const av=document.getElementById('m-pd-amt').value;
+      if(av!=='')A(cc)[actualKey]=parseFloat(av);else delete A(cc)[actualKey];
       save();closeModal('m-payor-date');render();buildSb();
       return;
     }
