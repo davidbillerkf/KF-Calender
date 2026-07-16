@@ -4,6 +4,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Finance 2026–2027</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
 <style>
@@ -316,6 +319,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500}
 .badge.on{background:#E1F5EE;color:#085041}
 .badge.off{background:#f0f0ec;color:#aaa}
+#dash-theme-light-btn.sel,#dash-theme-dark-btn.sel{border-color:#534AB7;color:#534AB7;background:#EEEDFE;font-weight:600}
 
 /* ==== CFO DASHBOARD ==== */
 .dash{display:none;flex-direction:column;flex:1;min-width:0;min-height:0;padding:10px 12px;gap:8px;overflow:hidden;background:#f7f7f2;position:relative}
@@ -404,12 +408,71 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .dash-mobile-msg{display:block;font-size:13px;color:#888;text-align:center;padding:40px}
 }
 .dash-print-header{display:none;margin-bottom:10px}
+
+/* ==== CFO DASHBOARD — PREMIUM DARK THEME ====
+   Scoped entirely under #dashboard.dash-dark so the rest of the app (and
+   the dashboard's own default light look) is completely unaffected. */
+#dashboard.dash-dark{
+  --dbg:#0B0E14;--dcard:#131722;--dcard2:#171C29;--dborder:rgba(255,255,255,.07);
+  --dtext:#F2F4F8;--dtext-muted:#8891A5;--dtext-dim:#5B6478;
+  --dgold:#D4AF6A;
+  --dred:#FF6B6B;--dgreen:#34D399;--dblue:#5FA8FF;--damber:#FBBF24;--dpurple:#A78BFA;
+  background:var(--dbg);color:var(--dtext);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+#dashboard.dash-dark .dash-card{background:var(--dcard);border-color:var(--dborder);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+#dashboard.dash-dark .dash-card-title{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-kpi{background:var(--dcard);border-color:var(--dborder)}
+#dashboard.dash-dark .dash-kpi-label{color:var(--dtext-dim)}
+#dashboard.dash-dark .dash-kpi-val{color:var(--dgold);font-weight:600;letter-spacing:-.01em}
+#dashboard.dash-dark .dash-kpi-sub{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-kpi-badge.up{background:rgba(255,107,107,.14);color:var(--dred)}
+#dashboard.dash-dark .dash-kpi-badge.down{background:rgba(52,211,153,.14);color:var(--dgreen)}
+#dashboard.dash-dark .dash-kpi-badge.neutral{background:rgba(139,148,165,.14);color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-months{background:var(--dcard);border-color:var(--dborder)}
+#dashboard.dash-dark .dash-month-pill{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-month-pill:hover{color:var(--dtext)}
+#dashboard.dash-dark .dash-month-pill.on{background:var(--dgold);color:#0B0E14;font-weight:600}
+#dashboard.dash-dark .dash-icon-btn{background:var(--dcard2);border-color:var(--dborder);color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-icon-btn:hover{border-color:var(--dgold);color:var(--dgold)}
+#dashboard.dash-dark .dash-catbar-name{color:var(--dtext)}
+#dashboard.dash-dark .dash-catbar-val{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-catbar-track{background:rgba(255,255,255,.06)}
+#dashboard.dash-dark .dash-item-name{color:var(--dtext)}
+#dashboard.dash-dark .dash-item-val{color:var(--dgold)}
+#dashboard.dash-dark .dash-item-pct{color:var(--dtext-dim)}
+#dashboard.dash-dark .dash-item-row{border-color:var(--dborder)}
+#dashboard.dash-dark .dash-table th{background:var(--dcard);color:var(--dtext-dim);border-color:var(--dborder)}
+#dashboard.dash-dark .dash-table td{border-color:var(--dborder);color:var(--dtext)}
+#dashboard.dash-dark .dash-table td:first-child{color:var(--dtext)}
+#dashboard.dash-dark .dash-table tr.sel{background:rgba(212,175,106,.10)}
+#dashboard.dash-dark .dash-table .ar-val{color:var(--dgreen)}
+#dashboard.dash-dark .dash-table .pos{color:var(--dgreen)}
+#dashboard.dash-dark .dash-table .neg{color:var(--dred)}
+#dashboard.dash-dark .dash-table .badge-mom.up{background:rgba(255,107,107,.14);color:var(--dred)}
+#dashboard.dash-dark .dash-table .badge-mom.down{background:rgba(52,211,153,.14);color:var(--dgreen)}
+#dashboard.dash-dark .dash-empty{color:var(--dtext-dim)}
+#dashboard.dash-dark .dash-note{color:var(--dtext-dim)}
+#dashboard.dash-dark .dash-legend{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-drawer{background:var(--dcard);border-color:var(--dborder);color:var(--dtext);box-shadow:-4px 0 24px rgba(0,0,0,.5)}
+#dashboard.dash-dark .dash-drawer h3{color:var(--dtext)}
+#dashboard.dash-dark .dash-drawer-section h4{color:var(--dtext-dim)}
+#dashboard.dash-dark .dash-check-row{color:var(--dtext)}
+#dashboard.dash-dark .dash-select{background:var(--dcard2);border-color:var(--dborder);color:var(--dtext)}
+#dashboard.dash-dark .dash-drawer-close{color:var(--dtext-muted)}
+#dashboard.dash-dark .dash-drawer-backdrop{background:rgba(0,0,0,.6)}
+#dashboard.dash-dark ::-webkit-scrollbar{width:8px;height:8px}
+#dashboard.dash-dark ::-webkit-scrollbar-track{background:transparent}
+#dashboard.dash-dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+
 @media print{
   body>*:not(.app){display:none!important}
   .app{height:auto}
   .topnav,.sb,.sb-pill,.rp,.rp-pill{display:none!important}
   .content{display:block!important}
   .dash{display:block!important;overflow:visible!important;height:auto!important;background:#fff!important}
+  .dash.dash-dark,.dash.dash-dark .dash-card,.dash.dash-dark .dash-kpi{background:#fff!important;color:#1a1a1a!important;border-color:#ddd!important}
+  .dash.dash-dark .dash-kpi-val{color:#1a1a1a!important}
   .dash-topbar-actions,.dash-months,.dash-drawer,.dash-drawer-backdrop{display:none!important}
   .dash-kpis{display:grid!important;grid-template-columns:repeat(5,1fr)!important;height:auto!important}
   .dash-row2,.dash-row3{display:block!important;height:auto!important}
@@ -689,6 +752,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <h4><i class="ti ti-percentage" style="font-size:12px"></i> AR Collection Rates</h4>
     <div class="pw-note">Blended collection rate per insurance payor (actual ÷ billed, trailing 3 months).</div>
     <button onclick="closeModal('m-settings');openCollRateReport()" style="width:100%;padding:7px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-size:11px;font-weight:500">View report…</button>
+  </div>
+  <div class="pw-box">
+    <h4><i class="ti ti-palette" style="font-size:12px"></i> Dashboard Appearance</h4>
+    <div class="pw-note">Choose how the CFO Dashboard tab looks.</div>
+    <div style="display:flex;gap:6px">
+      <button id="dash-theme-light-btn" onclick="setDashTheme('light')" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#555;cursor:pointer;font-size:11px;font-weight:500">Light (Default)</button>
+      <button id="dash-theme-dark-btn" onclick="setDashTheme('dark')" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#555;cursor:pointer;font-size:11px;font-weight:500">Premium Dark</button>
+    </div>
   </div>
   <div class="pw-box">
     <h4><i class="ti ti-upload" style="font-size:12px"></i> Publish to GitHub</h4>
@@ -2117,7 +2188,7 @@ function doXlsExport(){
 }
 
 /* ---- SETTINGS ---- */
-function openSettings(){updatePwBadge();buildMarketsList();openModal('m-settings');}
+function openSettings(){updatePwBadge();buildMarketsList();if(!dashPrefs)loadDashPrefs();updateDashThemeButtons();openModal('m-settings');}
 
 /* ---- MARKETS ---- */
 function buildMarketsList(){
@@ -2814,6 +2885,7 @@ var dashMonth=null; /* 'YYYY-MM' */
 var dashChartObj=null;
 const DASH_PREFS_KEY='kf_dashboard_prefs';
 const DASH_DEFAULT_PREFS={
+  theme:'light',
   layout:{chart:true,catbars:true,items:true,summary:true},
   kpis:['apTotal','arTotal','net','largestCat','paymentCount'],
   chartType:'bar',
@@ -2828,13 +2900,19 @@ const DASH_DEFAULT_PREFS={
 };
 const DASH_KPI_LABELS={apTotal:'Total AP',arTotal:'Total AR',net:'Net Cash Position',largestCat:'Largest AP Category',paymentCount:'Payment Count',ytdAp:'YTD Total AP',ytdAr:'YTD Total AR',collRate:'Collection Rate %',apMomPct:'AP Month-over-Month % Change',highestPayment:'Highest Single Payment',denialRate:'Denial Rate %'};
 const DASH_KPI_BORDER={apTotal:'#E24B4A',arTotal:'#1D9E75',net:'#2a78d6',largestCat:'#eda100',paymentCount:'#4a3aa7',ytdAp:'#E24B4A',ytdAr:'#1D9E75',collRate:'#1D9E75',apMomPct:'#E24B4A',highestPayment:'#eda100',denialRate:'#eda100'};
+const DASH_KPI_BORDER_DARK={apTotal:'#FF6B6B',arTotal:'#34D399',net:'#5FA8FF',largestCat:'#FBBF24',paymentCount:'#A78BFA',ytdAp:'#FF6B6B',ytdAr:'#34D399',collRate:'#34D399',apMomPct:'#FF6B6B',highestPayment:'#FBBF24',denialRate:'#FBBF24'};
 const DASH_GROUP_COLORS={'Payroll':'#2a78d6','Credit Cards':'#888780','Staffing':'#eda100','Loans':'#1baf7a'};
 function dashGroupColor(grp){return DASH_GROUP_COLORS[grp]||'#73726c';}
 function dashChartColors(){
+  const dark=dashPrefs.theme==='dark';
   const scheme=dashPrefs.colorScheme;
-  if(scheme==='mono')return{ap:'rgba(90,90,90,0.65)',ar:'rgba(160,160,160,0.65)',net:'#444'};
-  if(scheme==='contrast')return{ap:'rgba(200,0,0,0.85)',ar:'rgba(0,140,70,0.85)',net:'#0047AB'};
-  return{ap:'rgba(226,73,72,0.65)',ar:'rgba(29,158,117,0.65)',net:'#2a78d6'};
+  let base;
+  if(scheme==='mono')base=dark?{ap:'rgba(210,210,210,0.65)',ar:'rgba(120,120,120,0.65)',net:'#ddd'}:{ap:'rgba(90,90,90,0.65)',ar:'rgba(160,160,160,0.65)',net:'#444'};
+  else if(scheme==='contrast')base=dark?{ap:'rgba(255,90,90,0.9)',ar:'rgba(40,220,140,0.9)',net:'#7fb8ff'}:{ap:'rgba(200,0,0,0.85)',ar:'rgba(0,140,70,0.85)',net:'#0047AB'};
+  else base=dark?{ap:'rgba(255,107,107,0.7)',ar:'rgba(52,211,153,0.7)',net:'#5FA8FF'}:{ap:'rgba(226,73,72,0.65)',ar:'rgba(29,158,117,0.65)',net:'#2a78d6'};
+  base.text=dark?'#8891A5':'#666';
+  base.grid=dark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  return base;
 }
 function dashFmt(v,isEst){return(isEst?'~':'')+'$'+fmt(v);}
 function dashFmtSigned(v,isEst){return(isEst?'~':'')+(v>=0?'+':'-')+'$'+fmt(Math.abs(v));}
@@ -2962,6 +3040,8 @@ function computeKpi(id,y,m){
   const prevApS=computeMonthStats(py,pm-1,'ap');
   const prevApFull=prevApS.tot+prevApS.totE;
   const momPct=prevApFull>0?((apFull-prevApFull)/prevApFull*100):null;
+  const isDark=dashPrefs&&dashPrefs.theme==='dark';
+  const cPos=isDark?'#34D399':'#0F6E56',cNeg=isDark?'#FF6B6B':'#a32d2d',cAmber=isDark?'#FBBF24':'#854F0B';
   switch(id){
     case 'apTotal':
       return{label:'Total AP',val:dashFmt(apFull,apS.totE>0&&apS.tot===0),
@@ -2973,7 +3053,7 @@ function computeKpi(id,y,m){
     case 'net':{
       const net=arFull-apFull;
       const sub=net>=0?'Cash positive':(arFull===0&&apFull>0?'AR pending':'Cash shortfall');
-      return{label:'Net Cash Position',val:dashFmtSigned(net,false),sub,valColor:net>=0?'#0F6E56':'#a32d2d'};
+      return{label:'Net Cash Position',val:dashFmtSigned(net,false),sub,valColor:net>=0?cPos:cNeg};
     }
     case 'largestCat':{
       const byGrp={};
@@ -2998,11 +3078,11 @@ function computeKpi(id,y,m){
       if(stats.completedCt<3)return{label:'Collection Rate',val:'—',sub:'Needs more AR data'};
       const rate=stats.collRate*100;
       return{label:'Collection Rate',val:rate.toFixed(1)+'%',sub:'based on last 3 months',
-        valColor:rate>=95?'#0F6E56':rate>=90?'#854F0B':'#a32d2d'};
+        valColor:rate>=95?cPos:rate>=90?cAmber:cNeg};
     }
     case 'apMomPct':
       return{label:'AP Month-over-Month',val:momPct===null?'—':(momPct>=0?'+':'')+momPct.toFixed(1)+'%',sub:'vs prior month',
-        valColor:momPct===null?null:(momPct>=0?'#a32d2d':'#0F6E56')};
+        valColor:momPct===null?null:(momPct>=0?cNeg:cPos)};
     case 'highestPayment':{
       let top=null,topV=0;
       Object.entries(apS.byType).forEach(([n,info])=>{if(info.v>topV){top=n;topV=info.v;}});
@@ -3013,7 +3093,7 @@ function computeKpi(id,y,m){
       if(stats.completedCt<3)return{label:'Denial Rate',val:'—',sub:'Needs more AR data'};
       const dr=stats.denialRate;
       return{label:'Denial Rate',val:dr.toFixed(1)+'%',sub:'of $'+fmt(stats.bSum)+' billed',
-        valColor:dr<5?'#0F6E56':dr<=10?'#854F0B':'#a32d2d'};
+        valColor:dr<5?cPos:dr<=10?cAmber:cNeg};
     }
   }
   return{label:id,val:'—',sub:null};
@@ -3031,9 +3111,29 @@ function openDashboard(){
   document.getElementById('dashboard').classList.add('open');
   ['ap','ar','net'].forEach(x=>{document.getElementById('ctab-'+x).className='ctab';});
   document.getElementById('ctab-dash').className='ctab dash';
+  applyDashTheme();
   const months=getMonthsWithData();
   if(!dashMonth||!months.includes(dashMonth))dashMonth=months.length?months[months.length-1]:dsFromDate(new Date()).slice(0,7);
   renderDashboard();
+}
+function setDashTheme(theme){
+  if(!dashPrefs)loadDashPrefs();
+  dashPrefs.theme=theme;
+  saveDashPrefs();
+  applyDashTheme();
+  updateDashThemeButtons();
+  if(document.getElementById('dashboard').classList.contains('open'))renderDashboard();
+}
+function applyDashTheme(){
+  if(!dashPrefs)return;
+  document.getElementById('dashboard').classList.toggle('dash-dark',dashPrefs.theme==='dark');
+}
+function updateDashThemeButtons(){
+  const light=document.getElementById('dash-theme-light-btn');
+  const dark=document.getElementById('dash-theme-dark-btn');
+  if(!light||!dark||!dashPrefs)return;
+  light.classList.toggle('sel',dashPrefs.theme!=='dark');
+  dark.classList.toggle('sel',dashPrefs.theme==='dark');
 }
 function closeDashboard(){
   document.getElementById('dashboard').classList.remove('open');
@@ -3088,7 +3188,8 @@ function renderDashKpis(){
   ids.forEach(id=>{
     const k=computeKpi(id,y,m-1);
     const tile=document.createElement('div');tile.className='dash-kpi';
-    tile.style.borderTopColor=DASH_KPI_BORDER[id]||'#ccc';
+    const borderMap=dashPrefs.theme==='dark'?DASH_KPI_BORDER_DARK:DASH_KPI_BORDER;
+    tile.style.borderTopColor=borderMap[id]||'#ccc';
     const lbl=document.createElement('div');lbl.className='dash-kpi-label';lbl.textContent=k.label;
     const val=document.createElement('div');val.className='dash-kpi-val';val.textContent=k.val;
     if(k.valColor)val.style.color=k.valColor;
@@ -3133,8 +3234,8 @@ function renderDashChart(){
     options:{
       responsive:true,maintainAspectRatio:false,
       scales:{
-        x:{stacked:dashPrefs.chartType==='stacked',grid:{display:false}},
-        y:{stacked:dashPrefs.chartType==='stacked',ticks:{callback:v=>'$'+fmt(v)}},
+        x:{stacked:dashPrefs.chartType==='stacked',grid:{display:false},ticks:{color:colors.text}},
+        y:{stacked:dashPrefs.chartType==='stacked',ticks:{callback:v=>'$'+fmt(v),color:colors.text},grid:{color:colors.grid}},
       },
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}}},
     },
