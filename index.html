@@ -163,6 +163,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mrow label{font-size:11px;color:#888;display:block;margin-bottom:3px;font-weight:500}
 .mrow .vv{font-size:13px;font-weight:500}
 .mrow .est-vv{color:#854F0B}
+.pd-bd-toggles{display:flex;gap:12px;margin-top:5px}
+.pd-bd-link{font-size:10.5px;padding:0;border:none;background:transparent;color:#534AB7;cursor:pointer;text-decoration:underline}
+.pd-bd-box{margin-top:6px;padding:8px;background:#f9f9f6;border-radius:8px}
+.pd-bd-box .mrow{margin-bottom:6px}
+.pd-bd-box .mrow:last-of-type{margin-bottom:0}
+.pd-bd-clear{font-size:10px;margin-top:2px;padding:0;border:none;background:transparent;color:#888;cursor:pointer;text-decoration:underline}
 .mrow .variance-vv{font-size:12px;line-height:1.7}
 .mrow .variance-vv .pos{color:#0F6E56}
 .mrow .variance-vv .neg{color:#a32d2d}
@@ -810,9 +816,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="mrow" id="m-pd-cycle-row" style="display:none"><label>Cycle</label><div class="vv" id="m-pd-cycle-info"></div></div>
   <div class="mrow" id="m-pd-date-row"><label>Date (YYYY-MM-DD)</label><input type="text" id="m-pd-date" placeholder="2026-06-15"></div>
   <div class="mrow" id="m-pd-stage1-row" style="display:none"><label>1. Estimate</label><div class="vv est-vv" id="m-pd-stage1"></div></div>
-  <div class="mrow" id="m-pd-billed-row" style="display:none"><label id="m-pd-billed-lbl">2. Billed ($)</label><input type="number" id="m-pd-billed" placeholder="0.00" step="0.01" min="0"></div>
+  <div class="mrow" id="m-pd-billed-row" style="display:none">
+    <label id="m-pd-billed-lbl">2. Billed ($)</label>
+    <input type="number" id="m-pd-billed" placeholder="0.00" step="0.01" min="0">
+    <div class="pd-bd-toggles" id="m-pd-billed-toggles">
+      <button type="button" class="pd-bd-link" id="m-pd-billed-mkt-toggle-btn" onclick="togglePdBreakdown('billed','mkt')">+ By market</button>
+      <button type="button" class="pd-bd-link" id="m-pd-billed-clean-toggle-btn" onclick="togglePdBreakdown('billed','clean')">+ Clean / not-clean</button>
+    </div>
+    <div class="pd-bd-box" id="m-pd-billed-mkt-box" style="display:none"><div id="m-pd-billed-mkt-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('billed','mkt')">Switch to single total</button></div>
+    <div class="pd-bd-box" id="m-pd-billed-clean-box" style="display:none"><div id="m-pd-billed-clean-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('billed','clean')">Switch to single total</button></div>
+  </div>
   <div class="mrow" id="m-pd-stage3-row" style="display:none"><label>3. Expected</label><div class="vv est-vv" id="m-pd-stage3"></div></div>
-  <div class="mrow"><label id="m-pd-amt-lbl">Amount ($)</label><input type="number" id="m-pd-amt" placeholder="0.00" step="0.01" min="0"></div>
+  <div class="mrow">
+    <label id="m-pd-amt-lbl">Amount ($)</label>
+    <input type="number" id="m-pd-amt" placeholder="0.00" step="0.01" min="0">
+    <div class="pd-bd-toggles" id="m-pd-amt-toggles" style="display:none">
+      <button type="button" class="pd-bd-link" id="m-pd-amt-mkt-toggle-btn" onclick="togglePdBreakdown('amt','mkt')">+ By market</button>
+      <button type="button" class="pd-bd-link" id="m-pd-amt-clean-toggle-btn" onclick="togglePdBreakdown('amt','clean')">+ Clean / not-clean</button>
+    </div>
+    <div class="pd-bd-box" id="m-pd-amt-mkt-box" style="display:none"><div id="m-pd-amt-mkt-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('amt','mkt')">Switch to single total</button></div>
+    <div class="pd-bd-box" id="m-pd-amt-clean-box" style="display:none"><div id="m-pd-amt-clean-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('amt','clean')">Switch to single total</button></div>
+  </div>
   <div class="mrow" id="m-pd-variance-row" style="display:none"><label>Variance</label><div class="vv" id="m-pd-variance"></div></div>
   <div class="mbtns" id="m-pd-btns"></div>
 </div></div>
@@ -820,7 +844,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- Collection rate report modal -->
 <div class="ov" id="m-collrate"><div class="md" style="width:420px">
   <h3>AR Collection Rates</h3>
-  <div class="pw-note" style="margin-bottom:10px">Blended rate per payor: actual ÷ billed, trailing 3 months (falls back to all-time if no recent data).</div>
+  <div class="pw-note" style="margin-bottom:10px">Clean vs. not-clean claim rate per payor: actual ÷ billed, trailing 3 months (falls back to all-time, then to a blended rate if no clean/not-clean split has been entered yet).</div>
   <div id="collrate-body" style="max-height:60vh;overflow-y:auto"></div>
   <div style="display:flex;justify-content:flex-end;margin-top:14px"><button onclick="closeModal('m-collrate')" style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;border:0.5px solid #ddd;background:transparent;color:#1a1a1a;font-weight:500">Close</button></div>
 </div></div>
@@ -1202,7 +1226,26 @@ function finalizeData(){
   let dirty=false;
   if(pruneArToInsuranceOnly())dirty=true;
   if(fixupArPayorCycles())dirty=true;
+  if(normalizePayorBilledCycleData())dirty=true;
   if(dirty)save();
+}
+/* Migrates p.cycleData[payDate] from the old plain-number shape to
+   {total,byMarket,byClean} so market/clean-not-clean breakdowns have
+   somewhere to live. Idempotent, same self-healing pattern as the other
+   AR fixups above. */
+function normalizePayorBilledCycleData(){
+  let changed=false;
+  D.ar.types.forEach(t=>{
+    if(!Array.isArray(t.payors))return;
+    t.payors.forEach(p=>{
+      if(!p.cycleData)return;
+      Object.keys(p.cycleData).forEach(ds=>{
+        const v=p.cycleData[ds];
+        if(typeof v==='number'){p.cycleData[ds]={total:v,byMarket:null,byClean:null};changed=true;}
+      });
+    });
+  });
+  return changed;
 }
 /* AR now only supports the Insurance group — removes any other AR type
    (and its events/amounts) left over from before that decision. Idempotent
@@ -1349,7 +1392,7 @@ function payorCollectionStats(p,compositeName,c,beforeDs){
   let bSumWin=0,aSumWin=0,bSumAll=0,aSumAll=0,completedCt=0;
   cycles.forEach(cyc=>{
     if(cyc.payDate>=beforeDs)return;
-    const billed=p.cycleData&&p.cycleData[cyc.payDate];
+    const billed=billedTotalOf(p.cycleData&&p.cycleData[cyc.payDate]);
     const actual=A(c)[ak(cyc.payDate,compositeName)];
     if(billed==null||actual===undefined)return;
     completedCt++;
@@ -1363,13 +1406,52 @@ function payorCollectionRate(p,compositeName,c,beforeDs){
   if(!payorCycles(p).length)return 1;
   return payorCollectionStats(p,compositeName,c,beforeDs).rate;
 }
+/* Clean vs not-clean collection stats — only counts cycles where BOTH the
+   billed clean/not-clean split AND the actual clean/not-clean split have
+   been entered. Cycles with only a flat total (no clean/not-clean split)
+   simply don't contribute here; payorDispAmt falls back to the blended
+   rate for those. */
+function payorCollectionStatsSplit(p,compositeName,c,beforeDs){
+  const cycles=payorCycles(p);
+  const cutoff=addDays(beforeDs,-90);
+  let bCW=0,aCW=0,bNW=0,aNW=0,bCA=0,aCA=0,bNA=0,aNA=0,completedCt=0;
+  cycles.forEach(cyc=>{
+    if(cyc.payDate>=beforeDs)return;
+    const billedEntry=p.cycleData&&p.cycleData[cyc.payDate];
+    const bClean=billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null;
+    if(!bClean||(bClean.clean==null&&bClean.notClean==null))return;
+    const aCleanVal=A(c)[cleanKey(cyc.payDate,'clean',compositeName)];
+    const aNCVal=A(c)[cleanKey(cyc.payDate,'notClean',compositeName)];
+    if(aCleanVal===undefined&&aNCVal===undefined)return;
+    const bC=bClean.clean||0,bN=bClean.notClean||0,aC=aCleanVal||0,aN=aNCVal||0;
+    completedCt++;
+    bCA+=bC;aCA+=aC;bNA+=bN;aNA+=aN;
+    if(cyc.payDate>=cutoff){bCW+=bC;aCW+=aC;bNW+=bN;aNW+=aN;}
+  });
+  const cleanRate=bCW>0?aCW/bCW:(bCA>0?aCA/bCA:null);
+  const notCleanRate=bNW>0?aNW/bNW:(bNA>0?aNA/bNA:null);
+  return{completedCt,cleanRate,notCleanRate,bCleanSum:bCW>0?bCW:bCA,bNotCleanSum:bNW>0?bNW:bNA,usedWindow:bCW>0||bNW>0};
+}
 function payorDispAmt(ds,p,t,c){
   if(selectedMarket&&!(p.markets&&p.markets.includes(selectedMarket)))return null;
   const compositeName=payorCompositeName(t,p);
   const k=ak(ds,compositeName);
   if(A(c)[k]!==undefined)return{v:A(c)[k],est:false,stage:'actual'};
-  const billed=p.cycleData&&p.cycleData[ds];
+  const billedEntry=p.cycleData&&p.cycleData[ds];
+  const billed=billedTotalOf(billedEntry);
   if(billed!=null){
+    const bClean=billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null;
+    if(bClean&&(bClean.clean!=null||bClean.notClean!=null)){
+      const split=payorCollectionStatsSplit(p,compositeName,c,ds);
+      if(split.cleanRate!=null||split.notCleanRate!=null){
+        const blended=payorCollectionRate(p,compositeName,c,ds);
+        const bC=bClean.clean||0,bN=bClean.notClean||0;
+        const rC=split.cleanRate!=null?split.cleanRate:blended;
+        const rN=split.notCleanRate!=null?split.notCleanRate:blended;
+        const exp=bC*rC+bN*rN;
+        return{v:exp,est:true,stage:'expected',billed,rate:billed>0?exp/billed:blended,splitRates:{clean:rC,notClean:rN}};
+      }
+    }
     const rate=payorCollectionRate(p,compositeName,c,ds);
     return{v:billed*rate,est:true,stage:'expected',billed,rate};
   }
@@ -1860,10 +1942,85 @@ function goToday(){const n=new Date();cy=n.getFullYear();cm=n.getMonth();render(
 
 /* ---- AMOUNT MODAL ---- */
 function mktKey(ds,market,name){return ak(ds,market+'__'+name);}
-function getMktBreakdown(ds,name){
+function getMktBreakdown(ds,name,cat){
+  cat=cat||'ap';
   const out={};
-  D.markets.forEach(m=>{const k=mktKey(ds,m,name);if(A('ap')[k]!==undefined)out[m]=A('ap')[k];});
+  D.markets.forEach(m=>{const k=mktKey(ds,m,name);if(A(cat)[k]!==undefined)out[m]=A(cat)[k];});
   return out;
+}
+/* Clean / not-clean claim breakdown — same key-per-part convention as the
+   market breakdown, namespaced with a "clean:" prefix so it can never
+   collide with an actual market name. */
+function cleanKey(ds,kind,name){return ak(ds,'clean:'+kind+'__'+name);}
+function getCleanBreakdown(ds,name,cat){
+  const out={};
+  const c=A(cat)[cleanKey(ds,'clean',name)];if(c!==undefined)out.clean=c;
+  const n=A(cat)[cleanKey(ds,'notClean',name)];if(n!==undefined)out.notClean=n;
+  return out;
+}
+/* p.cycleData[payDate] holds billed as {total,byMarket,byClean} — this
+   tolerates the older plain-number shape too (pre-breakdown-feature data,
+   normalized by normalizePayorBilledCycleData() but kept defensive here). */
+function billedTotalOf(v){
+  if(v==null)return null;
+  return typeof v==='number'?v:v.total;
+}
+/* ---- Generic fixed-row (non-addable) breakdown UI, used for both the
+   market split and the clean/not-clean split on Billed and Actual in the
+   payor lifecycle modal. Rows auto-sum into the target total input, which
+   becomes read-only while a breakdown is active. */
+function buildFixedBreakdownRows(wrapId,valInputId,rows,existing){
+  const wrap=document.getElementById(wrapId);wrap.innerHTML='';
+  rows.forEach(r=>{
+    const row=document.createElement('div');row.className='mrow';row.dataset.key=r.key;
+    const lbl=document.createElement('label');lbl.textContent=r.label;
+    const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.min='0';inp.placeholder='0.00';
+    inp.value=existing&&existing[r.key]!=null?existing[r.key]:'';
+    inp.addEventListener('input',()=>recalcFixedBreakdown(wrapId,valInputId));
+    row.appendChild(lbl);row.appendChild(inp);wrap.appendChild(row);
+  });
+  recalcFixedBreakdown(wrapId,valInputId);
+}
+function recalcFixedBreakdown(wrapId,valInputId){
+  let sum=0,any=false;
+  document.querySelectorAll('#'+wrapId+' div[data-key]').forEach(row=>{
+    const inp=row.querySelector('input');
+    if(inp.value!==''){sum+=parseFloat(inp.value)||0;any=true;}
+  });
+  const valInp=document.getElementById(valInputId);
+  valInp.value=any?sum.toFixed(2):'';
+  valInp.readOnly=true;valInp.style.background='#f5f5f0';valInp.style.color='#888';
+  valInp.dispatchEvent(new Event('input'));
+}
+function readFixedBreakdown(wrapId){
+  const out={};
+  document.querySelectorAll('#'+wrapId+' div[data-key]').forEach(row=>{
+    const inp=row.querySelector('input');
+    if(inp.value!=='')out[row.dataset.key]=parseFloat(inp.value);
+  });
+  return out;
+}
+function pdBreakdownRows(kind,p){
+  if(kind==='mkt')return(p.markets||[]).map(m=>({key:m,label:m}));
+  return[{key:'clean',label:'Clean claims'},{key:'notClean',label:'Not-clean claims'}];
+}
+/* field: 'billed'|'amt'  kind: 'mkt'|'clean' — the two breakdown kinds are
+   mutually exclusive per field (both are just different lenses on the same
+   total, editing both at once would be ambiguous about which wins). */
+function togglePdBreakdown(field,kind,existing){
+  const other=kind==='mkt'?'clean':'mkt';
+  document.getElementById(`m-pd-${field}-${other}-box`).style.display='none';
+  document.getElementById(`m-pd-${field}-${other}-toggle-btn`).style.display='';
+  document.getElementById(`m-pd-${field}-${kind}-box`).style.display='block';
+  document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='none';
+  buildFixedBreakdownRows(`m-pd-${field}-${kind}-rows`,`m-pd-${field}`,pdBreakdownRows(kind,_pdPayor),existing||{});
+}
+function closePdBreakdown(field,kind){
+  document.getElementById(`m-pd-${field}-${kind}-box`).style.display='none';
+  document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='';
+  const valInp=document.getElementById(`m-pd-${field}`);
+  valInp.readOnly=false;valInp.style.background='';valInp.style.color='';valInp.value='';
+  valInp.dispatchEvent(new Event('input'));
 }
 function openAmt(ds,name,key,da,c){
   _amtKey=key;_amtCat=c;_amtDs=ds;_amtName=name;_amtMktCleared=false;
@@ -2377,10 +2534,21 @@ function payorVarianceHtml(actual,billed,expected){
   }
   return parts.join(' · ');
 }
+function resetPdBreakdownUi(){
+  ['billed','amt'].forEach(field=>{
+    ['mkt','clean'].forEach(kind=>{
+      document.getElementById(`m-pd-${field}-${kind}-box`).style.display='none';
+      document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='';
+    });
+    const inp=document.getElementById(`m-pd-${field}`);
+    inp.readOnly=false;inp.style.background='';inp.style.color='';
+  });
+}
 function openPayorDateModal(t,cc,p,dateKey){
   _pdType=t;_pdCat=cc;_pdPayor=p;_pdDateKey=dateKey;
   const compositeName=p.name+'__'+t.name;
   const cyc=dateKey&&(p.cycleRule||p.cycles)?payorCycles(p).find(c=>c.payDate===dateKey):null;
+  resetPdBreakdownUi();
   document.getElementById('m-pd-title').textContent=cyc?'Payor Cycle':(dateKey?'Edit Date':'Add Pay Date');
   document.getElementById('m-pd-payor').textContent=p.name;
   document.getElementById('m-pd-date-row').style.display=cyc?'none':'';
@@ -2389,6 +2557,16 @@ function openPayorDateModal(t,cc,p,dateKey){
   const actualVal=k&&A(cc)[k]!==undefined?A(cc)[k]:null;
   document.getElementById('m-pd-amt').value=actualVal!==null?actualVal:'';
 
+  const canBreakdownByMarket=p.markets&&p.markets.length>1;
+  document.getElementById('m-pd-amt-toggles').style.display=dateKey?'flex':'none';
+  document.getElementById('m-pd-amt-mkt-toggle-btn').style.display=canBreakdownByMarket?'':'none';
+  if(dateKey){
+    const existingAmtMkt=getMktBreakdown(dateKey,compositeName,cc);
+    const existingAmtClean=getCleanBreakdown(dateKey,compositeName,cc);
+    if(canBreakdownByMarket&&Object.keys(existingAmtMkt).length)togglePdBreakdown('amt','mkt',existingAmtMkt);
+    else if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
+  }
+
   document.getElementById('m-pd-cycle-row').style.display=cyc?'':'none';
   document.getElementById('m-pd-stage1-row').style.display=cyc?'':'none';
   document.getElementById('m-pd-billed-row').style.display=cyc?'':'none';
@@ -2396,14 +2574,19 @@ function openPayorDateModal(t,cc,p,dateKey){
   document.getElementById('m-pd-variance-row').style.display='none';
   document.getElementById('m-pd-amt-lbl').textContent=cyc?'4. Actual ($)':'Amount ($)';
 
-  let billedVal=null;
   if(cyc){
     document.getElementById('m-pd-cycle-info').textContent=`${dsShort(cyc.cycleStart)} – ${dsShort(cyc.cycleEnd)}, ${cyc.cycleStart.slice(0,4)} → paid ${dsShort(cyc.payDate)}`;
     const[y,m]=dateKey.split('-').map(Number);
     const est=estimate(compositeName,y,m,cc);
     document.getElementById('m-pd-stage1').textContent=est!==null?`~$${fmt(est)} (avg of prior actuals)`:'No prior actuals yet';
-    billedVal=p.cycleData&&p.cycleData[dateKey]!=null?p.cycleData[dateKey]:null;
-    document.getElementById('m-pd-billed').value=billedVal!==null?billedVal:'';
+    document.getElementById('m-pd-billed-mkt-toggle-btn').style.display=canBreakdownByMarket?'':'none';
+    const billedEntry=p.cycleData&&p.cycleData[dateKey];
+    const billedTotal=billedTotalOf(billedEntry);
+    document.getElementById('m-pd-billed').value=billedTotal!=null?billedTotal:'';
+    const existingByMarket=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarket?billedEntry.byMarket:null;
+    const existingByClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byClean?billedEntry.byClean:null;
+    if(canBreakdownByMarket&&existingByMarket)togglePdBreakdown('billed','mkt',existingByMarket);
+    else if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
     const refreshExpected=()=>{
       const bv=parseFloat(document.getElementById('m-pd-billed').value);
       if(isNaN(bv)){document.getElementById('m-pd-stage3').textContent='Enter a billed amount first';return null;}
@@ -2432,7 +2615,14 @@ function openPayorDateModal(t,cc,p,dateKey){
   const can=document.createElement('button');can.textContent='Cancel';can.onclick=()=>closeModal('m-payor-date');btns.appendChild(can);
   if(cyc){
     const clr=document.createElement('button');clr.className='del';clr.textContent='Clear';
-    clr.onclick=()=>{if(p.cycleData)delete p.cycleData[dateKey];delete A(cc)[ak(dateKey,compositeName)];save();closeModal('m-payor-date');render();buildSb();};
+    clr.onclick=()=>{
+      if(p.cycleData)delete p.cycleData[dateKey];
+      delete A(cc)[ak(dateKey,compositeName)];
+      (p.markets||[]).forEach(m=>delete A(cc)[mktKey(dateKey,m,compositeName)]);
+      delete A(cc)[cleanKey(dateKey,'clean',compositeName)];
+      delete A(cc)[cleanKey(dateKey,'notClean',compositeName)];
+      save();closeModal('m-payor-date');render();buildSb();
+    };
     btns.appendChild(clr);
   } else if(dateKey){
     const del=document.createElement('button');del.className='del';del.textContent='Delete';del.onclick=()=>{p.dates=p.dates.filter(x=>x!==dateKey);delete A(cc)[ak(dateKey,compositeName)];save();closeModal('m-payor-date');render();buildSb();};btns.appendChild(del);
@@ -2440,11 +2630,44 @@ function openPayorDateModal(t,cc,p,dateKey){
   const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Save';
   sv.onclick=()=>{
     if(cyc){
-      const bv=document.getElementById('m-pd-billed').value;
-      const av=document.getElementById('m-pd-amt').value;
-      if(bv!==''){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]=parseFloat(bv);}
-      else if(p.cycleData)delete p.cycleData[dateKey];
-      if(av!=='')A(cc)[ak(dateKey,compositeName)]=parseFloat(av);else delete A(cc)[ak(dateKey,compositeName)];
+      const billedMktActive=document.getElementById('m-pd-billed-mkt-box').style.display==='block';
+      const billedCleanActive=document.getElementById('m-pd-billed-clean-box').style.display==='block';
+      if(billedMktActive){
+        const byMarket=readFixedBreakdown('m-pd-billed-mkt-rows');
+        const total=Object.values(byMarket).reduce((a,b)=>a+b,0);
+        if(Object.keys(byMarket).length){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total,byMarket,byClean:null};}
+        else if(p.cycleData)delete p.cycleData[dateKey];
+      } else if(billedCleanActive){
+        const byClean=readFixedBreakdown('m-pd-billed-clean-rows');
+        const total=Object.values(byClean).reduce((a,b)=>a+b,0);
+        if(Object.keys(byClean).length){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total,byMarket:null,byClean};}
+        else if(p.cycleData)delete p.cycleData[dateKey];
+      } else {
+        const bv=document.getElementById('m-pd-billed').value;
+        if(bv!==''){if(!p.cycleData)p.cycleData={};p.cycleData[dateKey]={total:parseFloat(bv),byMarket:null,byClean:null};}
+        else if(p.cycleData)delete p.cycleData[dateKey];
+      }
+
+      const actualKey=ak(dateKey,compositeName);
+      (p.markets||[]).forEach(m=>delete A(cc)[mktKey(dateKey,m,compositeName)]);
+      delete A(cc)[cleanKey(dateKey,'clean',compositeName)];
+      delete A(cc)[cleanKey(dateKey,'notClean',compositeName)];
+      const amtMktActive=document.getElementById('m-pd-amt-mkt-box').style.display==='block';
+      const amtCleanActive=document.getElementById('m-pd-amt-clean-box').style.display==='block';
+      if(amtMktActive){
+        const byMarket=readFixedBreakdown('m-pd-amt-mkt-rows');
+        let sum=0,any=false;
+        Object.entries(byMarket).forEach(([m,v])=>{A(cc)[mktKey(dateKey,m,compositeName)]=v;sum+=v;any=true;});
+        if(any)A(cc)[actualKey]=sum;else delete A(cc)[actualKey];
+      } else if(amtCleanActive){
+        const byClean=readFixedBreakdown('m-pd-amt-clean-rows');
+        let sum=0,any=false;
+        Object.entries(byClean).forEach(([kind,v])=>{A(cc)[cleanKey(dateKey,kind,compositeName)]=v;sum+=v;any=true;});
+        if(any)A(cc)[actualKey]=sum;else delete A(cc)[actualKey];
+      } else {
+        const av=document.getElementById('m-pd-amt').value;
+        if(av!=='')A(cc)[actualKey]=parseFloat(av);else delete A(cc)[actualKey];
+      }
       save();closeModal('m-payor-date');render();buildSb();
       return;
     }
@@ -2468,8 +2691,9 @@ function openCollRateReport(){
       if(p.status==='pending')return;
       if(!payorCycles(p).length)return;
       const compositeName=p.name+'__'+t.name;
-      const stats=payorCollectionStats(p,compositeName,'ar',today);
-      rows.push({name:p.name,c:p.c,stats});
+      const split=payorCollectionStatsSplit(p,compositeName,'ar',today);
+      const blended=payorCollectionStats(p,compositeName,'ar',today);
+      rows.push({name:p.name,c:p.c,split,blended});
     });
   });
   if(!rows.length){
@@ -2485,12 +2709,16 @@ function openCollRateReport(){
     const nm=document.createElement('span');nm.textContent=r.name;
     left.appendChild(dot);left.appendChild(nm);
     const right=document.createElement('div');right.style.cssText='text-align:right';
-    if(r.stats.completedCt===0){
-      right.innerHTML='<span style="font-size:11px;color:#bbb">No data yet</span>';
+    if(r.split.completedCt>0){
+      const cleanPct=r.split.cleanRate!=null?(r.split.cleanRate*100).toFixed(1)+'%':'—';
+      const ncPct=r.split.notCleanRate!=null?(r.split.notCleanRate*100).toFixed(1)+'%':'—';
+      const sub=r.split.usedWindow?`${r.split.completedCt} cycle${r.split.completedCt>1?'s':''} (3mo)`:`${r.split.completedCt} cycle${r.split.completedCt>1?'s':''} (all-time)`;
+      right.innerHTML=`<div style="font-size:12px;font-weight:600"><span style="color:#0F6E56">Clean ${cleanPct}</span> <span style="color:#ccc">·</span> <span style="color:#a32d2d">Not-clean ${ncPct}</span></div><div style="font-size:10px;color:#999">${sub}</div>`;
+    } else if(r.blended.completedCt>0){
+      const pct=(r.blended.rate*100).toFixed(1);
+      right.innerHTML=`<div style="font-size:13px;font-weight:600;color:#0F6E56">${pct}% blended</div><div style="font-size:10px;color:#999">no clean/not-clean split entered yet</div>`;
     } else {
-      const pct=(r.stats.rate*100).toFixed(1);
-      const sub=r.stats.usedWindow?`$${fmt(r.stats.aSumWin)} / $${fmt(r.stats.bSumWin)} (3mo)`:`$${fmt(r.stats.aSumAll)} / $${fmt(r.stats.bSumAll)} (all-time)`;
-      right.innerHTML=`<div style="font-size:13px;font-weight:600;color:#0F6E56">${pct}%</div><div style="font-size:10px;color:#999">${sub}</div>`;
+      right.innerHTML='<span style="font-size:11px;color:#bbb">No data yet</span>';
     }
     row.appendChild(left);row.appendChild(right);
     body.appendChild(row);
