@@ -169,6 +169,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pd-bd-box .mrow{margin-bottom:6px}
 .pd-bd-box .mrow:last-of-type{margin-bottom:0}
 .pd-bd-clear{font-size:10px;margin-top:2px;padding:0;border:none;background:transparent;color:#888;cursor:pointer;text-decoration:underline}
+.pd-grid-hdr{display:grid;grid-template-columns:1fr 88px 88px;gap:8px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-bottom:5px;font-weight:600}
+.pd-grid-row{display:grid;grid-template-columns:1fr 88px 88px;gap:8px;align-items:center;margin-bottom:6px}
+.pd-grid-row:last-of-type{margin-bottom:0}
+.pd-grid-lbl{font-size:11px;color:#333;font-weight:500}
+.pd-grid-row input{width:100%;font-size:12px;padding:6px 8px;border:0.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a}
+.pd-grid-row input:focus{border-color:#534AB7;outline:none;box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .mrow .variance-vv{font-size:12px;line-height:1.7}
 .mrow .variance-vv .pos{color:#0F6E56}
 .mrow .variance-vv .neg{color:#a32d2d}
@@ -1419,10 +1425,11 @@ function payorCollectionStatsSplit(p,compositeName,c,beforeDs){
   cycles.forEach(cyc=>{
     if(cyc.payDate>=beforeDs)return;
     const billedEntry=p.cycleData&&p.cycleData[cyc.payDate];
-    const bClean=billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null;
+    const bClean=(billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null)
+      ||(billedEntry&&billedEntry.byMarketClean?marketCleanMarginals(billedEntry.byMarketClean).byClean:null);
     if(!bClean||(bClean.clean==null&&bClean.notClean==null))return;
-    const aCleanVal=A(c)[cleanKey(cyc.payDate,'clean',compositeName)];
-    const aNCVal=A(c)[cleanKey(cyc.payDate,'notClean',compositeName)];
+    const aTotals=actualCleanTotals(cyc.payDate,compositeName,c);
+    const aCleanVal=aTotals.clean,aNCVal=aTotals.notClean;
     if(aCleanVal===undefined&&aNCVal===undefined)return;
     const bC=bClean.clean||0,bN=bClean.notClean||0,aC=aCleanVal||0,aN=aNCVal||0;
     completedCt++;
@@ -1445,11 +1452,15 @@ function payorDispAmt(ds,p,t,c){
   if(canSliceByMarket){
     const mktActual=A(c)[mktKey(ds,selectedMarket,compositeName)];
     if(mktActual!==undefined)return{v:mktActual,est:false,stage:'actual'};
+    const crossClean=A(c)[crossKey(ds,selectedMarket,'clean',compositeName)];
+    const crossNotClean=A(c)[crossKey(ds,selectedMarket,'notClean',compositeName)];
+    if(crossClean!==undefined||crossNotClean!==undefined)return{v:(crossClean||0)+(crossNotClean||0),est:false,stage:'actual'};
   }
   if(A(c)[k]!==undefined)return{v:A(c)[k],est:false,stage:'actual'};
   const billedEntry=p.cycleData&&p.cycleData[ds];
   if(canSliceByMarket){
-    const byMkt=billedEntry&&typeof billedEntry==='object'?billedEntry.byMarket:null;
+    const byMkt=(billedEntry&&typeof billedEntry==='object'?billedEntry.byMarket:null)
+      ||(billedEntry&&billedEntry.byMarketClean?marketCleanMarginals(billedEntry.byMarketClean).byMarket:null);
     if(byMkt&&byMkt[selectedMarket]!=null){
       const billedMkt=byMkt[selectedMarket];
       const rate=payorCollectionRate(p,compositeName,c,ds);
@@ -1458,7 +1469,8 @@ function payorDispAmt(ds,p,t,c){
   }
   const billed=billedTotalOf(billedEntry);
   if(billed!=null){
-    const bClean=billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null;
+    const bClean=(billedEntry&&typeof billedEntry==='object'?billedEntry.byClean:null)
+      ||(billedEntry&&billedEntry.byMarketClean?marketCleanMarginals(billedEntry.byMarketClean).byClean:null);
     if(bClean&&(bClean.clean!=null||bClean.notClean!=null)){
       const split=payorCollectionStatsSplit(p,compositeName,c,ds);
       if(split.cleanRate!=null||split.notCleanRate!=null){
@@ -1976,6 +1988,36 @@ function getCleanBreakdown(ds,name,cat){
   const n=A(cat)[cleanKey(ds,'notClean',name)];if(n!==undefined)out.notClean=n;
   return out;
 }
+/* market x clean/not-clean cross-tab cell key, for payors with more than
+   one market — combines the market and clean: namespaces above so a cell
+   can never collide with a plain market or plain clean/not-clean key. */
+function crossKey(ds,market,kind,name){return ak(ds,market+'__clean:'+kind+'__'+name);}
+function getCrossBreakdown(ds,name,cat){
+  cat=cat||'ar';
+  const out={};
+  D.markets.forEach(m=>{
+    const c=A(cat)[crossKey(ds,m,'clean',name)],n=A(cat)[crossKey(ds,m,'notClean',name)];
+    if(c!==undefined||n!==undefined)out[m]={clean:c,notClean:n};
+  });
+  return out;
+}
+/* Blended clean/not-clean actual totals for a date — reads the plain
+   cleanKey sub-amounts first (single-market payors), falling back to
+   summing the market x clean/not-clean cross-tab cells across all markets
+   (multi-market payors), so collection-rate math doesn't need to care
+   which breakdown shape a given payor actually uses. */
+function actualCleanTotals(ds,name,c){
+  const flat=getCleanBreakdown(ds,name,c);
+  if(flat.clean!==undefined||flat.notClean!==undefined)return flat;
+  const cross=getCrossBreakdown(ds,name,c);
+  if(!Object.keys(cross).length)return{};
+  let clean,notClean;
+  Object.values(cross).forEach(v=>{
+    if(v.clean!=null)clean=(clean||0)+v.clean;
+    if(v.notClean!=null)notClean=(notClean||0)+v.notClean;
+  });
+  return{clean,notClean};
+}
 /* p.cycleData[payDate] holds billed as {total,byMarket,byClean} — this
    tolerates the older plain-number shape too (pre-breakdown-feature data,
    normalized by normalizePayorBilledCycleData() but kept defensive here). */
@@ -1983,13 +2025,14 @@ function billedTotalOf(v){
   if(v==null)return null;
   return typeof v==='number'?v:v.total;
 }
-/* ---- Generic fixed-row (non-addable) breakdown UI, used for both the
-   market split and the clean/not-clean split on Billed and Actual in the
-   payor lifecycle modal. Market and clean/not-clean are independent lenses
-   on the same total — both can be active at once (e.g. so a payment can be
-   filtered by market for revenue AND tracked by clean/not-clean for denial
-   rate). Whichever box the user last edited drives the shared total input,
-   which is read-only while at least one breakdown is active. */
+/* ---- Breakdown UI for Billed/Actual in the payor lifecycle modal.
+   A payor with more than one market gets a single "By market" breakdown
+   that's a market x clean/not-clean grid — two columns per market row —
+   so the same entry shows revenue per market AND feeds the clean/not-clean
+   denial-rate split. A payor with one (or no) market has nothing to cross
+   the market dimension with, so it falls back to a plain 2-row clean/
+   not-clean breakdown instead. Only one of the two is ever offered for a
+   given payor, so there's no "which one wins" ambiguity. */
 function buildFixedBreakdownRows(wrapId,rows,existing,onChange){
   const wrap=document.getElementById(wrapId);wrap.innerHTML='';
   rows.forEach(r=>{
@@ -2010,38 +2053,77 @@ function readFixedBreakdown(wrapId){
   });
   return out;
 }
+/* market x clean/not-clean grid: existing = {market:{clean,notClean}} */
+function buildMarketCleanGrid(wrapId,markets,existing,onChange){
+  const wrap=document.getElementById(wrapId);wrap.innerHTML='';
+  const hdr=document.createElement('div');hdr.className='pd-grid-hdr';
+  hdr.innerHTML='<span></span><span>Clean</span><span>Not-clean</span>';
+  wrap.appendChild(hdr);
+  markets.forEach(m=>{
+    const row=document.createElement('div');row.className='pd-grid-row';row.dataset.key=m;
+    const lbl=document.createElement('span');lbl.className='pd-grid-lbl';lbl.textContent=m;
+    const cIn=document.createElement('input');cIn.type='number';cIn.step='0.01';cIn.min='0';cIn.placeholder='0.00';cIn.dataset.kind='clean';
+    const ex=existing&&existing[m];
+    cIn.value=ex&&ex.clean!=null?ex.clean:'';
+    const nIn=document.createElement('input');nIn.type='number';nIn.step='0.01';nIn.min='0';nIn.placeholder='0.00';nIn.dataset.kind='notClean';
+    nIn.value=ex&&ex.notClean!=null?ex.notClean:'';
+    cIn.addEventListener('input',onChange);nIn.addEventListener('input',onChange);
+    row.appendChild(lbl);row.appendChild(cIn);row.appendChild(nIn);wrap.appendChild(row);
+  });
+  onChange();
+}
+function readMarketCleanGrid(wrapId){
+  const out={};
+  document.querySelectorAll('#'+wrapId+' div.pd-grid-row').forEach(row=>{
+    const cIn=row.querySelector('input[data-kind="clean"]'),nIn=row.querySelector('input[data-kind="notClean"]');
+    const clean=cIn.value!==''?parseFloat(cIn.value):null,notClean=nIn.value!==''?parseFloat(nIn.value):null;
+    if(clean!=null||notClean!=null)out[row.dataset.key]={clean,notClean};
+  });
+  return out;
+}
+/* Marginal sums derived from a market x clean/not-clean grid, so the
+   existing (grid-unaware) collection-rate and market-slicing code can keep
+   reading plain byMarket/byClean shapes without knowing the grid exists. */
+function marketCleanMarginals(byMarketClean){
+  if(!byMarketClean)return{byMarket:null,byClean:null};
+  const byMarket={};const byClean={clean:0,notClean:0};let any=false;
+  Object.entries(byMarketClean).forEach(([m,v])=>{
+    const c=v.clean||0,n=v.notClean||0;
+    byMarket[m]=c+n;byClean.clean+=c;byClean.notClean+=n;any=true;
+  });
+  return any?{byMarket,byClean}:{byMarket:null,byClean:null};
+}
 function pdBoxSum(field,kind){
   const box=document.getElementById(`m-pd-${field}-${kind}-box`);
   if(!box||box.style.display!=='block')return null;
   let sum=0,any=false;
-  document.querySelectorAll(`#m-pd-${field}-${kind}-rows div[data-key]`).forEach(row=>{
-    const inp=row.querySelector('input');
+  document.querySelectorAll(`#m-pd-${field}-${kind}-rows input`).forEach(inp=>{
     if(inp.value!==''){sum+=parseFloat(inp.value)||0;any=true;}
   });
   return{sum,any};
 }
 function recalcPdTotal(field,editedKind){
-  const mkt=pdBoxSum(field,'mkt'),clean=pdBoxSum(field,'clean');
-  if(!mkt&&!clean)return;
+  const box=pdBoxSum(field,editedKind);
+  if(!box)return;
   const valInp=document.getElementById(`m-pd-${field}`);
   valInp.readOnly=true;valInp.style.background='#f5f5f0';valInp.style.color='#888';
-  const edited=editedKind==='mkt'?mkt:clean;
-  const other=editedKind==='mkt'?clean:mkt;
-  let use=null;
-  if(edited&&edited.any)use=edited.sum;
-  else if(other&&other.any)use=other.sum;
-  valInp.value=use!=null?use.toFixed(2):'';
+  valInp.value=box.any?box.sum.toFixed(2):'';
   valInp.dispatchEvent(new Event('input'));
 }
-function pdBreakdownRows(kind,p){
-  if(kind==='mkt')return(p.markets||[]).map(m=>({key:m,label:m}));
+function pdBreakdownRows(){
   return[{key:'clean',label:'Clean claims'},{key:'notClean',label:'Not-clean claims'}];
 }
-/* field: 'billed'|'amt'  kind: 'mkt'|'clean' — independently toggled. */
+/* field: 'billed'|'amt'  kind: 'mkt'|'clean' — a payor only ever offers
+   one of the two (see the comment above), so this never needs to worry
+   about the other kind. */
 function togglePdBreakdown(field,kind,existing){
   document.getElementById(`m-pd-${field}-${kind}-box`).style.display='block';
   document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='none';
-  buildFixedBreakdownRows(`m-pd-${field}-${kind}-rows`,pdBreakdownRows(kind,_pdPayor),existing||{},()=>recalcPdTotal(field,kind));
+  if(kind==='mkt'){
+    buildMarketCleanGrid(`m-pd-${field}-mkt-rows`,_pdPayor.markets||[],existing||{},()=>recalcPdTotal(field,'mkt'));
+  } else {
+    buildFixedBreakdownRows(`m-pd-${field}-clean-rows`,pdBreakdownRows(),existing||{},()=>recalcPdTotal(field,'clean'));
+  }
 }
 function closePdBreakdown(field,kind){
   document.getElementById(`m-pd-${field}-${kind}-box`).style.display='none';
@@ -2593,11 +2675,15 @@ function openPayorDateModal(t,cc,p,dateKey){
   const canBreakdownByMarket=p.markets&&p.markets.length>1;
   document.getElementById('m-pd-amt-toggles').style.display=dateKey?'flex':'none';
   document.getElementById('m-pd-amt-mkt-toggle-btn').style.display=canBreakdownByMarket?'':'none';
+  document.getElementById('m-pd-amt-clean-toggle-btn').style.display=canBreakdownByMarket?'none':'';
   if(dateKey){
-    const existingAmtMkt=getMktBreakdown(dateKey,compositeName,cc);
-    const existingAmtClean=getCleanBreakdown(dateKey,compositeName,cc);
-    if(canBreakdownByMarket&&Object.keys(existingAmtMkt).length)togglePdBreakdown('amt','mkt',existingAmtMkt);
-    if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
+    if(canBreakdownByMarket){
+      const existingAmtCross=getCrossBreakdown(dateKey,compositeName,cc);
+      if(Object.keys(existingAmtCross).length)togglePdBreakdown('amt','mkt',existingAmtCross);
+    } else {
+      const existingAmtClean=getCleanBreakdown(dateKey,compositeName,cc);
+      if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
+    }
   }
 
   document.getElementById('m-pd-cycle-row').style.display=cyc?'':'none';
@@ -2613,13 +2699,17 @@ function openPayorDateModal(t,cc,p,dateKey){
     const est=estimate(compositeName,y,m,cc);
     document.getElementById('m-pd-stage1').textContent=est!==null?`~$${fmt(est)} (avg of prior actuals)`:'No prior actuals yet';
     document.getElementById('m-pd-billed-mkt-toggle-btn').style.display=canBreakdownByMarket?'':'none';
+    document.getElementById('m-pd-billed-clean-toggle-btn').style.display=canBreakdownByMarket?'none':'';
     const billedEntry=p.cycleData&&p.cycleData[dateKey];
     const billedTotal=billedTotalOf(billedEntry);
     document.getElementById('m-pd-billed').value=billedTotal!=null?billedTotal:'';
-    const existingByMarket=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarket?billedEntry.byMarket:null;
-    const existingByClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byClean?billedEntry.byClean:null;
-    if(canBreakdownByMarket&&existingByMarket)togglePdBreakdown('billed','mkt',existingByMarket);
-    if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
+    if(canBreakdownByMarket){
+      const existingByMarketClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarketClean?billedEntry.byMarketClean:null;
+      if(existingByMarketClean)togglePdBreakdown('billed','mkt',existingByMarketClean);
+    } else {
+      const existingByClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byClean?billedEntry.byClean:null;
+      if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
+    }
     const refreshExpected=()=>{
       const bv=parseFloat(document.getElementById('m-pd-billed').value);
       if(isNaN(bv)){document.getElementById('m-pd-stage3').textContent='Enter a billed amount first';return null;}
@@ -2651,7 +2741,11 @@ function openPayorDateModal(t,cc,p,dateKey){
     clr.onclick=()=>{
       if(p.cycleData)delete p.cycleData[dateKey];
       delete A(cc)[ak(dateKey,compositeName)];
-      (p.markets||[]).forEach(m=>delete A(cc)[mktKey(dateKey,m,compositeName)]);
+      (p.markets||[]).forEach(m=>{
+        delete A(cc)[mktKey(dateKey,m,compositeName)];
+        delete A(cc)[crossKey(dateKey,m,'clean',compositeName)];
+        delete A(cc)[crossKey(dateKey,m,'notClean',compositeName)];
+      });
       delete A(cc)[cleanKey(dateKey,'clean',compositeName)];
       delete A(cc)[cleanKey(dateKey,'notClean',compositeName)];
       save();closeModal('m-payor-date');render();buildSb();
@@ -2665,27 +2759,35 @@ function openPayorDateModal(t,cc,p,dateKey){
     if(cyc){
       const billedMktActive=document.getElementById('m-pd-billed-mkt-box').style.display==='block';
       const billedCleanActive=document.getElementById('m-pd-billed-clean-box').style.display==='block';
-      const billedByMarket=billedMktActive?readFixedBreakdown('m-pd-billed-mkt-rows'):null;
+      const billedByMarketClean=billedMktActive?readMarketCleanGrid('m-pd-billed-mkt-rows'):null;
       const billedByClean=billedCleanActive?readFixedBreakdown('m-pd-billed-clean-rows'):null;
       const bv=document.getElementById('m-pd-billed').value;
       if(bv!==''){
         if(!p.cycleData)p.cycleData={};
         p.cycleData[dateKey]={
           total:parseFloat(bv),
-          byMarket:(billedByMarket&&Object.keys(billedByMarket).length)?billedByMarket:null,
+          byMarket:null,
           byClean:(billedByClean&&Object.keys(billedByClean).length)?billedByClean:null,
+          byMarketClean:(billedByMarketClean&&Object.keys(billedByMarketClean).length)?billedByMarketClean:null,
         };
       } else if(p.cycleData)delete p.cycleData[dateKey];
 
       const actualKey=ak(dateKey,compositeName);
-      (p.markets||[]).forEach(m=>delete A(cc)[mktKey(dateKey,m,compositeName)]);
+      (p.markets||[]).forEach(m=>{
+        delete A(cc)[mktKey(dateKey,m,compositeName)];
+        delete A(cc)[crossKey(dateKey,m,'clean',compositeName)];
+        delete A(cc)[crossKey(dateKey,m,'notClean',compositeName)];
+      });
       delete A(cc)[cleanKey(dateKey,'clean',compositeName)];
       delete A(cc)[cleanKey(dateKey,'notClean',compositeName)];
       const amtMktActive=document.getElementById('m-pd-amt-mkt-box').style.display==='block';
       const amtCleanActive=document.getElementById('m-pd-amt-clean-box').style.display==='block';
       if(amtMktActive){
-        const byMarket=readFixedBreakdown('m-pd-amt-mkt-rows');
-        Object.entries(byMarket).forEach(([m,v])=>{A(cc)[mktKey(dateKey,m,compositeName)]=v;});
+        const byMarketClean=readMarketCleanGrid('m-pd-amt-mkt-rows');
+        Object.entries(byMarketClean).forEach(([m,v])=>{
+          if(v.clean!=null)A(cc)[crossKey(dateKey,m,'clean',compositeName)]=v.clean;
+          if(v.notClean!=null)A(cc)[crossKey(dateKey,m,'notClean',compositeName)]=v.notClean;
+        });
       }
       if(amtCleanActive){
         const byClean=readFixedBreakdown('m-pd-amt-clean-rows');
