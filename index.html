@@ -767,6 +767,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button onclick="closeModal('m-settings');openCollRateReport()" style="width:100%;padding:7px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-size:11px;font-weight:500">View report…</button>
   </div>
   <div class="pw-box">
+    <h4><i class="ti ti-file-spreadsheet" style="font-size:12px"></i> AR Bulk Data Entry</h4>
+    <div class="pw-note">Download a spreadsheet with every active payor's pay dates (split into a row per market), fill in Billed / Actual, then upload it back in. Re-downloading includes whatever's already entered, so it's safe to use for both first entry and updates.</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="doArTemplateExport()" style="flex:1;padding:7px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-size:11px;font-weight:500">Download template</button>
+      <button onclick="document.getElementById('ar-import-file').click()" style="flex:1;padding:7px;border-radius:8px;border:0.5px solid #534AB7;color:#534AB7;background:transparent;cursor:pointer;font-size:11px;font-weight:500">Upload filled-in file</button>
+    </div>
+    <input type="file" id="ar-import-file" accept=".xlsx,.xls" style="display:none" onchange="handleArImportFile(this)">
+  </div>
+  <div class="pw-box">
     <h4><i class="ti ti-palette" style="font-size:12px"></i> Dashboard Appearance</h4>
     <div class="pw-note">Choose how the CFO Dashboard tab looks.</div>
     <div style="display:flex;gap:6px">
@@ -830,7 +839,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button type="button" class="pd-bd-link" id="m-pd-billed-mkt-toggle-btn" onclick="togglePdBreakdown('billed','mkt')">+ By market</button>
       <button type="button" class="pd-bd-link" id="m-pd-billed-clean-toggle-btn" onclick="togglePdBreakdown('billed','clean')">+ Clean / not-clean</button>
     </div>
-    <div class="pd-bd-box" id="m-pd-billed-mkt-box" style="display:none"><div id="m-pd-billed-mkt-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('billed','mkt')">Switch to single total</button></div>
+    <div class="pd-bd-box" id="m-pd-billed-mkt-box" style="display:none"><div id="m-pd-billed-mkt-rows"></div><div id="m-pd-billed-mkt-splitlink"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('billed','mkt')">Switch to single total</button></div>
     <div class="pd-bd-box" id="m-pd-billed-clean-box" style="display:none"><div id="m-pd-billed-clean-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('billed','clean')">Switch to single total</button></div>
   </div>
   <div class="mrow" id="m-pd-stage3-row" style="display:none"><label>3. Expected</label><div class="vv est-vv" id="m-pd-stage3"></div></div>
@@ -841,7 +850,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button type="button" class="pd-bd-link" id="m-pd-amt-mkt-toggle-btn" onclick="togglePdBreakdown('amt','mkt')">+ By market</button>
       <button type="button" class="pd-bd-link" id="m-pd-amt-clean-toggle-btn" onclick="togglePdBreakdown('amt','clean')">+ Clean / not-clean</button>
     </div>
-    <div class="pd-bd-box" id="m-pd-amt-mkt-box" style="display:none"><div id="m-pd-amt-mkt-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('amt','mkt')">Switch to single total</button></div>
+    <div class="pd-bd-box" id="m-pd-amt-mkt-box" style="display:none"><div id="m-pd-amt-mkt-rows"></div><div id="m-pd-amt-mkt-splitlink"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('amt','mkt')">Switch to single total</button></div>
     <div class="pd-bd-box" id="m-pd-amt-clean-box" style="display:none"><div id="m-pd-amt-clean-rows"></div><button type="button" class="pd-bd-clear" onclick="closePdBreakdown('amt','clean')">Switch to single total</button></div>
   </div>
   <div class="mrow" id="m-pd-variance-row" style="display:none"><label>Variance</label><div class="vv" id="m-pd-variance"></div></div>
@@ -2113,14 +2122,47 @@ function recalcPdTotal(field,editedKind){
 function pdBreakdownRows(){
   return[{key:'clean',label:'Clean claims'},{key:'notClean',label:'Not-clean claims'}];
 }
+function pdMktRows(){return(_pdPayor.markets||[]).map(m=>({key:m,label:m}));}
+/* The market breakdown defaults to one plain amount per market ("simple"
+   mode) — that's all most payors need day to day. A small link inside the
+   box lets it expand into the market x clean/not-clean grid ("split" mode)
+   for payors where denial-rate tracking matters too, without losing
+   whatever was already entered. */
+function renderPdMarketBox(field,mode,data){
+  const wrapId=`m-pd-${field}-mkt-rows`;
+  if(mode==='split'){
+    buildMarketCleanGrid(wrapId,_pdPayor.markets||[],data||{},()=>recalcPdTotal(field,'mkt'));
+  } else {
+    buildFixedBreakdownRows(wrapId,pdMktRows(),data||{},()=>recalcPdTotal(field,'mkt'));
+  }
+  document.getElementById(`m-pd-${field}-mkt-box`).dataset.mode=mode;
+  const link=document.getElementById(`m-pd-${field}-mkt-splitlink`);link.innerHTML='';
+  const btn=document.createElement('button');btn.type='button';btn.className='pd-bd-link';
+  btn.textContent=mode==='split'?'Remove clean / not-clean split':'+ Also split by clean / not-clean';
+  btn.onclick=()=>pdMktSwitchMode(field,mode==='split'?'simple':'split');
+  link.appendChild(btn);
+}
+function pdMktSwitchMode(field,toMode){
+  if(toMode==='split'){
+    const flat=readFixedBreakdown(`m-pd-${field}-mkt-rows`);
+    const cross={};
+    Object.entries(flat).forEach(([m,v])=>{cross[m]={clean:v,notClean:null};});
+    renderPdMarketBox(field,'split',cross);
+  } else {
+    const cross=readMarketCleanGrid(`m-pd-${field}-mkt-rows`);
+    const flat={};
+    Object.entries(cross).forEach(([m,v])=>{flat[m]=(v.clean||0)+(v.notClean||0);});
+    renderPdMarketBox(field,'simple',flat);
+  }
+}
 /* field: 'billed'|'amt'  kind: 'mkt'|'clean' — a payor only ever offers
    one of the two (see the comment above), so this never needs to worry
-   about the other kind. */
-function togglePdBreakdown(field,kind,existing){
+   about the other kind. mode ('simple'|'split') only applies to kind='mkt'. */
+function togglePdBreakdown(field,kind,existing,mode){
   document.getElementById(`m-pd-${field}-${kind}-box`).style.display='block';
   document.getElementById(`m-pd-${field}-${kind}-toggle-btn`).style.display='none';
   if(kind==='mkt'){
-    buildMarketCleanGrid(`m-pd-${field}-mkt-rows`,_pdPayor.markets||[],existing||{},()=>recalcPdTotal(field,'mkt'));
+    renderPdMarketBox(field,mode||'simple',existing||{});
   } else {
     buildFixedBreakdownRows(`m-pd-${field}-clean-rows`,pdBreakdownRows(),existing||{},()=>recalcPdTotal(field,'clean'));
   }
@@ -2459,6 +2501,148 @@ function doXlsExport(){
   closeModal('m-xls');
 }
 
+/* ---- AR BULK DATA ENTRY (download a fill-in-and-upload template) ----
+   One row per (payor, market, pay date), covering the app's whole
+   2026-2027 window. Multi-market payors get one row per market; single-
+   market payors get one row with the market column blank (their whole
+   revenue already belongs to their one market, no split needed). Already-
+   entered Billed/Actual values are pre-filled so downloading again after
+   partial entry doubles as a "current state" export. */
+function arTemplateRows(){
+  const fromDs='2026-01-01',toDs='2027-12-31';
+  const rows=[['Payor','Market','Pay Date','Billed','Actual']];
+  D.ar.types.forEach(t=>{
+    if(!Array.isArray(t.payors))return;
+    t.payors.forEach(p=>{
+      if(p.status==='pending')return;
+      const compositeName=p.name+'__'+t.name;
+      const multiMarket=p.markets&&p.markets.length>1;
+      const dates=new Set();
+      if(p.cycleRule||p.cycles)payorCycles(p).forEach(cyc=>{if(cyc.payDate>=fromDs&&cyc.payDate<=toDs)dates.add(cyc.payDate);});
+      (p.dates||[]).forEach(d=>{if(d>=fromDs&&d<=toDs)dates.add(d);});
+      [...dates].sort().forEach(ds=>{
+        const billedEntry=p.cycleData&&p.cycleData[ds];
+        const billedByMkt=billedEntry&&typeof billedEntry==='object'?billedEntry.byMarket:null;
+        if(multiMarket){
+          p.markets.forEach(m=>{
+            const billed=billedByMkt&&billedByMkt[m]!=null?billedByMkt[m]:'';
+            const actual=A('ar')[mktKey(ds,m,compositeName)];
+            rows.push([p.name,m,ds,billed,actual!==undefined?actual:'']);
+          });
+        } else {
+          const billed=billedTotalOf(billedEntry);
+          const actual=A('ar')[ak(ds,compositeName)];
+          rows.push([p.name,'',ds,billed!=null?billed:'',actual!==undefined?actual:'']);
+        }
+      });
+    });
+  });
+  return rows;
+}
+function doArTemplateExport(){
+  if(typeof XLSX==='undefined'){alert('The Excel export library failed to load. Check your internet connection and try again.');return;}
+  const aoa=arTemplateRows();
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:22},{wch:14},{wch:12},{wch:12},{wch:12}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'AR Data Entry');
+  XLSX.writeFile(wb,`kf-calendar_ar-data-entry_${dsFromDate(new Date())}.xlsx`);
+}
+function handleArImportFile(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(typeof XLSX==='undefined'){alert('The Excel library failed to load. Check your internet connection and try again.');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      importArRows(rows);
+    }catch(err){
+      alert('Could not read that file. Make sure it\'s the .xlsx template downloaded from here (or matches its Payor / Market / Pay Date / Billed / Actual columns).');
+    }
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+/* Groups rows by (payor,date) first so a multi-market payor's several
+   market rows for the same date are combined into one billed/actual write,
+   rather than each row clobbering the last. Blank Billed/Actual cells are
+   left untouched — the import only ever fills in what's actually in the
+   file, never clears existing data for a row the user left blank. */
+function importArRows(rows){
+  if(!rows||!rows.length){alert('That file has no rows.');return;}
+  const header=rows[0].map(h=>String(h||'').trim().toLowerCase());
+  const idx={payor:header.indexOf('payor'),market:header.indexOf('market'),date:header.indexOf('pay date'),billed:header.indexOf('billed'),actual:header.indexOf('actual')};
+  if(idx.payor<0||idx.date<0){
+    alert('That file doesn\'t look like the AR data entry template — expected columns: Payor, Market, Pay Date, Billed, Actual.');
+    return;
+  }
+  const groups={};
+  let badRows=0;
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];if(!r||!r.length)continue;
+    const payorName=String(r[idx.payor]||'').trim();
+    const marketName=idx.market>=0?String(r[idx.market]||'').trim():'';
+    const ds=String(r[idx.date]||'').trim();
+    if(!payorName&&!ds)continue;
+    if(!payorName||!/^\d{4}-\d{2}-\d{2}$/.test(ds)){badRows++;continue;}
+    const billedRaw=idx.billed>=0?r[idx.billed]:'';
+    const actualRaw=idx.actual>=0?r[idx.actual]:'';
+    const billed=billedRaw===''||billedRaw==null?null:Number(billedRaw);
+    const actual=actualRaw===''||actualRaw==null?null:Number(actualRaw);
+    if((billed==null||isNaN(billed))&&(actual==null||isNaN(actual)))continue;
+    const key=payorName+'||'+ds;
+    if(!groups[key])groups[key]={payorName,ds,cells:[]};
+    groups[key].cells.push({market:marketName,billed:(billed!=null&&!isNaN(billed))?billed:null,actual:(actual!=null&&!isNaN(actual))?actual:null});
+  }
+  let updated=0;const skippedPayors=new Set();
+  Object.values(groups).forEach(g=>{
+    let p=null,t=null;
+    D.ar.types.forEach(ty=>{if(p)return;(ty.payors||[]).forEach(pp=>{if(pp.name===g.payorName){p=pp;t=ty;}});});
+    if(!p){skippedPayors.add(g.payorName);return;}
+    const compositeName=p.name+'__'+t.name;
+    const multiMarket=p.markets&&p.markets.length>1;
+    const ds=g.ds;
+    const billedCells=g.cells.filter(c=>c.billed!=null);
+    if(billedCells.length){
+      if(!p.cycleData)p.cycleData={};
+      const byMarket={};
+      if(multiMarket)billedCells.forEach(c=>{if(c.market)byMarket[c.market]=c.billed;});
+      if(Object.keys(byMarket).length){
+        const total=Object.values(byMarket).reduce((a,b)=>a+b,0);
+        p.cycleData[ds]={total,byMarket,byClean:null,byMarketClean:null};
+      } else {
+        p.cycleData[ds]={total:billedCells[billedCells.length-1].billed,byMarket:null,byClean:null,byMarketClean:null};
+      }
+    }
+    const actualCells=g.cells.filter(c=>c.actual!=null);
+    if(actualCells.length){
+      const byMktActual={};
+      if(multiMarket)actualCells.forEach(c=>{if(c.market)byMktActual[c.market]=c.actual;});
+      if(Object.keys(byMktActual).length){
+        (p.markets||[]).forEach(m=>delete A('ar')[mktKey(ds,m,compositeName)]);
+        let sum=0;
+        Object.entries(byMktActual).forEach(([m,v])=>{A('ar')[mktKey(ds,m,compositeName)]=v;sum+=v;});
+        A('ar')[ak(ds,compositeName)]=sum;
+      } else {
+        A('ar')[ak(ds,compositeName)]=actualCells[actualCells.length-1].actual;
+      }
+    }
+    if(!(p.cycleRule||p.cycles)){
+      if(!p.dates)p.dates=[];
+      if(!p.dates.includes(ds))p.dates.push(ds);
+    }
+    updated++;
+  });
+  save();render();buildSb();
+  let msg=`Imported data for ${updated} payor/date row${updated===1?'':'s'}.`;
+  if(skippedPayors.size)msg+=` Skipped unrecognized payor name(s): ${[...skippedPayors].join(', ')}.`;
+  if(badRows)msg+=` Skipped ${badRows} row(s) with a missing/invalid date.`;
+  alert(msg);
+}
+
 /* ---- SETTINGS ---- */
 function openSettings(){updatePwBadge();buildMarketsList();if(!dashPrefs)loadDashPrefs();updateDashThemeButtons();openModal('m-settings');}
 
@@ -2679,7 +2863,9 @@ function openPayorDateModal(t,cc,p,dateKey){
   if(dateKey){
     if(canBreakdownByMarket){
       const existingAmtCross=getCrossBreakdown(dateKey,compositeName,cc);
-      if(Object.keys(existingAmtCross).length)togglePdBreakdown('amt','mkt',existingAmtCross);
+      const existingAmtMkt=getMktBreakdown(dateKey,compositeName,cc);
+      if(Object.keys(existingAmtCross).length)togglePdBreakdown('amt','mkt',existingAmtCross,'split');
+      else if(Object.keys(existingAmtMkt).length)togglePdBreakdown('amt','mkt',existingAmtMkt,'simple');
     } else {
       const existingAmtClean=getCleanBreakdown(dateKey,compositeName,cc);
       if(Object.keys(existingAmtClean).length)togglePdBreakdown('amt','clean',existingAmtClean);
@@ -2705,7 +2891,9 @@ function openPayorDateModal(t,cc,p,dateKey){
     document.getElementById('m-pd-billed').value=billedTotal!=null?billedTotal:'';
     if(canBreakdownByMarket){
       const existingByMarketClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarketClean?billedEntry.byMarketClean:null;
-      if(existingByMarketClean)togglePdBreakdown('billed','mkt',existingByMarketClean);
+      const existingByMarket=billedEntry&&typeof billedEntry==='object'&&billedEntry.byMarket?billedEntry.byMarket:null;
+      if(existingByMarketClean)togglePdBreakdown('billed','mkt',existingByMarketClean,'split');
+      else if(existingByMarket)togglePdBreakdown('billed','mkt',existingByMarket,'simple');
     } else {
       const existingByClean=billedEntry&&typeof billedEntry==='object'&&billedEntry.byClean?billedEntry.byClean:null;
       if(existingByClean)togglePdBreakdown('billed','clean',existingByClean);
@@ -2757,16 +2945,19 @@ function openPayorDateModal(t,cc,p,dateKey){
   const sv=document.createElement('button');sv.className='sv '+cc;sv.textContent='Save';
   sv.onclick=()=>{
     if(cyc){
-      const billedMktActive=document.getElementById('m-pd-billed-mkt-box').style.display==='block';
+      const billedMktBox=document.getElementById('m-pd-billed-mkt-box');
+      const billedMktActive=billedMktBox.style.display==='block';
+      const billedMktSplit=billedMktActive&&billedMktBox.dataset.mode==='split';
       const billedCleanActive=document.getElementById('m-pd-billed-clean-box').style.display==='block';
-      const billedByMarketClean=billedMktActive?readMarketCleanGrid('m-pd-billed-mkt-rows'):null;
+      const billedByMarket=(billedMktActive&&!billedMktSplit)?readFixedBreakdown('m-pd-billed-mkt-rows'):null;
+      const billedByMarketClean=billedMktSplit?readMarketCleanGrid('m-pd-billed-mkt-rows'):null;
       const billedByClean=billedCleanActive?readFixedBreakdown('m-pd-billed-clean-rows'):null;
       const bv=document.getElementById('m-pd-billed').value;
       if(bv!==''){
         if(!p.cycleData)p.cycleData={};
         p.cycleData[dateKey]={
           total:parseFloat(bv),
-          byMarket:null,
+          byMarket:(billedByMarket&&Object.keys(billedByMarket).length)?billedByMarket:null,
           byClean:(billedByClean&&Object.keys(billedByClean).length)?billedByClean:null,
           byMarketClean:(billedByMarketClean&&Object.keys(billedByMarketClean).length)?billedByMarketClean:null,
         };
@@ -2780,9 +2971,15 @@ function openPayorDateModal(t,cc,p,dateKey){
       });
       delete A(cc)[cleanKey(dateKey,'clean',compositeName)];
       delete A(cc)[cleanKey(dateKey,'notClean',compositeName)];
-      const amtMktActive=document.getElementById('m-pd-amt-mkt-box').style.display==='block';
+      const amtMktBox=document.getElementById('m-pd-amt-mkt-box');
+      const amtMktActive=amtMktBox.style.display==='block';
+      const amtMktSplit=amtMktActive&&amtMktBox.dataset.mode==='split';
       const amtCleanActive=document.getElementById('m-pd-amt-clean-box').style.display==='block';
-      if(amtMktActive){
+      if(amtMktActive&&!amtMktSplit){
+        const byMarket=readFixedBreakdown('m-pd-amt-mkt-rows');
+        Object.entries(byMarket).forEach(([m,v])=>{A(cc)[mktKey(dateKey,m,compositeName)]=v;});
+      }
+      if(amtMktSplit){
         const byMarketClean=readMarketCleanGrid('m-pd-amt-mkt-rows');
         Object.entries(byMarketClean).forEach(([m,v])=>{
           if(v.clean!=null)A(cc)[crossKey(dateKey,m,'clean',compositeName)]=v.clean;
