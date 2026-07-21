@@ -2562,6 +2562,30 @@ function doArTemplateExport(){
   XLSX.utils.book_append_sheet(wb,ws,'AR Data Entry');
   XLSX.writeFile(wb,`kf-calendar_ar-data-entry_${dsFromDate(new Date())}.xlsx`);
 }
+/* Excel (esp. when a downloaded .xlsx is re-opened, edited, and re-saved
+   in Excel) often "helpfully" converts a plain YYYY-MM-DD text cell into a
+   real date value with a locale-formatted display — e.g. 1/7/2026 instead
+   of 2026-01-07. cellDates:true + raw:true below hand us the actual JS
+   Date object (or the original string, or a number, whichever the cell
+   really is) instead of a pre-formatted display string, and this
+   normalizes any of those shapes back to YYYY-MM-DD so the strict date
+   check downstream doesn't silently reject every row. */
+function normalizeImportDate(v){
+  if(v instanceof Date&&!isNaN(v)){
+    const y=v.getUTCFullYear(),m=String(v.getUTCMonth()+1).padStart(2,'0'),d=String(v.getUTCDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+  const s=String(v==null?'':v).trim();
+  if(/^\d{4}-\d{1,2}-\d{1,2}/.test(s)){
+    const[y,m,d]=s.slice(0,10).split('-');
+    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  let m2=s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/); // M/D/YYYY or M-D-YYYY
+  if(m2)return `${m2[3]}-${m2[1].padStart(2,'0')}-${m2[2].padStart(2,'0')}`;
+  m2=s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2})$/); // M/D/YY
+  if(m2)return `20${m2[3]}-${m2[1].padStart(2,'0')}-${m2[2].padStart(2,'0')}`;
+  return s;
+}
 function handleArImportFile(input){
   const file=input.files[0];
   if(!file)return;
@@ -2569,9 +2593,9 @@ function handleArImportFile(input){
   const reader=new FileReader();
   reader.onload=(e)=>{
     try{
-      const wb=XLSX.read(e.target.result,{type:'array'});
+      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
       importArRows(rows);
     }catch(err){
       alert('Could not read that file. Make sure it\'s the .xlsx template downloaded from here (or matches its Payor / Market / Pay Date / Billed / Actual columns).');
@@ -2599,7 +2623,7 @@ function importArRows(rows){
     const r=rows[i];if(!r||!r.length)continue;
     const payorName=String(r[idx.payor]||'').trim();
     const marketName=idx.market>=0?String(r[idx.market]||'').trim():'';
-    const ds=String(r[idx.date]||'').trim();
+    const ds=normalizeImportDate(r[idx.date]);
     if(!payorName&&!ds)continue;
     if(!payorName||!/^\d{4}-\d{2}-\d{2}$/.test(ds)){badRows++;continue;}
     const billedRaw=idx.billed>=0?r[idx.billed]:'';
@@ -2651,9 +2675,11 @@ function importArRows(rows){
     updated++;
   });
   save();render();buildSb();
-  let msg=`Imported data for ${updated} payor/date row${updated===1?'':'s'}.`;
+  let msg=updated===0&&badRows>0
+    ? `Nothing was imported — ${badRows} row(s) had a date Excel didn't reformat as YYYY-MM-DD. Try re-downloading the template and only editing the Billed/Actual columns, or format the Pay Date column as Text before typing dates.`
+    : `Imported data for ${updated} payor/date row${updated===1?'':'s'}.`;
   if(skippedPayors.size)msg+=` Skipped unrecognized payor name(s): ${[...skippedPayors].join(', ')}.`;
-  if(badRows)msg+=` Skipped ${badRows} row(s) with a missing/invalid date.`;
+  if(updated>0&&badRows)msg+=` Skipped ${badRows} row(s) with a missing/invalid date.`;
   alert(msg);
 }
 
@@ -2702,9 +2728,9 @@ function handleApImportFile(input){
   const reader=new FileReader();
   reader.onload=(e)=>{
     try{
-      const wb=XLSX.read(e.target.result,{type:'array'});
+      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
       importApRows(rows);
     }catch(err){
       alert('Could not read that file. Make sure it\'s the .xlsx template downloaded from here (or matches its Type / Market / Date / Amount columns).');
@@ -2730,7 +2756,7 @@ function importApRows(rows){
     const r=rows[i];if(!r||!r.length)continue;
     const typeName=String(r[idx.type]||'').trim();
     const marketName=idx.market>=0?String(r[idx.market]||'').trim():'';
-    const ds=String(r[idx.date]||'').trim();
+    const ds=normalizeImportDate(r[idx.date]);
     if(!typeName&&!ds)continue;
     if(!typeName||!/^\d{4}-\d{2}-\d{2}$/.test(ds)){badRows++;continue;}
     const amountRaw=idx.amount>=0?r[idx.amount]:'';
@@ -2758,9 +2784,11 @@ function importApRows(rows){
     updated++;
   });
   save();render();buildSb();
-  let msg=`Imported data for ${updated} type/date row${updated===1?'':'s'}.`;
+  let msg=updated===0&&badRows>0
+    ? `Nothing was imported — ${badRows} row(s) had a date Excel didn't reformat as YYYY-MM-DD. Try re-downloading the template and only editing the Amount column, or format the Date column as Text before typing dates.`
+    : `Imported data for ${updated} type/date row${updated===1?'':'s'}.`;
   if(skippedTypes.size)msg+=` Skipped unrecognized type name(s): ${[...skippedTypes].join(', ')}.`;
-  if(badRows)msg+=` Skipped ${badRows} row(s) with a missing/invalid date.`;
+  if(updated>0&&badRows)msg+=` Skipped ${badRows} row(s) with a missing/invalid date.`;
   alert(msg);
 }
 
