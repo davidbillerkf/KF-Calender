@@ -2646,9 +2646,13 @@ function importArRows(rows){
     const billedCells=g.cells.filter(c=>c.billed!=null);
     if(billedCells.length){
       if(!p.cycleData)p.cycleData={};
-      const byMarket={};
-      if(multiMarket)billedCells.forEach(c=>{if(c.market)byMarket[c.market]=c.billed;});
-      if(Object.keys(byMarket).length){
+      if(multiMarket&&billedCells.some(c=>c.market)){
+        /* Merge with whatever's already there so editing just one market's
+           number and re-uploading doesn't wipe a market you left untouched
+           (blank) in this particular file. */
+        const existing=p.cycleData[ds];
+        const byMarket=(existing&&typeof existing==='object'&&existing.byMarket)?{...existing.byMarket}:{};
+        billedCells.forEach(c=>{if(c.market)byMarket[c.market]=c.billed;});
         const total=Object.values(byMarket).reduce((a,b)=>a+b,0);
         p.cycleData[ds]={total,byMarket,byClean:null,byMarketClean:null};
       } else {
@@ -2657,9 +2661,13 @@ function importArRows(rows){
     }
     const actualCells=g.cells.filter(c=>c.actual!=null);
     if(actualCells.length){
-      const byMktActual={};
-      if(multiMarket)actualCells.forEach(c=>{if(c.market)byMktActual[c.market]=c.actual;});
-      if(Object.keys(byMktActual).length){
+      if(multiMarket&&actualCells.some(c=>c.market)){
+        const byMktActual={};
+        (p.markets||[]).forEach(m=>{
+          const v=A('ar')[mktKey(ds,m,compositeName)];
+          if(v!==undefined)byMktActual[m]=v;
+        });
+        actualCells.forEach(c=>{if(c.market)byMktActual[c.market]=c.actual;});
         (p.markets||[]).forEach(m=>delete A('ar')[mktKey(ds,m,compositeName)]);
         let sum=0;
         Object.entries(byMktActual).forEach(([m,v])=>{A('ar')[mktKey(ds,m,compositeName)]=v;sum+=v;});
@@ -2773,8 +2781,17 @@ function importApRows(rows){
     const ds=g.ds;
     const mktCells=t.mkt?g.cells.filter(c=>c.market):[];
     if(mktCells.length){
+      /* Merge with whatever's already there so editing just one market's
+         amount and re-uploading doesn't wipe (or undercount the total for)
+         a market left untouched (blank) in this particular file. */
+      const byMkt={};
+      (D.markets||[]).forEach(m=>{
+        const v=A('ap')[mktKey(ds,m,g.typeName)];
+        if(v!==undefined)byMkt[m]=v;
+      });
+      mktCells.forEach(c=>{byMkt[c.market]=c.amount;});
       let sum=0;
-      mktCells.forEach(c=>{A('ap')[mktKey(ds,c.market,g.typeName)]=c.amount;sum+=c.amount;});
+      Object.entries(byMkt).forEach(([m,v])=>{A('ap')[mktKey(ds,m,g.typeName)]=v;sum+=v;});
       A('ap')[ak(ds,g.typeName)]=sum;
     } else {
       if(t.mkt&&D.markets)D.markets.forEach(m=>delete A('ap')[mktKey(ds,m,g.typeName)]);
