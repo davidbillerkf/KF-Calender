@@ -2658,10 +2658,13 @@ function importArRows(rows){
 }
 
 /* ---- AP BULK DATA ENTRY (same pattern as AR, one row per type/date) ----
-   Market-breakdown types (t.mkt) get one row per market; everything else
-   gets one row with the market column blank. Covers every date a type is
-   due, either recurring (datesForRecur) or one-off (EV('ap')), across the
-   app's whole 2026-2027 window. Already-entered amounts are pre-filled. */
+   Market-breakdown types (t.mkt) only get split into one row per market
+   for a date that ALREADY has a market breakdown entered — otherwise they
+   get one plain row with the market column blank, same as any other type,
+   so entering a lump-sum total doesn't require splitting by market. Covers
+   every date a type is due, either recurring (datesForRecur) or one-off
+   (EV('ap')), across the app's whole 2026-2027 window. Already-entered
+   amounts are pre-filled. */
 function apTemplateRows(){
   const fromDs='2026-01-01',toDs='2027-12-31';
   const rows=[['Type','Market','Date','Amount']];
@@ -2669,8 +2672,8 @@ function apTemplateRows(){
     const dates=new Set(datesForRecur(t.recur).filter(d=>d>=fromDs&&d<=toDs));
     EV('ap').forEach(r=>{if(r[0]===t.name&&r[1]>=fromDs&&r[1]<=toDs)dates.add(r[1]);});
     [...dates].sort().forEach(ds=>{
-      if(t.mkt&&D.markets&&D.markets.length){
-        const existing=getMktBreakdown(ds,t.name,'ap');
+      const existing=(t.mkt&&D.markets&&D.markets.length)?getMktBreakdown(ds,t.name,'ap'):{};
+      if(Object.keys(existing).length){
         D.markets.forEach(m=>{
           const v=existing[m];
           rows.push([t.name,m,ds,v!=null?v:'']);
@@ -2748,6 +2751,7 @@ function importApRows(rows){
       mktCells.forEach(c=>{A('ap')[mktKey(ds,c.market,g.typeName)]=c.amount;sum+=c.amount;});
       A('ap')[ak(ds,g.typeName)]=sum;
     } else {
+      if(t.mkt&&D.markets)D.markets.forEach(m=>delete A('ap')[mktKey(ds,m,g.typeName)]);
       A('ap')[ak(ds,g.typeName)]=g.cells[g.cells.length-1].amount;
     }
     if(!EV('ap').find(r=>r[0]===g.typeName&&r[1]===ds))D.ap.events.push([g.typeName,ds]);
